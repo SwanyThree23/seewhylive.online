@@ -62,7 +62,8 @@ var CAT_C  = { platform:'#D4854A', ai:'#D4854A', music:'#D4854A', production:'#D
 var GEN_STEPS = ['Reading sources…', 'Drafting outline…', 'Writing dialogue…', 'Polishing script…'];
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
-function Toast({ message }) {
+function Toast(props) {
+  var message = props.message;
   return (
     <AnimatePresence>
       {message && (
@@ -72,11 +73,11 @@ function Toast({ message }) {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           style={{
             position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(14,12,9,0.97)', border: `1px solid ${GOLD}55`,
+            background: 'rgba(14,12,9,0.97)', border: '1px solid ' + GOLD + '55',
             borderRadius: 12, padding: '12px 22px',
-            color: '#fff', fontSize: 14, ...T,
+            color: '#fff', fontSize: 14, fontFamily: 'Barlow Condensed, sans-serif',
             fontWeight: 700, letterSpacing: '0.04em',
-            boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 20px ${GOLD}18`,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 20px ' + GOLD + '18',
             zIndex: 9999, whiteSpace: 'nowrap',
           }}
         >
@@ -88,12 +89,16 @@ function Toast({ message }) {
 }
 
 // ── Tab Button ────────────────────────────────────────────────────────────────
-function TabBtn({ label, active, onClick, badge }) {
+function TabBtn(props) {
+  var label = props.label;
+  var active = props.active;
+  var onClick = props.onClick;
+  var badge = props.badge;
   return (
     <button
       onClick={onClick}
       style={{
-        ...T, fontSize: 13, fontWeight: 800, letterSpacing: '0.05em',
+        fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 800, letterSpacing: '0.05em',
         padding: '7px 16px', borderRadius: 999, border: 'none', cursor: 'pointer',
         background: active ? GOLD : 'rgba(255,255,255,0.06)',
         color: active ? '#000' : 'rgba(255,255,255,0.5)',
@@ -114,23 +119,27 @@ function TabBtn({ label, active, onClick, badge }) {
 }
 
 // ── Octagonal panel slot ──────────────────────────────────────────────────────
-function PanelSlot({ name, emoji, borderColor, onInvite }) {
+function PanelSlot(props) {
+  var name = props.name;
+  var emoji = props.emoji;
+  var borderColor = props.borderColor;
+  var onInvite = props.onInvite;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
       <div style={{
         width: 80, height: 80, clipPath: OCT,
-        background: `${borderColor}20`, border: `2px solid ${borderColor}60`,
+        background: borderColor + '20', border: '2px solid ' + borderColor + '60',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 28, cursor: 'default',
       }}>
         {emoji}
       </div>
-      <span style={{ ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{name}</span>
+      <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>{name}</span>
       <button
         onClick={onInvite}
         style={{
-          ...T, fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 999,
-          background: `${borderColor}15`, border: `1px solid ${borderColor}40`,
+          fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 999,
+          background: borderColor + '15', border: '1px solid ' + borderColor + '40',
           color: borderColor, cursor: 'pointer', letterSpacing: '0.05em',
         }}
       >
@@ -141,24 +150,48 @@ function PanelSlot({ name, emoji, borderColor, onInvite }) {
 }
 
 // ── NotebookLM Sources Tab ────────────────────────────────────────────────────
-function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
-  var [urlInput, setUrlInput]   = useState('');
-  var [titleInput, setTitleInput] = useState('');
-  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+function NlmSourcesTab(props) {
+  var nlmSources = props.nlmSources;
+  var saveNlmSources = props.saveNlmSources;
+  var showToast = props.showToast;
+  var inputStyle = props.inputStyle;
 
-  var [topicInput, setTopicInput] = useState('');
-  var [fetchState, setFetchState] = useState('idle'); // idle | fetching | ok | partial | failed
-  var [editIdx, setEditIdx]     = useState(null);
-  var [deleteIdx, setDeleteIdx] = useState(null);
-  var [libCat, setLibCat]       = useState('all');
+  var urlInputState = useState('');
+  var urlInput = urlInputState[0];
+  var setUrlInput = urlInputState[1];
+
+  var titleInputState = useState('');
+  var titleInput = titleInputState[0];
+  var setTitleInput = titleInputState[1];
+
+  var topicInputState = useState('');
+  var topicInput = topicInputState[0];
+  var setTopicInput = topicInputState[1];
+
+  var fetchStateState = useState('idle');
+  var fetchState = fetchStateState[0];
+  var setFetchState = fetchStateState[1];
+
+  var editIdxState = useState(null);
+  var editIdx = editIdxState[0];
+  var setEditIdx = editIdxState[1];
+
+  var deleteIdxState = useState(null);
+  var deleteIdx = deleteIdxState[0];
+  var setDeleteIdx = deleteIdxState[1];
+
+  var libCatState = useState('all');
+  var libCat = libCatState[0];
+  var setLibCat = libCatState[1];
 
   function addPreset(p) {
-    if (nlmSources.find(nb => nb.notebookId === p.nbId)) { showToast('Already in sources'); return; }
+    if (nlmSources.find(function(nb) { return nb.notebookId === p.nbId; })) { showToast('Already in sources'); return; }
     if (nlmSources.length >= 8) { showToast('Maximum 8 sources'); return; }
+    var nbUrl = p.artId
+      ? 'https://notebooklm.google.com/notebook/' + p.nbId + '/artifact/' + p.artId
+      : 'https://notebooklm.google.com/notebook/' + p.nbId;
     var nb = {
-      url: p.artId
-        ? `https://notebooklm.google.com/notebook/${p.nbId}/artifact/${p.artId}`
-        : `https://notebooklm.google.com/notebook/${p.nbId}`,
+      url: nbUrl,
       title: p.title,
       topic: '',
       notebookId: p.nbId,
@@ -167,8 +200,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
       icon: p.icon,
       addedAt: new Date().toISOString(),
     };
-    saveNlmSources([nb, ...nlmSources]);
-    showToast(`Added: ${p.title.slice(0, 32)}…`);
+    saveNlmSources([nb].concat(nlmSources));
+    showToast('Added: ' + p.title.slice(0, 32) + '…');
   }
 
   function isNlmUrl(url) {
@@ -189,14 +222,12 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
     setFetchState('fetching');
     setTitleInput('');
 
-    // Try a plain fetch — NLM serves page metadata before the auth redirect
     var controller = new AbortController();
-    var timer = setTimeout(() => controller.abort(), 5000);
+    var timer = setTimeout(function() { controller.abort(); }, 5000);
     try {
       var res = await fetch(url, { signal: controller.signal, redirect: 'follow' });
       clearTimeout(timer);
       var html = await res.text();
-      // Extract <title>
       var m = html.match(/<title[^>]*>([^<]*)<\/title>/i);
       var raw = ((m && m[1]) || '')
         .replace(/\s*[-–|]\s*Google NotebookLM\s*$/i, '')
@@ -210,9 +241,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
         setTitleInput('NotebookLM Source');
         setFetchState('partial');
       }
-    } catch {
+    } catch (err) {
       clearTimeout(timer);
-      // Likely CORS or auth redirect — gracefully degrade
       setTitleInput('NotebookLM Source');
       setFetchState('partial');
     }
@@ -227,14 +257,14 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 
     var ids = parseNlmIds(url);
     var newSrc = {
-      url,
+      url: url,
       title: titleInput.trim(),
       topic: topicInput.trim(),
       notebookId: ids.notebookId,
       artifactId: ids.artifactId,
       addedAt: new Date().toISOString(),
     };
-    saveNlmSources([newSrc, ...nlmSources]);
+    saveNlmSources([newSrc].concat(nlmSources));
     setUrlInput('');
     setTitleInput('');
     setTopicInput('');
@@ -243,9 +273,9 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
   }
 
   function handleSaveEdit(idx) {
-    var updated = nlmSources.map((s, i) =>
-      i === idx ? { ...s, title: titleInput.trim(), topic: topicInput.trim() } : s
-    );
+    var updated = nlmSources.map(function(s, i) {
+      return i === idx ? Object.assign({}, s, { title: titleInput.trim(), topic: topicInput.trim() }) : s;
+    });
     saveNlmSources(updated);
     setEditIdx(null);
     setTitleInput('');
@@ -261,7 +291,7 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
   }
 
   function handleDelete(idx) {
-    saveNlmSources(nlmSources.filter((_, i) => i !== idx));
+    saveNlmSources(nlmSources.filter(function(item, i) { return i !== idx; }));
     setDeleteIdx(null);
     showToast('Source removed');
   }
@@ -288,19 +318,19 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 
       {/* Explainer card */}
       <div style={{
-        background: `${NLM}0C`, border: `1px solid ${NLM}30`,
-        borderLeft: `3px solid ${NLM}`, borderRadius: 16, padding: '16px 18px',
+        background: NLM + '0C', border: '1px solid ' + NLM + '30',
+        borderLeft: '3px solid ' + NLM, borderRadius: 16, padding: '16px 18px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <span style={{ fontSize: 22 }}>🧠</span>
           <div>
-            <p style={{ ...T, fontSize: 16, fontWeight: 900, color: '#fff', margin: 0 }}>NotebookLM Sources</p>
-            <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 16, fontWeight: 900, color: '#fff', margin: 0 }}>NotebookLM Sources</p>
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>
               Saved sources feed directly into AI script generation
             </p>
           </div>
         </div>
-        <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, margin: 0 }}>
+        <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, margin: 0 }}>
           Paste any NotebookLM share URL. The app will try to auto-extract the title.
           If NotebookLM requires sign-in, enter the title and topic manually — the AI will use
           them as research context when generating your podcast script.
@@ -309,15 +339,15 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 
       {/* URL Input Card */}
       <div style={{
-        background: BG2, border: `1px solid ${NLM}25`,
-        borderLeft: `3px solid ${NLM}`, borderRadius: 16, padding: '20px 18px',
+        background: BG2, border: '1px solid ' + NLM + '25',
+        borderLeft: '3px solid ' + NLM, borderRadius: 16, padding: '20px 18px',
       }}>
-        <p style={{ ...T, fontSize: 15, fontWeight: 900, color: '#fff', marginBottom: 14 }}>
+        <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 15, fontWeight: 900, color: '#fff', marginBottom: 14 }}>
           Add NotebookLM Source
         </p>
 
         {/* URL field + fetch button */}
-        <label style={{ ...T, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+        <label style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
           NotebookLM Share URL
         </label>
         <div style={{ display: 'flex', gap: 8, marginTop: 6, marginBottom: 12 }}>
@@ -326,16 +356,16 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
             value={urlInput}
             onChange={handleUrlPaste}
             placeholder="https://notebooklm.google.com/notebook/…"
-            style={{ ...inputStyle, flex: 1, fontFamily: 'monospace', fontSize: 12 }}
+            style={Object.assign({}, inputStyle, { flex: 1, fontFamily: 'monospace', fontSize: 12 })}
           />
           <button
             onClick={handleFetch}
             disabled={fetchState === 'fetching' || !urlInput.trim()}
             style={{
-              ...T, padding: '10px 14px', borderRadius: 10, border: 'none',
+              fontFamily: 'Barlow Condensed, sans-serif', padding: '10px 14px', borderRadius: 10, border: 'none',
               cursor: fetchState === 'fetching' || !urlInput.trim() ? 'not-allowed' : 'pointer',
               background: fetchState === 'idle' ? NLM : fetchColor + '22',
-              border: `1px solid ${fetchColor}44`,
+              border: '1px solid ' + fetchColor + '44',
               color: fetchState === 'idle' ? '#fff' : fetchColor,
               fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap', flexShrink: 0,
               opacity: !urlInput.trim() ? 0.5 : 1,
@@ -353,8 +383,8 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
             animate={{ opacity: 1, y: 0 }}
             style={{
               padding: '8px 12px', borderRadius: 8, marginBottom: 12,
-              background: `${GOLD}10`, border: `1px solid ${GOLD}30`,
-              ...T, fontSize: 12, color: GOLD, lineHeight: 1.5,
+              background: GOLD + '10', border: '1px solid ' + GOLD + '30',
+              fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: GOLD, lineHeight: 1.5,
             }}
           >
             🔐 NotebookLM requires Google sign-in to read content. Enter the title and
@@ -363,28 +393,28 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
         )}
 
         {/* Title field */}
-        <label style={{ ...T, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+        <label style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
           Source Title *
         </label>
         <input
           type="text"
           value={titleInput}
-          onChange={e => setTitleInput(e.target.value)}
+          onChange={function(e) { setTitleInput(e.target.value); }}
           placeholder="e.g. Domino Social Expo: Participant Invitations"
-          style={{ ...inputStyle, marginTop: 6, marginBottom: 12 }}
+          style={Object.assign({}, inputStyle, { marginTop: 6, marginBottom: 12 })}
           maxLength={150}
         />
 
         {/* Topic/context field */}
-        <label style={{ ...T, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+        <label style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
           Topic / Context <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>(optional — helps AI understand the source)</span>
         </label>
         <textarea
           value={topicInput}
-          onChange={e => setTopicInput(e.target.value)}
+          onChange={function(e) { setTopicInput(e.target.value); }}
           placeholder="e.g. Planning and invitations for a domino social tournament event with state teams…"
           rows={3}
-          style={{ ...inputStyle, marginTop: 6, marginBottom: 14, resize: 'vertical' }}
+          style={Object.assign({}, inputStyle, { marginTop: 6, marginBottom: 14, resize: 'vertical' })}
           maxLength={500}
         />
 
@@ -392,11 +422,11 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
           onClick={handleAdd}
           disabled={!urlInput.trim() || !titleInput.trim()}
           style={{
-            ...T, width: '100%', padding: '12px 0', borderRadius: 10, border: 'none',
+            fontFamily: 'Barlow Condensed, sans-serif', width: '100%', padding: '12px 0', borderRadius: 10, border: 'none',
             cursor: !urlInput.trim() || !titleInput.trim() ? 'not-allowed' : 'pointer',
             background: !urlInput.trim() || !titleInput.trim()
               ? 'rgba(255,255,255,0.06)'
-              : `linear-gradient(90deg, ${NLM}, #34a853)`,
+              : 'linear-gradient(90deg, ' + NLM + ', #34a853)',
             color: !urlInput.trim() || !titleInput.trim() ? 'rgba(255,255,255,0.3)' : '#fff',
             fontSize: 14, fontWeight: 900, letterSpacing: '0.06em',
             transition: 'all 0.15s',
@@ -409,134 +439,136 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
       {/* Saved sources list */}
       {nlmSources.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <p style={{ ...T, fontSize: 13, fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 800, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em', textTransform: 'uppercase', margin: 0 }}>
             Saved Sources ({nlmSources.length})
           </p>
-          {nlmSources.map((src, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              style={{
-                background: BG2,
-                border: `1px solid ${NLM}25`,
-                borderLeft: `3px solid ${NLM}`,
-                borderRadius: 14, padding: '14px 16px',
-              }}
-            >
-              {editIdx === i ? (
-                /* Edit mode */
-                <div>
-                  <input
-                    type="text"
-                    value={titleInput}
-                    onChange={e => setTitleInput(e.target.value)}
-                    style={{ ...inputStyle, marginBottom: 8 }}
-                    placeholder="Title"
-                  />
-                  <textarea
-                    value={topicInput}
-                    onChange={e => setTopicInput(e.target.value)}
-                    rows={2}
-                    style={{ ...inputStyle, resize: 'vertical', marginBottom: 10 }}
-                    placeholder="Topic / context"
-                  />
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      onClick={() => handleSaveEdit(i)}
-                      style={{ ...T, padding: '7px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: NLM, color: '#fff', fontSize: 12, fontWeight: 800 }}
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => { setEditIdx(null); setTitleInput(''); setTopicInput(''); }}
-                      style={{ ...T, padding: '7px 14px', borderRadius: 8, cursor: 'pointer', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 700 }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Display mode */
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
-                        <span style={{
-                          ...T, fontSize: 9, fontWeight: 900, padding: '2px 7px', borderRadius: 999,
-                          background: `${NLM}20`, border: `1px solid ${NLM}40`, color: NLM,
-                          letterSpacing: '0.1em', textTransform: 'uppercase',
-                        }}>🧠 NLM</span>
-                        <span style={{ ...T, fontSize: 14, fontWeight: 900, color: '#fff' }}>{src.title}</span>
-                      </div>
-                      {src.topic && (
-                        <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, margin: '0 0 6px' }}>
-                          {src.topic}
-                        </p>
-                      )}
-                      <a
-                        href={isSafeUrl(src.url) ? src.url : undefined}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ ...T, fontSize: 10, color: NLM, wordBreak: 'break-all', textDecoration: 'none', opacity: 0.7 }}
+          {nlmSources.map(function(src, i) {
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{
+                  background: BG2,
+                  border: '1px solid ' + NLM + '25',
+                  borderLeft: '3px solid ' + NLM,
+                  borderRadius: 14, padding: '14px 16px',
+                }}
+              >
+                {editIdx === i ? (
+                  /* Edit mode */
+                  <div>
+                    <input
+                      type="text"
+                      value={titleInput}
+                      onChange={function(e) { setTitleInput(e.target.value); }}
+                      style={Object.assign({}, inputStyle, { marginBottom: 8 })}
+                      placeholder="Title"
+                    />
+                    <textarea
+                      value={topicInput}
+                      onChange={function(e) { setTopicInput(e.target.value); }}
+                      rows={2}
+                      style={Object.assign({}, inputStyle, { resize: 'vertical', marginBottom: 10 })}
+                      placeholder="Topic / context"
+                    />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        onClick={function() { handleSaveEdit(i); }}
+                        style={{ fontFamily: 'Barlow Condensed, sans-serif', padding: '7px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: NLM, color: '#fff', fontSize: 12, fontWeight: 800 }}
                       >
-                        {src.url.length > 55 ? src.url.slice(0, 55) + '…' : src.url}
-                      </a>
-                      <div style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>
-                        Added {new Date(src.addedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </div>
+                        Save
+                      </button>
+                      <button
+                        onClick={function() { setEditIdx(null); setTitleInput(''); setTopicInput(''); }}
+                        style={{ fontFamily: 'Barlow Condensed, sans-serif', padding: '7px 14px', borderRadius: 8, cursor: 'pointer', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontWeight: 700 }}
+                      >
+                        Cancel
+                      </button>
                     </div>
                   </div>
+                ) : (
+                  /* Display mode */
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 }}>
+                          <span style={{
+                            fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, fontWeight: 900, padding: '2px 7px', borderRadius: 999,
+                            background: NLM + '20', border: '1px solid ' + NLM + '40', color: NLM,
+                            letterSpacing: '0.1em', textTransform: 'uppercase',
+                          }}>🧠 NLM</span>
+                          <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 900, color: '#fff' }}>{src.title}</span>
+                        </div>
+                        {src.topic && (
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.5, margin: '0 0 6px' }}>
+                            {src.topic}
+                          </p>
+                        )}
+                        <a
+                          href={isSafeUrl(src.url) ? src.url : undefined}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: NLM, wordBreak: 'break-all', textDecoration: 'none', opacity: 0.7 }}
+                        >
+                          {src.url.length > 55 ? src.url.slice(0, 55) + '…' : src.url}
+                        </a>
+                        <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>
+                          Added {new Date(src.addedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </div>
+                      </div>
+                    </div>
 
-                  <div style={{ display: 'flex', gap: 7, marginTop: 8 }}>
-                    <button
-                      onClick={() => startEdit(i)}
-                      style={{
-                        ...T, padding: '5px 14px', borderRadius: 8, cursor: 'pointer',
-                        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                        color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 800,
-                      }}
-                    >
-                      Edit
-                    </button>
-                    {deleteIdx === i ? (
-                      <>
-                        <button
-                          onClick={() => handleDelete(i)}
-                          style={{ ...T, padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900 }}
-                        >
-                          Confirm
-                        </button>
-                        <button
-                          onClick={() => setDeleteIdx(null)}
-                          style={{ ...T, padding: '5px 12px', borderRadius: 8, cursor: 'pointer', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700 }}
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
+                    <div style={{ display: 'flex', gap: 7, marginTop: 8 }}>
                       <button
-                        onClick={() => setDeleteIdx(i)}
+                        onClick={function() { startEdit(i); }}
                         style={{
-                          ...T, padding: '5px 12px', borderRadius: 8, cursor: 'pointer',
-                          background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)',
-                          color: '#C0392B', fontSize: 11, fontWeight: 800,
+                          fontFamily: 'Barlow Condensed, sans-serif', padding: '5px 14px', borderRadius: 8, cursor: 'pointer',
+                          background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 800,
                         }}
                       >
-                        Remove
+                        Edit
                       </button>
-                    )}
+                      {deleteIdx === i ? (
+                        <React.Fragment>
+                          <button
+                            onClick={function() { handleDelete(i); }}
+                            style={{ fontFamily: 'Barlow Condensed, sans-serif', padding: '5px 12px', borderRadius: 8, border: 'none', cursor: 'pointer', background: '#C0392B', color: '#fff', fontSize: 11, fontWeight: 900 }}
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={function() { setDeleteIdx(null); }}
+                            style={{ fontFamily: 'Barlow Condensed, sans-serif', padding: '5px 12px', borderRadius: 8, cursor: 'pointer', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 700 }}
+                          >
+                            Cancel
+                          </button>
+                        </React.Fragment>
+                      ) : (
+                        <button
+                          onClick={function() { setDeleteIdx(i); }}
+                          style={{
+                            fontFamily: 'Barlow Condensed, sans-serif', padding: '5px 12px', borderRadius: 8, cursor: 'pointer',
+                            background: 'rgba(192,57,43,0.08)', border: '1px solid rgba(192,57,43,0.2)',
+                            color: '#C0392B', fontSize: 11, fontWeight: 800,
+                          }}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </motion.div>
-          ))}
+                )}
+              </motion.div>
+            );
+          })}
 
           {/* Clear all */}
           <button
-            onClick={() => { saveNlmSources([]); showToast('All sources cleared'); }}
+            onClick={function() { saveNlmSources([]); showToast('All sources cleared'); }}
             style={{
-              ...T, padding: '8px 0', borderRadius: 10, cursor: 'pointer',
+              fontFamily: 'Barlow Condensed, sans-serif', padding: '8px 0', borderRadius: 10, cursor: 'pointer',
               background: 'transparent', border: '1px solid rgba(192,57,43,0.2)',
               color: 'rgba(192,57,43,0.5)', fontSize: 12, fontWeight: 700,
             }}
@@ -547,79 +579,81 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
       ) : (
         <div style={{
           textAlign: 'center', padding: '40px 20px',
-          background: BG2, borderRadius: 16, border: `1px dashed ${NLM}30`,
+          background: BG2, borderRadius: 16, border: '1px dashed ' + NLM + '30',
         }}>
           <span style={{ fontSize: 36 }}>🧠</span>
-          <p style={{ ...T, fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.3)', marginTop: 10 }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.3)', marginTop: 10 }}>
             No sources saved yet
           </p>
-          <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.2)', marginTop: 4 }}>
             Paste a NotebookLM share URL above or browse the library below
           </p>
         </div>
       )}
 
       {/* ── NLM Library Browser ── */}
-      <div style={{ background: BG2, border: `1px solid ${NLM}20`, borderLeft: `3px solid ${NLM}`, borderRadius: 16, padding: '18px 18px 14px' }}>
+      <div style={{ background: BG2, border: '1px solid ' + NLM + '20', borderLeft: '3px solid ' + NLM, borderRadius: 16, padding: '18px 18px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <span style={{ fontSize: 18 }}>📚</span>
           <div>
-            <p style={{ ...T, fontSize: 15, fontWeight: 900, color: '#fff', margin: 0 }}>Source Library</p>
-            <p style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0 }}>One-click add curated NLM notebooks to your sources</p>
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 15, fontWeight: 900, color: '#fff', margin: 0 }}>Source Library</p>
+            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0 }}>One-click add curated NLM notebooks to your sources</p>
           </div>
         </div>
 
         {/* Category filter pills */}
         <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none', marginBottom: 12, paddingBottom: 4 }}>
-          {CATS.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setLibCat(cat)}
-              style={{
-                ...T, fontSize: 10, fontWeight: 800, padding: '4px 11px', borderRadius: 999,
-                border: `1px solid ${cat === 'all' ? NLM : (CAT_C[cat] || NLM)}44`,
-                background: libCat === cat ? (cat === 'all' ? NLM : (CAT_C[cat] || NLM)) + '28' : 'rgba(255,255,255,0.04)',
-                color: libCat === cat ? (cat === 'all' ? NLM : (CAT_C[cat] || NLM)) : 'rgba(255,255,255,0.4)',
-                cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em',
-                whiteSpace: 'nowrap', flexShrink: 0,
-                outline: libCat === cat ? `1px solid ${cat === 'all' ? NLM : (CAT_C[cat] || NLM)}60` : 'none',
-                transition: 'all 0.15s',
-              }}
-            >
-              {cat}
-            </button>
-          ))}
+          {CATS.map(function(cat) {
+            return (
+              <button
+                key={cat}
+                onClick={function() { setLibCat(cat); }}
+                style={{
+                  fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 800, padding: '4px 11px', borderRadius: 999,
+                  border: '1px solid ' + (cat === 'all' ? NLM : (CAT_C[cat] || NLM)) + '44',
+                  background: libCat === cat ? (cat === 'all' ? NLM : (CAT_C[cat] || NLM)) + '28' : 'rgba(255,255,255,0.04)',
+                  color: libCat === cat ? (cat === 'all' ? NLM : (CAT_C[cat] || NLM)) : 'rgba(255,255,255,0.4)',
+                  cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em',
+                  whiteSpace: 'nowrap', flexShrink: 0,
+                  outline: libCat === cat ? '1px solid ' + (cat === 'all' ? NLM : (CAT_C[cat] || NLM)) + '60' : 'none',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
 
         {/* Library entries */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-          {NLM_LIB.filter(p => libCat === 'all' || p.cat === libCat).map(p => {
-            var alreadyAdded = nlmSources.some(nb => nb.notebookId === p.nbId);
+          {NLM_LIB.filter(function(p) { return libCat === 'all' || p.cat === libCat; }).map(function(p) {
+            var alreadyAdded = nlmSources.some(function(nb) { return nb.notebookId === p.nbId; });
             var catColor = CAT_C[p.cat] || NLM;
             return (
               <div key={p.id} style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 background: 'rgba(255,255,255,0.03)', borderRadius: 10,
-                border: `1px solid rgba(255,255,255,0.07)`, padding: '10px 12px',
+                border: '1px solid rgba(255,255,255,0.07)', padding: '10px 12px',
               }}>
                 <span style={{ fontSize: 20, flexShrink: 0 }}>{p.icon}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ ...T, fontSize: 13, fontWeight: 800, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 800, color: '#fff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {p.title}
                   </p>
                   <span style={{
-                    ...T, fontSize: 9, fontWeight: 900, padding: '1px 6px', borderRadius: 999,
-                    background: catColor + '18', border: `1px solid ${catColor}35`, color: catColor,
+                    fontFamily: 'Barlow Condensed, sans-serif', fontSize: 9, fontWeight: 900, padding: '1px 6px', borderRadius: 999,
+                    background: catColor + '18', border: '1px solid ' + catColor + '35', color: catColor,
                     letterSpacing: '0.08em', textTransform: 'uppercase',
                   }}>
                     {p.cat}
                   </span>
                 </div>
                 <button
-                  onClick={() => addPreset(p)}
+                  onClick={function() { addPreset(p); }}
                   disabled={alreadyAdded}
                   style={{
-                    ...T, padding: '5px 12px', borderRadius: 8, border: 'none', flexShrink: 0,
+                    fontFamily: 'Barlow Condensed, sans-serif', padding: '5px 12px', borderRadius: 8, border: 'none', flexShrink: 0,
                     cursor: alreadyAdded ? 'default' : 'pointer',
                     background: alreadyAdded ? 'rgba(109,191,126,0.1)' : NLM,
                     color: alreadyAdded ? '#6DBF7E' : '#fff',
@@ -640,58 +674,130 @@ function NlmSourcesTab({ nlmSources, saveNlmSources, showToast, inputStyle }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PodcastStudio() {
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  var [tab, setTab] = useState('create');
-  var [noiseSupp, setNoiseSupp] = useState(true);
-  var [echoCan, setEchoCan] = useState(true);
-  var [sources, setSources] = useState([]);
-  var [addingSource, setAddingSource] = useState(false);
-  var [sourceInput, setSourceInput] = useState('');
-  var [sourceType, setSourceType] = useState('text');
-  var [episodeTitle, setEpisodeTitle] = useState('');
-  var [hostName, setHostName] = useState('');
-  var [cohostName, setCohostName] = useState('ARIA');
-  var [duration, setDuration] = useState('15min');
-  var [tone, setTone] = useState('Casual');
-  var [topic, setTopic] = useState('');
-  var [generating, setGenerating] = useState(false);
-  var [genStep, setGenStep] = useState('');
-  var [script, setScript] = useState(null);
-  var [library, setLibrary] = useState([]);
-  var [nlmSources, setNlmSources] = useState([]);
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
 
-  useEffect(() => {
+  var tabState = useState('create');
+  var tab = tabState[0];
+  var setTab = tabState[1];
+
+  var noiseSuppState = useState(true);
+  var noiseSupp = noiseSuppState[0];
+  var setNoiseSupp = noiseSuppState[1];
+
+  var echoCancState = useState(true);
+  var echoCan = echoCancState[0];
+  var setEchoCan = echoCancState[1];
+
+  var sourcesState = useState([]);
+  var sources = sourcesState[0];
+  var setSources = sourcesState[1];
+
+  var addingSourceState = useState(false);
+  var addingSource = addingSourceState[0];
+  var setAddingSource = addingSourceState[1];
+
+  var sourceInputState = useState('');
+  var sourceInput = sourceInputState[0];
+  var setSourceInput = sourceInputState[1];
+
+  var sourceTypeState = useState('text');
+  var sourceType = sourceTypeState[0];
+  var setSourceType = sourceTypeState[1];
+
+  var episodeTitleState = useState('');
+  var episodeTitle = episodeTitleState[0];
+  var setEpisodeTitle = episodeTitleState[1];
+
+  var hostNameState = useState('');
+  var hostName = hostNameState[0];
+  var setHostName = hostNameState[1];
+
+  var cohostNameState = useState('ARIA');
+  var cohostName = cohostNameState[0];
+  var setCohostName = cohostNameState[1];
+
+  var durationState = useState('15min');
+  var duration = durationState[0];
+  var setDuration = durationState[1];
+
+  var toneState = useState('Casual');
+  var tone = toneState[0];
+  var setTone = toneState[1];
+
+  var topicState = useState('');
+  var topic = topicState[0];
+  var setTopic = topicState[1];
+
+  var generatingState = useState(false);
+  var generating = generatingState[0];
+  var setGenerating = generatingState[1];
+
+  var genStepState = useState('');
+  var genStep = genStepState[0];
+  var setGenStep = genStepState[1];
+
+  var scriptState = useState(null);
+  var script = scriptState[0];
+  var setScript = scriptState[1];
+
+  var libraryState = useState([]);
+  var library = libraryState[0];
+  var setLibrary = libraryState[1];
+
+  var nlmSourcesState = useState([]);
+  var nlmSources = nlmSourcesState[0];
+  var setNlmSources = nlmSourcesState[1];
+
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
+
+  useEffect(function() {
     if (!user) return;
     if (user.podcast_library) setLibrary(user.podcast_library);
     if (user.podcast_nlm_sources) setNlmSources(user.podcast_nlm_sources);
   }, [(user && user.id)]);
-  var [editingIdx, setEditingIdx] = useState(null);
-  var [toast, setToast] = useState('');
-  var [panelSegIdx, setPanelSegIdx] = useState(0);
-  var [deleteConfirmIdx, setDeleteConfirmIdx] = useState(null);
-  var [micOn, setMicOn] = useState(true);
+
+  var editingIdxState = useState(null);
+  var editingIdx = editingIdxState[0];
+  var setEditingIdx = editingIdxState[1];
+
+  var toastState = useState('');
+  var toast = toastState[0];
+  var setToast = toastState[1];
+
+  var panelSegIdxState = useState(0);
+  var panelSegIdx = panelSegIdxState[0];
+  var setPanelSegIdx = panelSegIdxState[1];
+
+  var deleteConfirmIdxState = useState(null);
+  var deleteConfirmIdx = deleteConfirmIdxState[0];
+  var setDeleteConfirmIdx = deleteConfirmIdxState[1];
+
+  var micOnState = useState(true);
+  var micOn = micOnState[0];
+  var setMicOn = micOnState[1];
 
   function showToast(msg) {
     setToast(msg);
-    setTimeout(() => setToast(''), 3000);
+    setTimeout(function() { setToast(''); }, 3000);
   }
 
   function saveNlmSources(updated) {
     setNlmSources(updated);
-    base44.auth.updateMe({ podcast_nlm_sources: updated }).catch(() => {});
+    base44.auth.updateMe({ podcast_nlm_sources: updated }).catch(function() {});
   }
 
   function addSource() {
     if (!sourceInput.trim()) return;
     if (sources.length >= 5) { showToast('Maximum 5 sources'); return; }
     var label = sourceInput.slice(0, 30);
-    setSources(prev => [...prev, { type: sourceType, label, content: sourceInput }]);
+    setSources(function(prev) { return prev.concat([{ type: sourceType, label: label, content: sourceInput }]); });
     setSourceInput('');
     setAddingSource(false);
   }
 
   function removeSource(idx) {
-    setSources(prev => prev.filter((_, i) => i !== idx));
+    setSources(function(prev) { return prev.filter(function(item, i) { return i !== idx; }); });
   }
 
   function sourceEmoji(type) {
@@ -705,15 +811,14 @@ export default function PodcastStudio() {
     setGenStep('Generating script…');
     try {
       var srcText = sources.length
-        ? sources.map(s => `[${s.label}]: ${s.content}`).join('\n---\n')
+        ? sources.map(function(s) { return '[' + s.label + ']: ' + s.content; }).join('\n---\n')
         : 'No sources provided — generate based on topic only.';
       var nlmText = nlmSources.length
-        ? `\n\nNotebookLM Research Sources (treat as research context for the discussion):\n${
-            nlmSources.map(s => `- "${s.title}"${s.topic ? ' — ' + s.topic : ''}`).join('\n')
-          }`
+        ? '\n\nNotebookLM Research Sources (treat as research context for the discussion):\n' +
+            nlmSources.map(function(s) { return '- "' + s.title + '"' + (s.topic ? ' — ' + s.topic : ''); }).join('\n')
         : '';
       var result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a podcast script writer for SeeWhy LIVE, a live streaming platform. Write a ${duration} podcast script between ${hostName} (host) and ${cohostName} (co-host/AI) about: "${topic || 'live streaming, creator economy, and community building'}". Sources: ${srcText}${nlmText}. Tone: ${tone}. The script should feel like a real conversation about the topic, with the hosts reacting to each other naturally. If NotebookLM sources are provided, weave their topics into the discussion naturally.`,
+        prompt: 'You are a podcast script writer for SeeWhy LIVE, a live streaming platform. Write a ' + duration + ' podcast script between ' + hostName + ' (host) and ' + cohostName + ' (co-host/AI) about: "' + (topic || 'live streaming, creator economy, and community building') + '". Sources: ' + srcText + nlmText + '. Tone: ' + tone + '. The script should feel like a real conversation about the topic, with the hosts reacting to each other naturally. If NotebookLM sources are provided, weave their topics into the discussion naturally.',
         response_json_schema: {
           type: 'object',
           properties: {
@@ -735,29 +840,29 @@ export default function PodcastStudio() {
           },
         },
       });
-      var ep = { ...result, title: episodeTitle || result.title, generatedAt: new Date().toISOString(), duration, tone };
+      var ep = Object.assign({}, result, { title: episodeTitle || result.title, generatedAt: new Date().toISOString(), duration: duration, tone: tone });
       setScript(ep);
-      var newLib = [ep, ...library].slice(0, 20);
+      var newLib = [ep].concat(library).slice(0, 20);
       setLibrary(newLib);
-      base44.auth.updateMe({ podcast_library: newLib }).catch(() => {});
+      base44.auth.updateMe({ podcast_library: newLib }).catch(function() {});
       setTab('script');
     } catch (e) {
       var fallback = {
         title: episodeTitle || 'Episode: ' + topic,
         episode: library.length + 1,
-        intro: `Welcome to SeeWhy LIVE! I'm ${hostName}, joined by ${cohostName}. Today we're diving into: ${topic || 'the world of live streaming'}.`,
+        intro: 'Welcome to SeeWhy LIVE! I\'m ' + hostName + ', joined by ' + cohostName + '. Today we\'re diving into: ' + (topic || 'the world of live streaming') + '.',
         segments: [
-          { title: 'Getting Started', host_line: `So ${cohostName}, what do you think is the biggest opportunity for creators right now?`, cohost_line: `Honestly? Community. Creators who build real community on platforms like Fanbase and SeeWhy LIVE are winning every time.`, host_response: `100%. And with tools like AI co-hosting and watch parties, creators can scale that community like never before.` },
-          { title: 'Key Insights', host_line: `Let's talk about the tech side. What tools are making the biggest difference?`, cohost_line: `Real-time AI, 20-person panels, multi-platform streaming — it's all converging right now.`, host_response: `And our audience can experience all of that right here, live.` },
+          { title: 'Getting Started', host_line: 'So ' + cohostName + ', what do you think is the biggest opportunity for creators right now?', cohost_line: 'Honestly? Community. Creators who build real community on platforms like Fanbase and SeeWhy LIVE are winning every time.', host_response: '100%. And with tools like AI co-hosting and watch parties, creators can scale that community like never before.' },
+          { title: 'Key Insights', host_line: 'Let\'s talk about the tech side. What tools are making the biggest difference?', cohost_line: 'Real-time AI, 20-person panels, multi-platform streaming — it\'s all converging right now.', host_response: 'And our audience can experience all of that right here, live.' },
         ],
-        outro: `That's a wrap on today's episode! Thanks for listening and keep building your community.`,
+        outro: 'That\'s a wrap on today\'s episode! Thanks for listening and keep building your community.',
         key_topics: ['live streaming', 'creator economy', 'AI tools', 'community building'],
-        generatedAt: new Date().toISOString(), duration, tone,
+        generatedAt: new Date().toISOString(), duration: duration, tone: tone,
       };
       setScript(fallback);
-      var newLib = [fallback, ...library].slice(0, 20);
-      setLibrary(newLib);
-      base44.auth.updateMe({ podcast_library: newLib }).catch(() => {});
+      var newLib2 = [fallback].concat(library).slice(0, 20);
+      setLibrary(newLib2);
+      base44.auth.updateMe({ podcast_library: newLib2 }).catch(function() {});
       setTab('script');
     }
     setGenerating(false);
@@ -765,17 +870,17 @@ export default function PodcastStudio() {
 
   function copyTranscript() {
     if (!script) return;
-    var text = `${script.title}\n\n`;
-    text += `INTRO:\n${script.intro}\n\n`;
-    (script.segments || []).forEach(seg => {
-      text += `--- ${seg.title} ---\n`;
-      text += `${hostName}: ${seg.host_line}\n`;
-      text += `${cohostName}: ${seg.cohost_line}\n`;
-      if (seg.host_response) text += `${hostName}: ${seg.host_response}\n`;
+    var text = script.title + '\n\n';
+    text += 'INTRO:\n' + script.intro + '\n\n';
+    (script.segments || []).forEach(function(seg) {
+      text += '--- ' + seg.title + ' ---\n';
+      text += hostName + ': ' + seg.host_line + '\n';
+      text += cohostName + ': ' + seg.cohost_line + '\n';
+      if (seg.host_response) text += hostName + ': ' + seg.host_response + '\n';
       text += '\n';
     });
-    text += `OUTRO:\n${script.outro}`;
-    navigator.clipboard.writeText(text).then(() => showToast('Transcript copied!')).catch(() => showToast('Copy failed'));
+    text += 'OUTRO:\n' + script.outro;
+    navigator.clipboard.writeText(text).then(function() { showToast('Transcript copied!'); }).catch(function() { showToast('Copy failed'); });
   }
 
   function loadFromLibrary(ep) {
@@ -784,26 +889,26 @@ export default function PodcastStudio() {
   }
 
   function deleteEpisode(idx) {
-    var newLib = library.filter((_, i) => i !== idx);
+    var newLib = library.filter(function(item, i) { return i !== idx; });
     setLibrary(newLib);
-    base44.auth.updateMe({ podcast_library: newLib }).catch(() => {});
+    base44.auth.updateMe({ podcast_library: newLib }).catch(function() {});
     setDeleteConfirmIdx(null);
     showToast('Episode deleted');
   }
 
   // DJ track for panel tab
   var djTrack = null;
-  try { djTrack = JSON.parse(localStorage.getItem('seewhy_dj_track') || 'null'); } catch {}
+  try { djTrack = JSON.parse(localStorage.getItem('seewhy_dj_track') || 'null'); } catch (e) {}
 
   var inputStyle = {
     width: '100%', boxSizing: 'border-box',
     background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)',
     borderRadius: 10, padding: '10px 14px',
-    color: '#fff', fontSize: 14, ...T, fontWeight: 600,
+    color: '#fff', fontSize: 14, fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 600,
     outline: 'none',
   };
 
-  var selectStyle = { ...inputStyle };
+  var selectStyle = Object.assign({}, inputStyle);
 
   return (
     <div style={{ minHeight: '100vh', background: BG, paddingBottom: 80 }}>
@@ -815,10 +920,10 @@ export default function PodcastStudio() {
         </a>
       </div>
       <div style={{ textAlign: 'center', padding: '0 16px 16px' }}>
-        <h1 style={{ ...T, fontSize: 30, fontWeight: 900, color: GOLD, letterSpacing: '0.04em', margin: 0 }}>
+        <h1 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 30, fontWeight: 900, color: GOLD, letterSpacing: '0.04em', margin: 0 }}>
           🎙️ Podcast Studio
         </h1>
-        <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.5 }}>
+        <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 6, lineHeight: 1.5 }}>
           AI-powered podcast creation · NotebookLM-style
         </p>
       </div>
@@ -851,11 +956,11 @@ export default function PodcastStudio() {
         display: 'flex', gap: 8, padding: '0 16px 16px', overflowX: 'auto',
         scrollbarWidth: 'none', justifyContent: 'center',
       }}>
-        <TabBtn label="Create" active={tab === 'create'} onClick={() => setTab('create')} />
-        <TabBtn label="Sources" active={tab === 'sources'} onClick={() => setTab('sources')} badge={nlmSources.length || null} />
-        <TabBtn label="Script" active={tab === 'script'} onClick={() => setTab('script')} />
-        <TabBtn label="Panel Record" active={tab === 'record'} onClick={() => setTab('record')} />
-        <TabBtn label="Library" active={tab === 'library'} onClick={() => setTab('library')} />
+        <TabBtn label="Create" active={tab === 'create'} onClick={function() { setTab('create'); }} />
+        <TabBtn label="Sources" active={tab === 'sources'} onClick={function() { setTab('sources'); }} badge={nlmSources.length || null} />
+        <TabBtn label="Script" active={tab === 'script'} onClick={function() { setTab('script'); }} />
+        <TabBtn label="Panel Record" active={tab === 'record'} onClick={function() { setTab('record'); }} />
+        <TabBtn label="Library" active={tab === 'library'} onClick={function() { setTab('library'); }} />
       </div>
 
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 16px' }}>
@@ -867,12 +972,12 @@ export default function PodcastStudio() {
             {/* Sources section */}
             <div style={{
               background: BG2, border: '1px solid rgba(212,175,55,0.12)',
-              borderLeft: `3px solid ${CYAN}`, borderRadius: 16, padding: '20px 18px',
+              borderLeft: '3px solid ' + CYAN, borderRadius: 16, padding: '20px 18px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <div>
-                  <p style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff', margin: 0 }}>Sources</p>
-                  <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '2px 0 0' }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 18, fontWeight: 900, color: '#fff', margin: 0 }}>Sources</p>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '2px 0 0' }}>
                     {sources.length}/5 added
                     {nlmSources.length > 0 && (
                       <span style={{ color: NLM, marginLeft: 8 }}>
@@ -883,10 +988,10 @@ export default function PodcastStudio() {
                 </div>
                 {!addingSource && sources.length < 5 && (
                   <button
-                    onClick={() => setAddingSource(true)}
+                    onClick={function() { setAddingSource(true); }}
                     style={{
-                      ...T, fontSize: 13, fontWeight: 800, padding: '7px 16px', borderRadius: 999,
-                      background: 'transparent', border: `1px solid ${CYAN}60`, color: CYAN, cursor: 'pointer',
+                      fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 800, padding: '7px 16px', borderRadius: 999,
+                      background: 'transparent', border: '1px solid ' + CYAN + '60', color: CYAN, cursor: 'pointer',
                     }}
                   >
                     + Add Source
@@ -899,7 +1004,7 @@ export default function PodcastStudio() {
                 <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 14 }}>
                   <MobileSelect
                     value={sourceType}
-                    onChange={v => setSourceType(v)}
+                    onChange={function(v) { setSourceType(v); }}
                     options={[
                       { value: 'text', label: '📄 Text' },
                       { value: 'url',  label: '🔗 URL' },
@@ -909,25 +1014,25 @@ export default function PodcastStudio() {
                   />
                   <textarea
                     value={sourceInput}
-                    onChange={e => setSourceInput(e.target.value)}
+                    onChange={function(e) { setSourceInput(e.target.value); }}
                     placeholder={sourceType === 'url' ? 'Paste a URL…' : 'Paste or type source content…'}
                     rows={3}
-                    style={{ ...inputStyle, resize: 'vertical', marginBottom: 8 }}
+                    style={Object.assign({}, inputStyle, { resize: 'vertical', marginBottom: 8 })}
                   />
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button
                       onClick={addSource}
                       style={{
-                        ...T, fontSize: 13, fontWeight: 800, padding: '8px 20px', borderRadius: 10,
+                        fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 800, padding: '8px 20px', borderRadius: 10,
                         background: CYAN, color: '#000', border: 'none', cursor: 'pointer',
                       }}
                     >
                       Add
                     </button>
                     <button
-                      onClick={() => { setAddingSource(false); setSourceInput(''); }}
+                      onClick={function() { setAddingSource(false); setSourceInput(''); }}
                       style={{
-                        ...T, fontSize: 13, fontWeight: 700, padding: '8px 16px', borderRadius: 10,
+                        fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 700, padding: '8px 16px', borderRadius: 10,
                         background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', border: 'none', cursor: 'pointer',
                       }}
                     >
@@ -940,29 +1045,31 @@ export default function PodcastStudio() {
               {/* Source chips */}
               {sources.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {sources.map((src, i) => (
-                    <div key={i} style={{
-                      display: 'flex', alignItems: 'center', gap: 6,
-                      padding: '5px 12px', borderRadius: 999,
-                      background: `${CYAN}12`, border: `1px solid ${CYAN}30`,
-                    }}>
-                      <span>{sourceEmoji(src.type)}</span>
-                      <span style={{ ...T, fontSize: 12, color: CYAN, fontWeight: 700 }}>
-                        {src.label.length > 30 ? src.label.slice(0, 30) + '…' : src.label}
-                      </span>
-                      <button
-                        onClick={() => removeSource(i)}
-                        style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 14, padding: 0, lineHeight: 1 }}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
+                  {sources.map(function(src, i) {
+                    return (
+                      <div key={i} style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        padding: '5px 12px', borderRadius: 999,
+                        background: CYAN + '12', border: '1px solid ' + CYAN + '30',
+                      }}>
+                        <span>{sourceEmoji(src.type)}</span>
+                        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: CYAN, fontWeight: 700 }}>
+                          {src.label.length > 30 ? src.label.slice(0, 30) + '…' : src.label}
+                        </span>
+                        <button
+                          onClick={function() { removeSource(i); }}
+                          style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 14, padding: 0, lineHeight: 1 }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
               {sources.length === 0 && !addingSource && (
-                <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.25)', fontStyle: 'italic', margin: 0 }}>
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.25)', fontStyle: 'italic', margin: 0 }}>
                   No sources added — AI will generate from topic only
                 </p>
               )}
@@ -971,54 +1078,54 @@ export default function PodcastStudio() {
             {/* Episode config */}
             <div style={{
               background: BG2, border: '1px solid rgba(212,175,55,0.12)',
-              borderLeft: `3px solid ${GOLD}`, borderRadius: 16, padding: '20px 18px',
+              borderLeft: '3px solid ' + GOLD, borderRadius: 16, padding: '20px 18px',
             }}>
-              <p style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 16 }}>Episode Config</p>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 16 }}>Episode Config</p>
 
-              <label style={{ ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              <label style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 Episode Title
               </label>
               <input
                 type="text"
                 value={episodeTitle}
-                onChange={e => setEpisodeTitle(e.target.value)}
+                onChange={function(e) { setEpisodeTitle(e.target.value); }}
                 placeholder="Untitled Episode"
-                style={{ ...inputStyle, marginTop: 6, marginBottom: 14 }}
+                style={Object.assign({}, inputStyle, { marginTop: 6, marginBottom: 14 })}
               />
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
                 <div>
-                  <label style={{ ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  <label style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Host Name
                   </label>
                   <input
                     type="text"
                     value={hostName}
-                    onChange={e => setHostName(e.target.value)}
-                    style={{ ...inputStyle, marginTop: 6 }}
+                    onChange={function(e) { setHostName(e.target.value); }}
+                    style={Object.assign({}, inputStyle, { marginTop: 6 })}
                   />
                 </div>
                 <div>
-                  <label style={{ ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  <label style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Co-host Name
                   </label>
                   <input
                     type="text"
                     value={cohostName}
-                    onChange={e => setCohostName(e.target.value)}
-                    style={{ ...inputStyle, marginTop: 6 }}
+                    onChange={function(e) { setCohostName(e.target.value); }}
+                    style={Object.assign({}, inputStyle, { marginTop: 6 })}
                   />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
                 <div>
-                  <label style={{ ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  <label style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Duration
                   </label>
                   <MobileSelect
                     value={duration}
-                    onChange={v => setDuration(v)}
+                    onChange={function(v) { setDuration(v); }}
                     options={[
                       { value: '5min',  label: '5 min' },
                       { value: '15min', label: '15 min' },
@@ -1029,12 +1136,12 @@ export default function PodcastStudio() {
                   />
                 </div>
                 <div>
-                  <label style={{ ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  <label style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     Tone
                   </label>
                   <MobileSelect
                     value={tone}
-                    onChange={v => setTone(v)}
+                    onChange={function(v) { setTone(v); }}
                     options={[
                       { value: 'Casual',        label: 'Casual' },
                       { value: 'Professional',  label: 'Professional' },
@@ -1046,15 +1153,15 @@ export default function PodcastStudio() {
                 </div>
               </div>
 
-              <label style={{ ...T, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              <label style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 What's this episode about?
               </label>
               <textarea
                 value={topic}
-                onChange={e => setTopic(e.target.value)}
+                onChange={function(e) { setTopic(e.target.value); }}
                 placeholder="E.g. 'How Fanbase is changing creator monetization' or 'Tips for going live on multiple platforms at once'"
                 rows={4}
-                style={{ ...inputStyle, marginTop: 6, marginBottom: 16, resize: 'vertical' }}
+                style={Object.assign({}, inputStyle, { marginTop: 6, marginBottom: 16, resize: 'vertical' })}
               />
 
               <motion.button
@@ -1062,10 +1169,10 @@ export default function PodcastStudio() {
                 disabled={!topic || generating}
                 onClick={generateScript}
                 style={{
-                  ...T, width: '100%', padding: '14px 0', borderRadius: 12, border: 'none', cursor: (!topic || generating) ? 'not-allowed' : 'pointer',
+                  fontFamily: 'Barlow Condensed, sans-serif', width: '100%', padding: '14px 0', borderRadius: 12, border: 'none', cursor: (!topic || generating) ? 'not-allowed' : 'pointer',
                   background: (!topic || generating)
                     ? 'rgba(212,175,55,0.15)'
-                    : `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`,
+                    : 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')',
                   color: (!topic || generating) ? 'rgba(255,255,255,0.35)' : '#000',
                   fontSize: 16, fontWeight: 900, letterSpacing: '0.07em', textTransform: 'uppercase',
                 }}
@@ -1080,7 +1187,7 @@ export default function PodcastStudio() {
                   </span>
                 ) : 'Generate Podcast Script →'}
               </motion.button>
-              <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+              <style>{'@keyframes spin{to{transform:rotate(360deg)}}'}</style>
             </div>
           </div>
         )}
@@ -1105,13 +1212,13 @@ export default function PodcastStudio() {
                 background: BG2, borderRadius: 16, border: '1px solid rgba(255,255,255,0.08)',
               }}>
                 <p style={{ fontSize: 40, marginBottom: 12 }}>🎙️</p>
-                <p style={{ ...T, fontSize: 16, fontWeight: 800, color: 'rgba(255,255,255,0.5)' }}>
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 16, fontWeight: 800, color: 'rgba(255,255,255,0.5)' }}>
                   No script yet — create one first
                 </p>
                 <button
-                  onClick={() => setTab('create')}
+                  onClick={function() { setTab('create'); }}
                   style={{
-                    ...T, marginTop: 16, padding: '10px 24px', borderRadius: 10,
+                    fontFamily: 'Barlow Condensed, sans-serif', marginTop: 16, padding: '10px 24px', borderRadius: 10,
                     background: GOLD, color: '#000', fontWeight: 900, fontSize: 14, border: 'none', cursor: 'pointer',
                   }}
                 >
@@ -1123,20 +1230,22 @@ export default function PodcastStudio() {
 
                 {/* Key topics */}
                 <div style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4 }}>
-                  {(script.key_topics || []).map(t => (
-                    <span key={t} style={{
-                      ...T, fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 999, flexShrink: 0,
-                      background: `${CYAN}15`, border: `1px solid ${CYAN}40`, color: CYAN,
-                    }}>
-                      {t}
-                    </span>
-                  ))}
+                  {(script.key_topics || []).map(function(t) {
+                    return (
+                      <span key={t} style={{
+                        fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 700, padding: '4px 12px', borderRadius: 999, flexShrink: 0,
+                        background: CYAN + '15', border: '1px solid ' + CYAN + '40', color: CYAN,
+                      }}>
+                        {t}
+                      </span>
+                    );
+                  })}
                 </div>
 
                 {/* Title */}
                 <div>
-                  <p style={{ ...T, fontSize: 22, fontWeight: 900, color: '#fff', margin: 0 }}>{script.title}</p>
-                  <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 22, fontWeight: 900, color: '#fff', margin: 0 }}>{script.title}</p>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>
                     Ep. {script.episode || 1} · {script.duration} · {script.tone}
                   </p>
                 </div>
@@ -1146,85 +1255,87 @@ export default function PodcastStudio() {
                   padding: '14px 16px', borderRadius: 12,
                   background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
                 }}>
-                  <p style={{ ...T, fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Intro</p>
-                  <p style={{ ...T, fontSize: 14, color: '#fff', fontStyle: 'italic', lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Intro</p>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, color: '#fff', fontStyle: 'italic', lineHeight: 1.6, margin: 0 }}>
                     {script.intro}
                   </p>
                 </div>
 
                 {/* Segments */}
-                {(script.segments || []).map((seg, i) => (
-                  <div key={i} style={{
-                    background: BG2, borderRadius: 14, border: '1px solid rgba(255,255,255,0.07)', padding: '14px 16px',
-                  }}>
-                    <p style={{ ...T, fontSize: 11, fontWeight: 900, color: GOLD, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
-                      {seg.title}
-                    </p>
+                {(script.segments || []).map(function(seg, i) {
+                  return (
+                    <div key={i} style={{
+                      background: BG2, borderRadius: 14, border: '1px solid rgba(255,255,255,0.07)', padding: '14px 16px',
+                    }}>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, color: GOLD, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
+                        {seg.title}
+                      </p>
 
-                    {/* Host line */}
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10, justifyContent: 'flex-end' }}>
-                      <div style={{
-                        flex: 1, padding: '10px 14px', borderRadius: '12px 12px 4px 12px', maxWidth: '85%',
-                        background: `${GOLD}15`, border: `1px solid ${GOLD}30`,
-                      }}>
-                        <p style={{ ...T, fontSize: 12, fontWeight: 800, color: GOLD, marginBottom: 4 }}>{hostName}</p>
-                        <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5, margin: 0 }}>{seg.host_line}</p>
-                      </div>
-                      <div style={{
-                        width: 32, height: 32, borderRadius: '50%', background: GOLD, flexShrink: 0,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        ...T, fontSize: 14, fontWeight: 900, color: '#000',
-                      }}>
-                        {hostName.charAt(0).toUpperCase()}
-                      </div>
-                    </div>
-
-                    {/* Co-host line */}
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: seg.host_response ? 10 : 0 }}>
-                      <div style={{
-                        width: 32, height: 32, borderRadius: '50%', background: PURPLE, flexShrink: 0,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        ...T, fontSize: 14, fontWeight: 900, color: '#fff',
-                      }}>
-                        {cohostName.charAt(0).toUpperCase()}
-                      </div>
-                      <div style={{
-                        flex: 1, padding: '10px 14px', borderRadius: '12px 12px 12px 4px', maxWidth: '85%',
-                        background: `${PURPLE}15`, border: `1px solid ${PURPLE}30`,
-                      }}>
-                        <p style={{ ...T, fontSize: 12, fontWeight: 800, color: PURPLE, marginBottom: 4 }}>{cohostName}</p>
-                        <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5, margin: 0 }}>{seg.cohost_line}</p>
-                      </div>
-                    </div>
-
-                    {/* Host response */}
-                    {seg.host_response && (
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, justifyContent: 'flex-end' }}>
+                      {/* Host line */}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10, justifyContent: 'flex-end' }}>
                         <div style={{
                           flex: 1, padding: '10px 14px', borderRadius: '12px 12px 4px 12px', maxWidth: '85%',
-                          background: `${GOLD}12`, border: `1px solid ${GOLD}25`,
+                          background: GOLD + '15', border: '1px solid ' + GOLD + '30',
                         }}>
-                          <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5, margin: 0 }}>{seg.host_response}</p>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 800, color: GOLD, marginBottom: 4 }}>{hostName}</p>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5, margin: 0 }}>{seg.host_line}</p>
                         </div>
                         <div style={{
                           width: 32, height: 32, borderRadius: '50%', background: GOLD, flexShrink: 0,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          ...T, fontSize: 14, fontWeight: 900, color: '#000',
+                          fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 900, color: '#000',
                         }}>
                           {hostName.charAt(0).toUpperCase()}
                         </div>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      {/* Co-host line */}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: seg.host_response ? 10 : 0 }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: '50%', background: PURPLE, flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 900, color: '#fff',
+                        }}>
+                          {cohostName.charAt(0).toUpperCase()}
+                        </div>
+                        <div style={{
+                          flex: 1, padding: '10px 14px', borderRadius: '12px 12px 12px 4px', maxWidth: '85%',
+                          background: PURPLE + '15', border: '1px solid ' + PURPLE + '30',
+                        }}>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 800, color: PURPLE, marginBottom: 4 }}>{cohostName}</p>
+                          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5, margin: 0 }}>{seg.cohost_line}</p>
+                        </div>
+                      </div>
+
+                      {/* Host response */}
+                      {seg.host_response && (
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, justifyContent: 'flex-end' }}>
+                          <div style={{
+                            flex: 1, padding: '10px 14px', borderRadius: '12px 12px 4px 12px', maxWidth: '85%',
+                            background: GOLD + '12', border: '1px solid ' + GOLD + '25',
+                          }}>
+                            <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.5, margin: 0 }}>{seg.host_response}</p>
+                          </div>
+                          <div style={{
+                            width: 32, height: 32, borderRadius: '50%', background: GOLD, flexShrink: 0,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, fontWeight: 900, color: '#000',
+                          }}>
+                            {hostName.charAt(0).toUpperCase()}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
 
                 {/* Outro */}
                 <div style={{
                   padding: '14px 16px', borderRadius: 12,
                   background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
                 }}>
-                  <p style={{ ...T, fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Outro</p>
-                  <p style={{ ...T, fontSize: 14, color: 'rgba(255,255,255,0.8)', fontStyle: 'italic', lineHeight: 1.6, margin: 0 }}>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 800, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>Outro</p>
+                  <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 14, color: 'rgba(255,255,255,0.8)', fontStyle: 'italic', lineHeight: 1.6, margin: 0 }}>
                     {script.outro}
                   </p>
                 </div>
@@ -1236,10 +1347,10 @@ export default function PodcastStudio() {
                   background: BG,
                 }}>
                   <button
-                    onClick={() => setTab('record')}
+                    onClick={function() { setTab('record'); }}
                     style={{
-                      ...T, flex: 1, padding: '12px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
-                      background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, color: '#000',
+                      fontFamily: 'Barlow Condensed, sans-serif', flex: 1, padding: '12px 0', borderRadius: 12, border: 'none', cursor: 'pointer',
+                      background: 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')', color: '#000',
                       fontSize: 14, fontWeight: 900, letterSpacing: '0.06em',
                     }}
                   >
@@ -1248,7 +1359,7 @@ export default function PodcastStudio() {
                   <button
                     onClick={copyTranscript}
                     style={{
-                      ...T, flex: 1, padding: '12px 0', borderRadius: 12, cursor: 'pointer',
+                      fontFamily: 'Barlow Condensed, sans-serif', flex: 1, padding: '12px 0', borderRadius: 12, cursor: 'pointer',
                       background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
                       color: 'rgba(255,255,255,0.7)', fontSize: 14, fontWeight: 800,
                     }}
@@ -1266,10 +1377,10 @@ export default function PodcastStudio() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             {/* Audio Mixer */}
-            <AudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} />
+            <AudioMixer micMuted={!micOn} onMicToggle={function() { setMicOn(function(v) { return !v; }); }} />
 
             {/* Enhanced Audio Mixer */}
-            <EnhancedAudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />
+            <EnhancedAudioMixer micMuted={!micOn} onMicToggle={function() { setMicOn(function(v) { return !v; }); }} onAudioSettingsChange={function(s) { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />
 
             {/* Soundboard */}
             <SoundboardWidget />
@@ -1277,23 +1388,23 @@ export default function PodcastStudio() {
             {/* Panel slots */}
             <div style={{
               background: BG2, border: '1px solid rgba(212,175,55,0.12)',
-              borderLeft: `3px solid ${GOLD}`, borderRadius: 16, padding: '20px 18px',
+              borderLeft: '3px solid ' + GOLD, borderRadius: 16, padding: '20px 18px',
             }}>
-              <p style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 16 }}>Panel Setup</p>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 18, fontWeight: 900, color: '#fff', marginBottom: 16 }}>Panel Setup</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, justifyItems: 'center' }}>
-                <PanelSlot name={hostName} emoji="👑" borderColor={GOLD} onInvite={() => showToast('Host slot is always yours')} />
-                <PanelSlot name={cohostName} emoji="🤖" borderColor={PURPLE} onInvite={() => showToast('ARIA is your AI co-host')} />
-                <PanelSlot name="Guest 1" emoji="🎤" borderColor="rgba(255,255,255,0.5)" onInvite={() => showToast('Send invite link to guest')} />
-                <PanelSlot name="Guest 2" emoji="🎤" borderColor="rgba(255,255,255,0.5)" onInvite={() => showToast('Send invite link to guest')} />
+                <PanelSlot name={hostName} emoji="👑" borderColor={GOLD} onInvite={function() { showToast('Host slot is always yours'); }} />
+                <PanelSlot name={cohostName} emoji="🤖" borderColor={PURPLE} onInvite={function() { showToast('ARIA is your AI co-host'); }} />
+                <PanelSlot name="Guest 1" emoji="🎤" borderColor="rgba(255,255,255,0.5)" onInvite={function() { showToast('Send invite link to guest'); }} />
+                <PanelSlot name="Guest 2" emoji="🎤" borderColor="rgba(255,255,255,0.5)" onInvite={function() { showToast('Send invite link to guest'); }} />
               </div>
             </div>
 
             {/* Script reader */}
             <div style={{
               background: BG2, border: '1px solid rgba(212,175,55,0.12)',
-              borderLeft: `3px solid ${CYAN}`, borderRadius: 16, padding: '20px 18px',
+              borderLeft: '3px solid ' + CYAN, borderRadius: 16, padding: '20px 18px',
             }}>
-              <p style={{ ...T, fontSize: 16, fontWeight: 900, color: '#fff', marginBottom: 12 }}>Script Reader</p>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 16, fontWeight: 900, color: '#fff', marginBottom: 12 }}>Script Reader</p>
               {script && script.segments && script.segments.length > 0 ? (
                 <div>
                   <div style={{
@@ -1301,36 +1412,36 @@ export default function PodcastStudio() {
                     background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
                     minHeight: 100,
                   }}>
-                    <p style={{ ...T, fontSize: 11, fontWeight: 900, color: GOLD, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 900, color: GOLD, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
                       {(script.segments[panelSegIdx] && script.segments[panelSegIdx].title)}
                     </p>
-                    <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, margin: 0 }}>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, margin: 0 }}>
                       <strong style={{ color: GOLD }}>{hostName}:</strong> {(script.segments[panelSegIdx] && script.segments[panelSegIdx].host_line)}
                     </p>
-                    <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginTop: 8 }}>
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginTop: 8 }}>
                       <strong style={{ color: PURPLE }}>{cohostName}:</strong> {(script.segments[panelSegIdx] && script.segments[panelSegIdx].cohost_line)}
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'center' }}>
                     <button
                       disabled={panelSegIdx === 0}
-                      onClick={() => setPanelSegIdx(i => Math.max(0, i - 1))}
+                      onClick={function() { setPanelSegIdx(function(i) { return Math.max(0, i - 1); }); }}
                       style={{
-                        ...T, padding: '8px 20px', borderRadius: 10, border: 'none', cursor: panelSegIdx === 0 ? 'not-allowed' : 'pointer',
+                        fontFamily: 'Barlow Condensed, sans-serif', padding: '8px 20px', borderRadius: 10, border: 'none', cursor: panelSegIdx === 0 ? 'not-allowed' : 'pointer',
                         background: panelSegIdx === 0 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)',
                         color: panelSegIdx === 0 ? 'rgba(255,255,255,0.2)' : '#fff', fontWeight: 800, fontSize: 13,
                       }}
                     >
                       ← Prev
                     </button>
-                    <span style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
+                    <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
                       {panelSegIdx + 1} / {script.segments.length}
                     </span>
                     <button
                       disabled={panelSegIdx === script.segments.length - 1}
-                      onClick={() => setPanelSegIdx(i => Math.min(script.segments.length - 1, i + 1))}
+                      onClick={function() { setPanelSegIdx(function(i) { return Math.min(script.segments.length - 1, i + 1); }); }}
                       style={{
-                        ...T, padding: '8px 20px', borderRadius: 10, border: 'none',
+                        fontFamily: 'Barlow Condensed, sans-serif', padding: '8px 20px', borderRadius: 10, border: 'none',
                         cursor: panelSegIdx === script.segments.length - 1 ? 'not-allowed' : 'pointer',
                         background: panelSegIdx === script.segments.length - 1 ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)',
                         color: panelSegIdx === script.segments.length - 1 ? 'rgba(255,255,255,0.2)' : '#fff', fontWeight: 800, fontSize: 13,
@@ -1341,7 +1452,7 @@ export default function PodcastStudio() {
                   </div>
                 </div>
               ) : (
-                <p style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.3)', fontStyle: 'italic' }}>
                   Generate a script first to use the Script Reader
                 </p>
               )}
@@ -1350,8 +1461,8 @@ export default function PodcastStudio() {
             {/* CTA buttons */}
             <Link to="/WatchParty" style={{ textDecoration: 'none', display: 'block' }}>
               <motion.div whileTap={{ scale: 0.97 }} style={{
-                ...T, padding: '14px 0', borderRadius: 12, textAlign: 'center',
-                background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`,
+                fontFamily: 'Barlow Condensed, sans-serif', padding: '14px 0', borderRadius: 12, textAlign: 'center',
+                background: 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')',
                 color: '#000', fontSize: 15, fontWeight: 900, letterSpacing: '0.07em',
                 cursor: 'pointer',
               }}>
@@ -1360,8 +1471,8 @@ export default function PodcastStudio() {
             </Link>
             <Link to="/BroadcastStudio" style={{ textDecoration: 'none', display: 'block' }}>
               <motion.div whileTap={{ scale: 0.97 }} style={{
-                ...T, padding: '13px 0', borderRadius: 12, textAlign: 'center',
-                background: `${PURPLE}15`, border: `1px solid ${PURPLE}40`,
+                fontFamily: 'Barlow Condensed, sans-serif', padding: '13px 0', borderRadius: 12, textAlign: 'center',
+                background: PURPLE + '15', border: '1px solid ' + PURPLE + '40',
                 color: PURPLE, fontSize: 14, fontWeight: 900, letterSpacing: '0.07em',
                 cursor: 'pointer',
               }}>
@@ -1372,18 +1483,18 @@ export default function PodcastStudio() {
             {/* AI Music bar */}
             <div style={{
               padding: '12px 16px', borderRadius: 12,
-              background: djTrack ? `${CYAN}10` : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${djTrack ? CYAN + '30' : 'rgba(255,255,255,0.08)'}`,
+              background: djTrack ? CYAN + '10' : 'rgba(255,255,255,0.04)',
+              border: '1px solid ' + (djTrack ? CYAN + '30' : 'rgba(255,255,255,0.08)'),
               display: 'flex', alignItems: 'center', gap: 10,
             }}>
               <span style={{ fontSize: 18 }}>🎵</span>
               {djTrack ? (
-                <span style={{ ...T, fontSize: 13, fontWeight: 700, color: CYAN, flex: 1 }}>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 700, color: CYAN, flex: 1 }}>
                   Now playing: {djTrack.emoji || ''} {djTrack.title}
                   {djTrack.bpm && <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 600, marginLeft: 8 }}>{djTrack.bpm} BPM</span>}
                 </span>
               ) : (
-                <Link to="/AIMusic" style={{ ...T, fontSize: 13, color: 'rgba(255,255,255,0.4)', fontWeight: 600, textDecoration: 'none' }}>
+                <Link to="/AIMusic" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: 'rgba(255,255,255,0.4)', fontWeight: 600, textDecoration: 'none' }}>
                   No background music set — Open Music Studio
                 </Link>
               )}
@@ -1400,13 +1511,13 @@ export default function PodcastStudio() {
                 background: BG2, borderRadius: 16, border: '1px solid rgba(255,255,255,0.08)',
               }}>
                 <p style={{ fontSize: 40, marginBottom: 12 }}>📚</p>
-                <p style={{ ...T, fontSize: 16, fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 16, fontWeight: 800, color: 'rgba(255,255,255,0.4)' }}>
                   No episodes yet — create your first podcast!
                 </p>
                 <button
-                  onClick={() => setTab('create')}
+                  onClick={function() { setTab('create'); }}
                   style={{
-                    ...T, marginTop: 16, padding: '10px 24px', borderRadius: 10,
+                    fontFamily: 'Barlow Condensed, sans-serif', marginTop: 16, padding: '10px 24px', borderRadius: 10,
                     background: GOLD, color: '#000', fontWeight: 900, fontSize: 14, border: 'none', cursor: 'pointer',
                   }}
                 >
@@ -1414,97 +1525,101 @@ export default function PodcastStudio() {
                 </button>
               </div>
             ) : (
-              library.map((ep, i) => (
-                <div key={i} style={{
-                  background: BG2, border: '1px solid rgba(212,175,55,0.12)',
-                  borderLeft: `3px solid ${GOLD}`, borderRadius: 16, padding: '16px 18px',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
-                    <p style={{ ...T, fontSize: 16, fontWeight: 900, color: '#fff', margin: 0, flex: 1 }}>
-                      {ep.title}
-                    </p>
-                    <span style={{
-                      ...T, fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 999, flexShrink: 0,
-                      background: `${GOLD}15`, border: `1px solid ${GOLD}40`, color: GOLD,
-                    }}>
-                      Ep. {ep.episode || i + 1}
-                    </span>
-                  </div>
-
-                  <p style={{ ...T, fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>
-                    {ep.generatedAt ? new Date(ep.generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown date'}
-                  </p>
-
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-                    {ep.duration && (
-                      <span style={{ ...T, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
-                        {ep.duration}
+              library.map(function(ep, i) {
+                return (
+                  <div key={i} style={{
+                    background: BG2, border: '1px solid rgba(212,175,55,0.12)',
+                    borderLeft: '3px solid ' + GOLD, borderRadius: 16, padding: '16px 18px',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                      <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 16, fontWeight: 900, color: '#fff', margin: 0, flex: 1 }}>
+                        {ep.title}
+                      </p>
+                      <span style={{
+                        fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 800, padding: '2px 8px', borderRadius: 999, flexShrink: 0,
+                        background: GOLD + '15', border: '1px solid ' + GOLD + '40', color: GOLD,
+                      }}>
+                        Ep. {ep.episode || i + 1}
                       </span>
-                    )}
-                    {ep.tone && (
-                      <span style={{ ...T, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
-                        {ep.tone}
-                      </span>
-                    )}
-                  </div>
-
-                  {(ep.key_topics || []).slice(0, 3).length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
-                      {(ep.key_topics || []).slice(0, 3).map(t => (
-                        <span key={t} style={{ ...T, fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: `${CYAN}12`, border: `1px solid ${CYAN}30`, color: CYAN }}>
-                          {t}
-                        </span>
-                      ))}
                     </div>
-                  )}
 
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      onClick={() => loadFromLibrary(ep)}
-                      style={{
-                        ...T, flex: 1, padding: '9px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
-                        background: GOLD, color: '#000', fontSize: 13, fontWeight: 900,
-                      }}
-                    >
-                      View Script
-                    </button>
-                    {deleteConfirmIdx === i ? (
-                      <>
-                        <button
-                          onClick={() => deleteEpisode(i)}
-                          style={{
-                            ...T, padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                            background: '#C0392B', color: '#fff', fontSize: 13, fontWeight: 900,
-                          }}
-                        >
-                          Confirm
-                        </button>
-                        <button
-                          onClick={() => setDeleteConfirmIdx(null)}
-                          style={{
-                            ...T, padding: '9px 14px', borderRadius: 10, cursor: 'pointer',
-                            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
-                            color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 800,
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
+                    <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 10 }}>
+                      {ep.generatedAt ? new Date(ep.generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown date'}
+                    </p>
+
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                      {ep.duration && (
+                        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
+                          {ep.duration}
+                        </span>
+                      )}
+                      {ep.tone && (
+                        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}>
+                          {ep.tone}
+                        </span>
+                      )}
+                    </div>
+
+                    {(ep.key_topics || []).slice(0, 3).length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                        {(ep.key_topics || []).slice(0, 3).map(function(t) {
+                          return (
+                            <span key={t} style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999, background: CYAN + '12', border: '1px solid ' + CYAN + '30', color: CYAN }}>
+                              {t}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', gap: 8 }}>
                       <button
-                        onClick={() => setDeleteConfirmIdx(i)}
+                        onClick={function() { loadFromLibrary(ep); }}
                         style={{
-                          ...T, padding: '9px 14px', borderRadius: 10, cursor: 'pointer',
-                          background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.3)',
-                          color: '#C0392B', fontSize: 13, fontWeight: 800,
+                          fontFamily: 'Barlow Condensed, sans-serif', flex: 1, padding: '9px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
+                          background: GOLD, color: '#000', fontSize: 13, fontWeight: 900,
                         }}
                       >
-                        Delete
+                        View Script
                       </button>
-                    )}
+                      {deleteConfirmIdx === i ? (
+                        <React.Fragment>
+                          <button
+                            onClick={function() { deleteEpisode(i); }}
+                            style={{
+                              fontFamily: 'Barlow Condensed, sans-serif', padding: '9px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                              background: '#C0392B', color: '#fff', fontSize: 13, fontWeight: 900,
+                            }}
+                          >
+                            Confirm
+                          </button>
+                          <button
+                            onClick={function() { setDeleteConfirmIdx(null); }}
+                            style={{
+                              fontFamily: 'Barlow Condensed, sans-serif', padding: '9px 14px', borderRadius: 10, cursor: 'pointer',
+                              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                              color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: 800,
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </React.Fragment>
+                      ) : (
+                        <button
+                          onClick={function() { setDeleteConfirmIdx(i); }}
+                          style={{
+                            fontFamily: 'Barlow Condensed, sans-serif', padding: '9px 14px', borderRadius: 10, cursor: 'pointer',
+                            background: 'rgba(192,57,43,0.1)', border: '1px solid rgba(192,57,43,0.3)',
+                            color: '#C0392B', fontSize: 13, fontWeight: 800,
+                          }}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}

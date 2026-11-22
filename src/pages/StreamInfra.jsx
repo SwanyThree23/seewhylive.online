@@ -37,13 +37,13 @@ import {
 
 /* ─── Helpers ─── */
 function copyText(val) {
-  navigator.clipboard.writeText(val).then(() => toast.success('Copied to clipboard')).catch(() => toast.error('Copy failed.'));
+  navigator.clipboard.writeText(val).then(function() { toast.success('Copied to clipboard'); }).catch(function() { toast.error('Copy failed.'); });
 }
 
 function genKey(prefix, userId) {
   var id = userId ? userId.slice(0, 8) : 'demo0000';
   var arr = new Uint8Array(5); crypto.getRandomValues(arr);
-  return prefix + '_' + id + '_' + Array.from(arr).map(b=>b.toString(36)).join('').slice(0, 8);
+  return prefix + '_' + id + '_' + Array.from(arr).map(function(b) { return b.toString(36); }).join('').slice(0, 8);
 }
 
 /* ─── Sub-components ─── */
@@ -142,7 +142,7 @@ function StreamTab({ user }) {
   var [egressKeys, setEgressKeys] = useState({ youtube: '', twitch: '', facebook: '', x: '' });
   var [vdoRoom] = useState(function() {
     var arr = new Uint8Array(5); crypto.getRandomValues(arr);
-    return 'sw_' + Array.from(arr).map(b=>b.toString(36)).join('').slice(0, 8);
+    return 'sw_' + Array.from(arr).map(function(b) { return b.toString(36); }).join('').slice(0, 8);
   });
   var [perms, setPerms] = useState({
     speakers_can_share_screen: true,
@@ -895,12 +895,13 @@ export default function StreamInfra() {
     queryKey: ['currentUser'],
     queryFn: function() { return base44.auth.me(); },
   });
-  var { data: activeRoom } = useQuery({
+  var activeRoomQuery = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = activeRoomQuery.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
 
   return (
