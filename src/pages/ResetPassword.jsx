@@ -16,7 +16,7 @@ export default function ResetPassword() {
   var [error, setError] = useState("");
   var [loading, setLoading] = useState(false);
 
-  var handleSubmit = async (e) => {
+  var handleSubmit = async function(e) {
     e.preventDefault();
     setError("");
     if (newPassword !== confirmPassword) {
@@ -76,7 +76,7 @@ export default function ResetPassword() {
               autoFocus
               placeholder="••••••••"
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={function(e) { setNewPassword(e.target.value); }}
               className="pl-10 h-12"
               required
             />
@@ -92,7 +92,7 @@ export default function ResetPassword() {
               autoComplete="new-password"
               placeholder="••••••••"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={function(e) { setConfirmPassword(e.target.value); }}
               className="pl-10 h-12"
               required
             />

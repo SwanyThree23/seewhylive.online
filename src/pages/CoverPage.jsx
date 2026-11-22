@@ -18,33 +18,37 @@ import StreamGoals from '../components/live/StreamGoals';
 
 export default function CoverPage() {
   var navigate = useNavigate();
-  var { data: user } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
-  var { data: activeRoom } = useQuery({
+  var user = userQuery.data || null;
+  var activeRoomQ = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = activeRoomQ.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
-  var { data: userCommunity } = useQuery({
+  var userCommunityQ = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
+  var userCommunity = userCommunityQ.data || null;
   var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  var { data: liveRooms } = useQuery({
+  var liveRoomsQ = useQuery({
     queryKey: ['cover-live-rooms'],
-    queryFn: () => base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 3),
+    queryFn: function() { return base44.entities.Room.filter({ status: 'live' }, '-viewer_count', 3); },
   });
+  var liveRooms = liveRoomsQ.data || null;
 
   var liveCount = (liveRooms && liveRooms.length) || 0;
 
   // Redirect if already logged in
-  useEffect(() => {
+  useEffect(function() {
     if ((user && user.id)) {
       navigate('/Home');
     }
@@ -93,7 +97,7 @@ export default function CoverPage() {
           </motion.div>
 
           {/* Live Rooms */}
-          {(liveRooms || []).slice(0, 2).map(room => (
+          {(liveRooms || []).slice(0, 2).map(function(room) { return (
             <motion.div
               key={room.id}
               whileHover={{ scale: 1.05 }}
@@ -109,7 +113,7 @@ export default function CoverPage() {
                 <p className="text-[11px] text-white mt-1 truncate">{room.host_name}</p>
               </div>
             </motion.div>
-          ))}
+          ); })}
         </div>
       </div>
 

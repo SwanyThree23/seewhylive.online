@@ -12,7 +12,7 @@ export default function ForgotPassword() {
   var [loading, setLoading] = useState(false);
   var [sent, setSent] = useState(false);
 
-  var handleSubmit = async (e) => {
+  var handleSubmit = async function(e) {
     e.preventDefault();
     setLoading(true);
     try {
@@ -53,7 +53,7 @@ export default function ForgotPassword() {
                 autoFocus
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={function(e) { setEmail(e.target.value); }}
                 className="pl-10 h-12"
                 required
               />

@@ -155,7 +155,7 @@ export default function VODLibraryPage() {
         {activeTab === 'library' && (user && user.id) && (
           <div className="space-y-4">
             <VODLibraryComponent creatorId={user.id} />
-            {myVODs.map(v => (
+            {myVODs.map(function(v) { return (
               <VODCard
                 key={v.id}
                 vod={v}
@@ -168,7 +168,7 @@ export default function VODLibraryPage() {
                     .catch(function() {});
                 }}
               />
-            ))}
+            ); })}
             {selectedForEdit && (
               <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: 14, padding: 20, marginTop: 8 }}>
                 <p className="text-sm font-black mb-4" style={{ color: G, fontFamily: 'Barlow Condensed, sans-serif' }}>Edit VOD</p>

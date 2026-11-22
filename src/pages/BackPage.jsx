@@ -20,26 +20,29 @@ export default function BackPage() {
   var [searchQuery, setSearchQuery] = useState('');
   var [showMenu, setShowMenu] = useState(false);
 
-  var { data: user } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
-  var { data: activeRoom } = useQuery({
+  var user = userQuery.data || null;
+  var activeRoomQ = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = activeRoomQ.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
-  var { data: userCommunity } = useQuery({
+  var userCommunityQ = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
+  var userCommunity = userCommunityQ.data || null;
   var userCommunityId = (userCommunity && userCommunity.id) || null;
 
   // Redirect if already logged in
-  useEffect(() => {
+  useEffect(function() {
     if ((user && user.id)) {
       navigate('/Home');
     }
@@ -74,7 +77,7 @@ export default function BackPage() {
               <MessageSquare className="w-4 h-4 text-white/50" />
             </button>
             <button
-              onClick={() => setShowMenu(!showMenu)}
+              onClick={function() { setShowMenu(!showMenu); }}
               className="w-8 h-8 rounded-lg flex items-center justify-center"
               style={{ background: 'rgba(255,255,255,0.05)' }}
             >
@@ -136,7 +139,7 @@ export default function BackPage() {
               type="text"
               placeholder="Search streams..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={function(e) { setSearchQuery(e.target.value); }}
               className="w-full pl-10 pr-4 py-3 rounded-lg text-sm text-white placeholder-white/30 bg-white/5 border border-white/10 focus:outline-none focus:border-[#d4af37]/50"
             />
           </div>
@@ -180,8 +183,8 @@ export default function BackPage() {
 
       <div style={{ padding: '0 16px 80px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <ZEGOStreamHealthCard roomId={activeRoomId} />
-        <StreamingPresets onApply={() => {}} />
-        <ActivitySidebar isOpen={false} onClose={() => {}} />
+        <StreamingPresets onApply={function() {}} />
+        <ActivitySidebar isOpen={false} onClose={function() {}} />
         <ContentRecommendations />
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ZEGOMobileAppBanner />

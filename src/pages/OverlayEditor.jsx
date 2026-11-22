@@ -69,21 +69,24 @@ export default function OverlayEditorPage() {
   var [goalBarStyle, setGoalBarStyle] = useState('gradient');
   var [saved, setSaved] = useState(false);
 
-  var { data: user } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
-  var { data: activeRoom } = useQuery({
+  var user = userQuery.data || null;
+  var activeRoomQ = useQuery({
     queryKey: ['overlayeditor-active-room', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
-  var { data: liveRoom } = useQuery({
+  var activeRoom = activeRoomQ.data || null;
+  var liveRoomQ = useQuery({
     queryKey: ['my-live-room-overlay', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }, '-created_date', 1).then(r => (r && r[0])),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }, '-created_date', 1).then(function(r) { return (r && r[0]); }); },
     enabled: !!(user && user.id),
   });
+  var liveRoom = liveRoomQ.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
   var theme = THEMES.find(function(t) { return t.id === selectedTheme; }) || THEMES[0];
