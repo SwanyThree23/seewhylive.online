@@ -698,7 +698,7 @@ function MusicPanel() {
           {track.hook && (
             <Card style={{ borderColor: C.gold, marginBottom: 8 }}>
               <p style={{ color: C.gold, fontSize: 11, fontWeight: 700, marginBottom: 4 }}>HOOK</p>
-              <p style={{ color: C.text, fontSize: 13, fontStyle: 'italic' }>"{track.hook}"</p>
+              <p style={{ color: C.text, fontSize: 13, fontStyle: "italic" }}>"{track.hook}"</p>
             </Card>
           )}
           {track.mix_tips && track.mix_tips.length > 0 && (
