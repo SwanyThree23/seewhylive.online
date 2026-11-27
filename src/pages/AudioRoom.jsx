@@ -386,7 +386,9 @@ export default function AudioRoom() {
   var [pttActive,     setPttActive]     = useState(false); // push-to-talk live state
   var pttWasEnabledRef = useRef(false); // was mic already on before PTT press?
 
-  var [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  var prefSpeakerState = useState(function() { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  var prefSpeaker = prefSpeakerState[0];
+  var setPrefSpeaker = prefSpeakerState[1];
   var [noiseSupp,   setNoiseSupp]   = useState(true);
   var [echoCan,     setEchoCan]     = useState(true);
   var [autoGain,    setAutoGain]    = useState(true);
@@ -437,7 +439,7 @@ export default function AudioRoom() {
   function handleToggleAudio() {
     toggleAudio();
     if ((myMember && myMember.id)) {
-      base44.entities.WatchPartyMember.update(myMember.id, { is_audio_enabled: !audioEnabled }).catch(() => {});
+      base44.entities.WatchPartyMember.update(myMember.id, { is_audio_enabled: !audioEnabled }).catch(function() {});
     }
   }
 
@@ -497,14 +499,14 @@ export default function AudioRoom() {
 
   async function sendLove() {
     if (!(user && user.id) || !roomId) {
-      setLoveCount(c => c + 1);
+      setLoveCount(function(c) { return c + 1; });
       return;
     }
     try {
       await base44.entities.Reaction.create({ room_id: roomId, user_id: user.id, emoji: '❤️', target_type: 'room', target_id: roomId });
-      setLoveCount(c => c + 1);
+      setLoveCount(function(c) { return c + 1; });
     } catch {
-      setLoveCount(c => c + 1);
+      setLoveCount(function(c) { return c + 1; });
     }
   }
 
@@ -762,8 +764,8 @@ export default function AudioRoom() {
               onClick={handleToggleAudio}
               className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
               style={{
-                background: pttActive ? 'rgba(109,191,126,0.25)' : audioEnabled ? `${GOLD}15` : 'rgba(192,57,43,0.15)',
-                border: pttActive ? '1px solid rgba(109,191,126,0.6)' : audioEnabled ? `1px solid ${GOLD}44` : '1px solid rgba(192,57,43,0.4)',
+                background: pttActive ? 'rgba(109,191,126,0.25)' : audioEnabled ? GOLD + '15' : 'rgba(192,57,43,0.15)',
+                border: pttActive ? '1px solid rgba(109,191,126,0.6)' : audioEnabled ? '1px solid ' + GOLD + '44' : '1px solid rgba(192,57,43,0.4)',
               }}
             >
               {audioEnabled
@@ -779,11 +781,11 @@ export default function AudioRoom() {
           </div>
 
           <button
-            onClick={() => setSettingsOpen(v => !v)}
+            onClick={function() { setSettingsOpen(function(v) { return !v; }); }}
             className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
             style={{
-              background: settingsOpen ? `${GOLD}20` : 'rgba(255,255,255,0.07)',
-              border: settingsOpen ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.12)',
+              background: settingsOpen ? GOLD + '20' : 'rgba(255,255,255,0.07)',
+              border: settingsOpen ? '1px solid ' + GOLD + '55' : '1px solid rgba(255,255,255,0.12)',
             }}
             title="Audio settings"
           >
@@ -799,18 +801,18 @@ export default function AudioRoom() {
               className="fixed inset-0 z-40"
               style={{ background: 'rgba(0,0,0,0.4)' }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setChatOpen(false)}
+              onClick={function() { setChatOpen(false); }}
             />
             <motion.div
               className="fixed inset-x-0 z-50 flex flex-col rounded-t-2xl overflow-hidden"
-              style={{ bottom: 64, height: 220, background: BG, borderTop: `1px solid rgba(212,175,55,0.2)` }}
+              style={{ bottom: 64, height: 220, background: BG, borderTop: '1px solid rgba(212,175,55,0.2)' }}
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             >
               <div className="shrink-0 flex items-center justify-between px-4 py-2"
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 <span className="text-sm font-black uppercase text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Chat</span>
-                <button onClick={() => setChatOpen(false)} className="text-white/40 text-sm">✕</button>
+                <button onClick={function() { setChatOpen(false); }} className="text-white/40 text-sm">✕</button>
               </div>
               <div className="flex-1 overflow-hidden">
                 <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} />
@@ -827,18 +829,18 @@ export default function AudioRoom() {
               className="fixed inset-0 z-40"
               style={{ background: 'rgba(0,0,0,0.4)' }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setSettingsOpen(false)}
+              onClick={function() { setSettingsOpen(false); }}
             />
             <motion.div
               className="fixed inset-x-0 z-50 rounded-t-2xl overflow-hidden"
-              style={{ bottom: 64, background: BG, borderTop: `1px solid rgba(212,175,55,0.2)` }}
+              style={{ bottom: 64, background: BG, borderTop: '1px solid rgba(212,175,55,0.2)' }}
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             >
               <div className="shrink-0 flex items-center justify-between px-4 py-3"
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 <span className="text-sm font-black uppercase text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Audio Settings</span>
-                <button onClick={() => setSettingsOpen(false)} className="text-white/40 text-sm">✕</button>
+                <button onClick={function() { setSettingsOpen(false); }} className="text-white/40 text-sm">✕</button>
               </div>
 
               <div className="p-4 space-y-4" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -851,8 +853,8 @@ export default function AudioRoom() {
                     </div>
                     <MobileSelect
                       value={prefSpeaker}
-                      onChange={v => setPrefSpeaker(v)}
-                      options={speakerDevices.map(d => ({ value: d.deviceId, label: d.label || `Speaker ${d.deviceId.slice(0, 6)}` }))}
+                      onChange={function(v) { setPrefSpeaker(v); }}
+                      options={speakerDevices.map(function(d) { return { value: d.deviceId, label: d.label || ('Speaker ' + d.deviceId.slice(0, 6)) }; })}
                       placeholder="Select speaker"
                     />
                   </div>
@@ -865,11 +867,11 @@ export default function AudioRoom() {
                     { label: 'Noise Suppression', value: noiseSupp, set: setNoiseSupp },
                     { label: 'Echo Cancellation', value: echoCan,   set: setEchoCan   },
                     { label: 'Auto Gain',          value: autoGain,  set: setAutoGain  },
-                  ].map(({ label, value, set }) => (
+                  ].map(function(item) { var label = item.label; var value = item.value; var set = item.set; return (
                     <div key={label} className="flex items-center justify-between">
                       <span className="text-sm text-white/80">{label}</span>
                       <button
-                        onClick={() => set(v => !v)}
+                        onClick={function() { set(function(v) { return !v; }); }}
                         className="relative w-10 h-5 rounded-full transition-all"
                         style={{ background: value ? GOLD : 'rgba(255,255,255,0.15)' }}
                         aria-label={label}
@@ -880,7 +882,7 @@ export default function AudioRoom() {
                         />
                       </button>
                     </div>
-                  ))}
+                  ); })}
                 </div>
               </div>
             </motion.div>
@@ -905,10 +907,10 @@ export default function AudioRoom() {
       {user && <ZEGOConfigPanel user={user} />}
       {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={(party && party.host_id) || (user && user.id)} />}
       {roomId && <LiveTranscription isLive={true} roomId={roomId} stream={localStream} />}
-      {showViewerControls && roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
+      {showViewerControls && roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={function() { setShowViewerControls(false); }} />}
       {roomId && (user && user.id) && <VirtualCurrencyTips roomId={roomId} creatorId={(party && party.host_id) || (user && user.id)} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
-      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={(user && user.id)} onOpenPanel={() => setShowSwanPanel(true)} />}
+      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={(user && user.id)} onOpenPanel={function() { setShowSwanPanel(true); }} />}
       {isHost && roomId && <StreamerGoalsWidget creatorId={(party && party.host_id) || (user && user.id)} roomId={roomId} isCreator={isHost} embedded={true} />}
       {isHost && roomId && <PayPerViewManager roomId={roomId} />}
       {isHost && roomId && <MonetizationDashboard roomId={roomId} />}
@@ -916,7 +918,7 @@ export default function AudioRoom() {
       {roomId && <GiftLeaderboard roomId={roomId} />}
       {isHost && <SubscriptionManager creatorId={(party && party.host_id) || (user && user.id)} />}
       {roomId && <TipAlert roomId={roomId} recipientId={(party && party.host_id) || (user && user.id)} />}
-      {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: (party && party.host_id) }} roomId={roomId} />}
+      {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={function() { setShowTippingModal(false); }} recipient={{ id: (party && party.host_id) }} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={(party && party.host_id) || (user && user.id)} roomId={roomId} isCreator={isHost} currentUser={user} />}
       <MerchWidget />
       <NotificationBell />
@@ -928,7 +930,7 @@ export default function AudioRoom() {
       {roomId && <RewardShop creatorId={(party && party.host_id) || (user && user.id)} roomId={roomId} currentUser={user} />}
       {!isHost && (user && user.id) && <ViewerLoyaltyCard userId={user.id} creatorId={(party && party.host_id) || (user && user.id)} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
-      {isHost && <StreamingPresets onApply={(p) => reacquireMedia({ resolution: p.resolution })} />}
+      {isHost && <StreamingPresets onApply={function(p) { reacquireMedia({ resolution: p.resolution }); }} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={(user && user.full_name) || ''} streamTitle={(party && party.title) || 'Live Audio'} viewerCount={memberCount} />}
       <LiveTranslationWidget chatMessage={lastChatMsg} onTranslation={() => {}} />
       {isHost && (user && user.id) && <RecordingManager userId={user.id} />}
@@ -1009,7 +1011,7 @@ export default function AudioRoom() {
         setLastChatMsg(content);
         if (content) {
           setChatMessages(prev => {
-            var next = [...prev, { content }];
+            var next = prev.concat([{ content: content }]);
             return next.length > 100 ? next.slice(-100) : next;
           });
           setHypeLevel(prev => Math.min(100, prev + 2));
