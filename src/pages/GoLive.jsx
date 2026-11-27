@@ -567,7 +567,7 @@ function Countdown({ onDone }) {
             fontFamily: FONT,
             color: count <= 1 ? PINK : count === 2 ? GOLD : '#fff',
             lineHeight: 1,
-            textShadow: `0 0 60px ${count <= 1 ? PINK : GOLD}88`,
+            textShadow: '0 0 60px ' + (count <= 1 ? PINK : GOLD) + '88',
           }}
         >
           {count === 0 ? '🔴 LIVE' : count}
@@ -627,13 +627,13 @@ export default function GoLive() {
   var subCount = useSubscriptionCount((user && user.id));
   var { data: party } = useQuery({
     queryKey: ['golive-party', partyId],
-    queryFn: () => base44.entities.WatchParty.filter({ id: partyId }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.WatchParty.filter({ id: partyId }).then(function(r) { return r[0] || null; }); },
     enabled: !!partyId,
     refetchInterval: 30000,
   });
   var { data: members = [] } = useQuery({
     queryKey: ['golive-members', partyId],
-    queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }),
+    queryFn: function() { return base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }); },
     enabled: !!partyId,
     refetchInterval: 10000,
   });
@@ -743,13 +743,13 @@ export default function GoLive() {
     setTitleSuggestions([]);
     try {
       var ctx = [
-        format ? `Stream format: ${format.title}` : '',
-        category ? `Category: ${category}` : '',
-        tags.length ? `Tags: ${tags.join(', ')}` : '',
-        title ? `Draft title so far: "${title}"` : '',
+        format ? ('Stream format: ' + format.title) : '',
+        category ? ('Category: ' + category) : '',
+        tags.length ? ('Tags: ' + tags.join(', ')) : '',
+        title ? ('Draft title so far: "' + title + '"') : '',
       ].filter(Boolean).join('. ') || 'General live stream on SeeWhy LIVE';
       var res = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are Joyce AI, co-host for SeeWhy LIVE — a creator-first live streaming platform (domino tournaments, tributes, talk shows, music, 90/10 revenue split). Generate 5 punchy, broadcast-ready stream title suggestions (max 60 chars each) for this stream context: ${ctx}. Return ONLY a JSON array of 5 title strings, no extra text.`,
+        prompt: 'You are Joyce AI, co-host for SeeWhy LIVE — a creator-first live streaming platform (domino tournaments, tributes, talk shows, music, 90/10 revenue split). Generate 5 punchy, broadcast-ready stream title suggestions (max 60 chars each) for this stream context: ' + ctx + '. Return ONLY a JSON array of 5 title strings, no extra text.',
         response_json_schema: { type: 'array', items: { type: 'string' } },
       });
       if (Array.isArray(res) && res.length) setTitleSuggestions(res.slice(0, 5));
@@ -860,7 +860,7 @@ export default function GoLive() {
   }
 
   // Stop fanout if the user navigates away before the redirect completes
-  useEffect(() => {
+  useEffect(function() {
     if (!partyId) return;
     var stopFanout = function() {
       var API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
@@ -1027,7 +1027,7 @@ export default function GoLive() {
             <CameraPreview onStreamReady={handleStreamReady} onMicChange={setMicOn} startRef={cameraRetryRef} />
 
             <div>
-              <div style={{ ...SL, justifyContent: 'space-between' }}>
+              <div style={{ fontSize: 11, fontWeight: 900, fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'space-between' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                   <AlignLeft style={{ width: 10, height: 10 }} /> Stream Title *
                 </span>
@@ -1046,7 +1046,7 @@ export default function GoLive() {
                 </button>
               </div>
               <input
-                style={{ ...INPUT, fontSize: 16, fontWeight: 700, borderColor: title ? 'rgba(255,184,0,0.3)' : 'rgba(255,255,255,0.1)' }}
+                style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 16, fontFamily: FONT, outline: 'none', boxSizing: 'border-box', fontWeight: 700, borderColor: title ? 'rgba(255,184,0,0.3)' : 'rgba(255,255,255,0.1)' }}
                 placeholder="What's your stream about?"
                 value={title}
                 onChange={function(e) { setTitle(e.target.value); }}
@@ -1130,14 +1130,14 @@ export default function GoLive() {
                 style={INPUT}
                 placeholder="https://… (optional)"
                 value={thumbUrl}
-                onChange={e => setThumbUrl(e.target.value)}
+                onChange={function(e) { setThumbUrl(e.target.value); }}
               />
               {thumbUrl && (
                 <img
                   src={thumbUrl}
                   alt="thumbnail preview"
                   style={{ marginTop: 8, width: '100%', aspectRatio: '16/9', objectFit: 'cover', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)' }}
-                  onError={e => { e.target.style.display = 'none'; }}
+                  onError={function(e) { e.target.style.display = 'none'; }}
                 />
               )}
             </div>
@@ -1145,16 +1145,16 @@ export default function GoLive() {
             <div>
               <div style={SL}><AlignLeft style={{ width: 10, height: 10 }} /> Description</div>
               <textarea
-                style={{ ...INPUT, minHeight: 72, resize: 'vertical' }}
+                style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 14, fontFamily: FONT, outline: 'none', boxSizing: 'border-box', minHeight: 72, resize: 'vertical' }}
                 placeholder="Tell viewers what to expect…"
                 value={description}
-                onChange={e => setDescription(e.target.value)}
+                onChange={function(e) { setDescription(e.target.value); }}
                 maxLength={300}
               />
             </div>
 
             <button
-              onClick={() => setIsExclusive(v => !v)}
+              onClick={function() { setIsExclusive(function(v) { return !v; }); }}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
@@ -1225,10 +1225,10 @@ export default function GoLive() {
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               background: title.trim()
-                ? `linear-gradient(135deg, ${CRIMSON}, ${PINK})`
+                ? ('linear-gradient(135deg, ' + CRIMSON + ', ' + PINK + ')')
                 : 'rgba(255,255,255,0.06)',
               color: title.trim() ? '#fff' : 'rgba(255,255,255,0.2)',
-              boxShadow: title.trim() ? `0 4px 24px rgba(255,32,64,0.4)` : 'none',
+              boxShadow: title.trim() ? '0 4px 24px rgba(255,32,64,0.4)' : 'none',
               transition: 'all 0.2s',
               display: 'flex',
               alignItems: 'center',
