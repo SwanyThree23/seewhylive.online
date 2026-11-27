@@ -75,7 +75,7 @@ function ProgressBar({ step, onboarding }) {
   return (
     <div style={{ padding: '14px 20px 10px', borderBottom: '1px solid rgba(212,175,55,0.1)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-        {STEPS.map(s => {
+        {STEPS.map(function(s) {
           var done   = onboarding && onboarding[s.key];
           var active = s.id === step;
           return (
@@ -83,8 +83,8 @@ function ProgressBar({ step, onboarding }) {
               <div style={{
                 width: 28, height: 28, borderRadius: '50%', margin: '0 auto 4px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
-                background: done ? C.gold : active ? `${C.burg}55` : 'rgba(255,255,255,0.05)',
-                border: done ? 'none' : active ? `1.5px solid ${C.burg}` : '1.5px solid rgba(255,255,255,0.1)',
+                background: done ? C.gold : active ? C.burg + '55' : 'rgba(255,255,255,0.05)',
+                border: done ? 'none' : active ? '1.5px solid ' + C.burg : '1.5px solid rgba(255,255,255,0.1)',
                 color: done ? '#000' : active ? '#fff' : 'rgba(255,255,255,0.25)',
                 fontWeight: 900, fontFamily: FONT, transition: 'all 0.3s',
               }}>
@@ -102,8 +102,8 @@ function ProgressBar({ step, onboarding }) {
       </div>
       {/* Progress bar */}
       <div style={{ height: 2, background: 'rgba(255,255,255,0.06)', borderRadius: 1, overflow: 'hidden' }}>
-        <motion.div animate={{ width: `${((step - 1) / 6) * 100}%` }}
-          style={{ height: '100%', background: `linear-gradient(90deg, ${C.burg}, ${C.gold})`, borderRadius: 1 }}
+        <motion.div animate={{ width: (((step - 1) / 6) * 100) + '%' }}
+          style={{ height: '100%', background: 'linear-gradient(90deg, ' + C.burg + ', ' + C.gold + ')', borderRadius: 1 }}
           transition={{ duration: 0.4 }} />
       </div>
     </div>
@@ -119,9 +119,9 @@ function StepHero({ step }) {
       <div style={{
         width: 64, height: 64, borderRadius: 18, margin: '0 auto 14px',
         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 30,
-        background: `linear-gradient(135deg, ${C.burg}40, ${C.gold}22)`,
-        border: `1px solid rgba(212,175,55,0.25)`,
-        boxShadow: `0 0 28px ${C.gold}22`,
+        background: 'linear-gradient(135deg, ' + C.burg + '40, ' + C.gold + '22)',
+        border: '1px solid rgba(212,175,55,0.25)',
+        boxShadow: '0 0 28px ' + C.gold + '22',
       }}>
         {emoji}
       </div>
@@ -143,10 +143,10 @@ function NavButtons({ step, setStep, onSave, saving, canNext = true, onSkip }) {
       borderTop: '1px solid rgba(255,255,255,0.06)',
       justifyContent: 'space-between', alignItems: 'center', marginTop: 12,
     }}>
-      <button onClick={() => setStep(s => Math.max(1, s - 1))} disabled={step === 1}
+      <button onClick={function() { setStep(function(s) { return Math.max(1, s - 1); }); }} disabled={step === 1}
         style={{
           padding: '9px 18px', background: 'transparent',
-          border: `1px solid ${step === 1 ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.18)'}`,
+          border: '1px solid ' + (step === 1 ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.18)'),
           borderRadius: 8, color: step === 1 ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.5)',
           cursor: step === 1 ? 'default' : 'pointer',
           fontFamily: FONT, fontSize: 13, letterSpacing: '0.06em',
@@ -163,7 +163,7 @@ function NavButtons({ step, setStep, onSave, saving, canNext = true, onSkip }) {
         <button onClick={onSave} disabled={saving || !canNext}
           style={{
             padding: '9px 22px',
-            background: canNext ? `linear-gradient(90deg, ${C.burg}, ${C.gold})` : 'rgba(255,255,255,0.07)',
+            background: canNext ? 'linear-gradient(90deg, ' + C.burg + ', ' + C.gold + ')' : 'rgba(255,255,255,0.07)',
             border: 'none', borderRadius: 8,
             color: canNext ? '#000' : 'rgba(255,255,255,0.2)',
             cursor: canNext ? 'pointer' : 'default',
@@ -180,7 +180,7 @@ function NavButtons({ step, setStep, onSave, saving, canNext = true, onSkip }) {
 function Step1({ onboarding, user, onDone, setStep }) {
   var [form, setForm] = useState({ display_name: (user && user.full_name) || '', bio: '', avatar: '🎙', category: 'Gaming' });
   var [saving, setSaving] = useState(false);
-  var save = async () => {
+  var save = async function() {
     setSaving(true);
     try {
       var profiles = await base44.entities.CreatorProfile.filter({ user_id: user.id });
@@ -198,26 +198,30 @@ function Step1({ onboarding, user, onDone, setStep }) {
     <div style={{ padding: '0 20px 4px' }}>
       <StepHero step={1} />
       <label style={lbl}>Display Name *</label>
-      <input style={inp} value={form.display_name} onChange={e => setForm(f => ({...f, display_name: e.target.value}))} placeholder="Your creator name" maxLength={80} />
+      <input style={inp} value={form.display_name} onChange={function(e) { setForm(function(f) { return Object.assign({}, f, {display_name: e.target.value}); }); }} placeholder="Your creator name" maxLength={80} />
       <label style={lbl}>Bio <span style={{ color: 'rgba(255,255,255,0.2)', fontWeight: 400 }}>{form.bio.length}/140</span></label>
-      <textarea style={{...inp, height: 76, resize: 'none'}} maxLength={140} value={form.bio} onChange={e => setForm(f => ({...f, bio: e.target.value}))} placeholder="Tell viewers about yourself…" />
+      <textarea style={{width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#f0ebe0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 2, height: 76, resize: 'none'}} maxLength={140} value={form.bio} onChange={function(e) { setForm(function(f) { return Object.assign({}, f, {bio: e.target.value}); }); }} placeholder="Tell viewers about yourself…" />
       <label style={lbl}>Avatar</label>
       <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
-        {AVATARS.map(a => (
-          <button key={a} onClick={() => setForm(f => ({...f, avatar: a}))}
-            style={{ width: 48, height: 48, fontSize: 24, borderRadius: 12, border: `2px solid ${form.avatar === a ? C.gold : 'rgba(255,255,255,0.1)'}`, background: form.avatar === a ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)', cursor: 'pointer', transition: 'all 0.15s' }}>
-            {a}
-          </button>
-        ))}
+        {AVATARS.map(function(a) {
+          return (
+            <button key={a} onClick={function() { setForm(function(f) { return Object.assign({}, f, {avatar: a}); }); }}
+              style={{ width: 48, height: 48, fontSize: 24, borderRadius: 12, border: '2px solid ' + (form.avatar === a ? C.gold : 'rgba(255,255,255,0.1)'), background: form.avatar === a ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)', cursor: 'pointer', transition: 'all 0.15s' }}>
+              {a}
+            </button>
+          );
+        })}
       </div>
       <label style={lbl}>Category</label>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 4 }}>
-        {CATEGORIES.map(c => (
-          <button key={c} onClick={() => setForm(f => ({...f, category: c}))}
-            style={{ padding: '6px 14px', borderRadius: 99, border: `1px solid ${form.category === c ? C.gold : 'rgba(255,255,255,0.12)'}`, background: form.category === c ? 'rgba(212,175,55,0.12)' : 'transparent', color: form.category === c ? C.gold : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: FONT, fontSize: 12, letterSpacing: '0.05em', transition: 'all 0.15s' }}>
-            {c}
-          </button>
-        ))}
+        {CATEGORIES.map(function(c) {
+          return (
+            <button key={c} onClick={function() { setForm(function(f) { return Object.assign({}, f, {category: c}); }); }}
+              style={{ padding: '6px 14px', borderRadius: 99, border: '1px solid ' + (form.category === c ? C.gold : 'rgba(255,255,255,0.12)'), background: form.category === c ? 'rgba(212,175,55,0.12)' : 'transparent', color: form.category === c ? C.gold : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: FONT, fontSize: 12, letterSpacing: '0.05em', transition: 'all 0.15s' }}>
+              {c}
+            </button>
+          );
+        })}
       </div>
       <NavButtons step={1} setStep={setStep} onSave={save} saving={saving} canNext={!!form.display_name} />
     </div>
@@ -229,29 +233,31 @@ function Step2({ onboarding, onDone, setStep }) {
   var [theme, setTheme] = useState(0);
   var [font, setFont] = useState(0);
   var [saving, setSaving] = useState(false);
-  var save = async () => { setSaving(true); onDone({ step_2_branding: true, current_step: 3 }); setSaving(false); };
+  var save = async function() { setSaving(true); onDone({ step_2_branding: true, current_step: 3 }); setSaving(false); };
   var T = THEMES[theme];
   return (
     <div style={{ padding: '0 20px 4px' }}>
       <StepHero step={2} />
       <label style={lbl}>Color Theme</label>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-        {THEMES.map((t, i) => (
-          <button key={t.name} onClick={() => setTheme(i)}
-            style={{ padding: '12px', borderRadius: 12, border: `2px solid ${theme === i ? C.gold : 'rgba(255,255,255,0.08)'}`, background: theme === i ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
-            <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
-              {t.preview.map((c, j) => <div key={j} style={{ width: 20, height: 20, borderRadius: 5, background: c }} />)}
-            </div>
-            <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 900, color: theme === i ? C.gold : 'rgba(255,255,255,0.35)', letterSpacing: '0.06em' }}>{t.name.toUpperCase()}</div>
-          </button>
-        ))}
+        {THEMES.map(function(t, i) {
+          return (
+            <button key={t.name} onClick={function() { setTheme(i); }}
+              style={{ padding: '12px', borderRadius: 12, border: '2px solid ' + (theme === i ? C.gold : 'rgba(255,255,255,0.08)'), background: theme === i ? 'rgba(212,175,55,0.08)' : 'rgba(255,255,255,0.03)', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+              <div style={{ display: 'flex', gap: 5, marginBottom: 8 }}>
+                {t.preview.map(function(c, j) { return <div key={j} style={{ width: 20, height: 20, borderRadius: 5, background: c }} />; })}
+              </div>
+              <div style={{ fontFamily: FONT, fontSize: 11, fontWeight: 900, color: theme === i ? C.gold : 'rgba(255,255,255,0.35)', letterSpacing: '0.06em' }}>{t.name.toUpperCase()}</div>
+            </button>
+          );
+        })}
       </div>
       {/* Live mini-preview */}
-      <div style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${T.secondary}33`, marginBottom: 8 }}>
-        <div style={{ height: 5, background: `linear-gradient(90deg, ${T.primary}, ${T.secondary})` }} />
+      <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid ' + T.secondary + '33', marginBottom: 8 }}>
+        <div style={{ height: 5, background: 'linear-gradient(90deg, ' + T.primary + ', ' + T.secondary + ')' }} />
         <div style={{ padding: '14px 16px', background: T.preview[0] }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: T.primary, border: `1px solid ${T.secondary}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>📡</div>
+            <div style={{ width: 28, height: 28, borderRadius: 8, background: T.primary, border: '1px solid ' + T.secondary + '44', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>📡</div>
             <div>
               <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 900, color: T.secondary, letterSpacing: '0.06em' }}>YOUR CHANNEL</div>
               <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.05em' }}>● LIVE NOW · 1,247 viewers</div>
@@ -259,7 +265,7 @@ function Step2({ onboarding, onDone, setStep }) {
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
             <div style={{ padding: '5px 12px', background: T.primary, borderRadius: 6, fontSize: 11, color: T.secondary, fontFamily: FONT, letterSpacing: '0.06em', fontWeight: 900 }}>SUBSCRIBE</div>
-            <div style={{ padding: '5px 12px', background: `${T.secondary}18`, border: `1px solid ${T.secondary}35`, borderRadius: 6, fontSize: 11, color: T.secondary, fontFamily: FONT, letterSpacing: '0.06em' }}>TIP 💛</div>
+            <div style={{ padding: '5px 12px', background: T.secondary + '18', border: '1px solid ' + T.secondary + '35', borderRadius: 6, fontSize: 11, color: T.secondary, fontFamily: FONT, letterSpacing: '0.06em' }}>TIP 💛</div>
           </div>
         </div>
       </div>
@@ -271,32 +277,32 @@ function Step2({ onboarding, onDone, setStep }) {
 // ── STEP 3: Streaming Setup ──────────────────────────────────────
 function Step3({ onboarding, onDone, setStep }) {
   var RTMP = 'rtmp://ingest.seewhy.live/live';
-  var [streamKey] = useState(() => {
+  var [streamKey] = useState(function() {
     var arr = new Uint8Array(9);
     crypto.getRandomValues(arr);
-    return 'sk_' + Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('').slice(0,16).toUpperCase();
+    return 'sk_' + Array.from(arr).map(function(b) { return b.toString(16).padStart(2,'0'); }).join('').slice(0,16).toUpperCase();
   });
   var [showKey, setShowKey] = useState(false);
   var [zegoId, setZegoId] = useState('');
   var [platforms, setPlatforms] = useState({ YouTube: false, TikTok: false, Facebook: false, Twitch: false, Rumble: false });
   var [copied, setCopied] = useState(false);
   var [saving, setSaving] = useState(false);
-  var copy = () => { navigator.clipboard.writeText(RTMP).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {}); };
-  var save = async () => { setSaving(true); onDone({ step_3_stream_key: true, zego_configured: !!zegoId, rtmp_configured: true, current_step: 4 }); setSaving(false); };
+  var copy = function() { navigator.clipboard.writeText(RTMP).then(function() { setCopied(true); setTimeout(function() { setCopied(false); }, 2000); }).catch(function() {}); };
+  var save = async function() { setSaving(true); onDone({ step_3_stream_key: true, zego_configured: !!zegoId, rtmp_configured: true, current_step: 4 }); setSaving(false); };
   return (
     <div style={{ padding: '0 20px 4px' }}>
       <StepHero step={3} />
       <label style={lbl}>RTMP Ingest URL</label>
       <div style={{ display: 'flex', gap: 6, marginBottom: 2 }}>
-        <input style={{...inp, flex: 1, marginBottom: 0}} readOnly value={RTMP} />
-        <button onClick={copy} style={{ padding: '12px 14px', background: copied ? 'rgba(109,191,126,0.12)' : 'rgba(212,175,55,0.1)', border: `1px solid ${copied ? 'rgba(109,191,126,0.4)' : 'rgba(212,175,55,0.3)'}`, borderRadius: 10, color: copied ? '#6DBF7E' : C.gold, cursor: 'pointer', fontFamily: FONT, fontSize: 11, letterSpacing: '0.06em', fontWeight: 900, whiteSpace: 'nowrap' }}>
+        <input style={{width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#f0ebe0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 0, flex: 1}} readOnly value={RTMP} />
+        <button onClick={copy} style={{ padding: '12px 14px', background: copied ? 'rgba(109,191,126,0.12)' : 'rgba(212,175,55,0.1)', border: '1px solid ' + (copied ? 'rgba(109,191,126,0.4)' : 'rgba(212,175,55,0.3)'), borderRadius: 10, color: copied ? '#6DBF7E' : C.gold, cursor: 'pointer', fontFamily: FONT, fontSize: 11, letterSpacing: '0.06em', fontWeight: 900, whiteSpace: 'nowrap' }}>
           {copied ? '✓ Copied' : 'Copy'}
         </button>
       </div>
       <label style={lbl}>Stream Key</label>
       <div style={{ display: 'flex', gap: 6, marginBottom: 2 }}>
-        <input style={{...inp, flex: 1, marginBottom: 0, fontFamily: 'monospace', letterSpacing: showKey ? '0.05em' : '0.2em'}} readOnly value={showKey ? streamKey : '••••••••••••••••'} />
-        <button onClick={() => setShowKey(v => !v)} style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 14 }}>
+        <input style={{width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#f0ebe0', fontSize: 14, outline: 'none', fontFamily: 'monospace', boxSizing: 'border-box', marginBottom: 0, flex: 1, letterSpacing: showKey ? '0.05em' : '0.2em'}} readOnly value={showKey ? streamKey : '••••••••••••••••'} />
+        <button onClick={function() { setShowKey(function(v) { return !v; }); }} style={{ padding: '12px 14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 14 }}>
           {showKey ? '🙈' : '👁'}
         </button>
       </div>
@@ -305,28 +311,30 @@ function Step3({ onboarding, onDone, setStep }) {
         <p style={{ fontFamily: FONT, fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Hit "Go Live" in the app — no OBS needed. Camera &amp; mic stream directly.</p>
       </div>
       <label style={lbl}>ZEGOCLOUD App ID (optional)</label>
-      <input style={inp} value={zegoId} onChange={e => setZegoId(e.target.value)} placeholder="Enter App ID from console.zegocloud.com" />
+      <input style={inp} value={zegoId} onChange={function(e) { setZegoId(e.target.value); }} placeholder="Enter App ID from console.zegocloud.com" />
       <label style={lbl}>Target Platforms</label>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 4 }}>
-        {Object.keys(platforms).map(p => (
-          <button key={p} onClick={() => setPlatforms(pl => ({...pl, [p]: !pl[p]}))}
-            style={{ padding: '6px 14px', borderRadius: 99, border: `1px solid ${platforms[p] ? C.gold : 'rgba(255,255,255,0.12)'}`, background: platforms[p] ? 'rgba(212,175,55,0.12)' : 'transparent', color: platforms[p] ? C.gold : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: FONT, fontSize: 12, transition: 'all 0.15s' }}>
-            {p}
-          </button>
-        ))}
+        {Object.keys(platforms).map(function(p) {
+          return (
+            <button key={p} onClick={function() { setPlatforms(function(pl) { return Object.assign({}, pl, {[p]: !pl[p]}); }); }}
+              style={{ padding: '6px 14px', borderRadius: 99, border: '1px solid ' + (platforms[p] ? C.gold : 'rgba(255,255,255,0.12)'), background: platforms[p] ? 'rgba(212,175,55,0.12)' : 'transparent', color: platforms[p] ? C.gold : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: FONT, fontSize: 12, transition: 'all 0.15s' }}>
+              {p}
+            </button>
+          );
+        })}
       </div>
-      <NavButtons step={3} setStep={setStep} onSave={save} saving={saving} onSkip={() => onDone({ step_3_stream_key: true, current_step: 4 })} />
+      <NavButtons step={3} setStep={setStep} onSave={save} saving={saving} onSkip={function() { onDone({ step_3_stream_key: true, current_step: 4 }); }} />
     </div>
   );
 }
 
 // ── STEP 4: Subscription Tiers ───────────────────────────────────
 function Step4({ user, onDone, setStep }) {
-  var [tiers, setTiers] = useState(DEFAULT_TIERS.map((t, i) => ({...t, id: i})));
+  var [tiers, setTiers] = useState(DEFAULT_TIERS.map(function(t, i) { return Object.assign({}, t, {id: i}); }));
   var [saving, setSaving] = useState(false);
-  var updateTier = (id, field, val) => setTiers(ts => ts.map(t => t.id === id ? {...t, [field]: val} : t));
-  var addTier = () => setTiers(ts => [...ts, { id: Date.now(), name: 'Custom', price: 14.99, benefits: '' }]);
-  var save = async () => {
+  var updateTier = function(id, field, val) { setTiers(function(ts) { return ts.map(function(t) { return t.id === id ? Object.assign({}, t, {[field]: val}) : t; }); }); };
+  var addTier = function() { setTiers(function(ts) { return ts.concat([{ id: Date.now(), name: 'Custom', price: 14.99, benefits: '' }]); }); };
+  var save = async function() {
     setSaving(true);
     try {
       for (var tier of tiers) {
@@ -348,21 +356,23 @@ function Step4({ user, onDone, setStep }) {
         </p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
-        {tiers.map(tier => (
-          <div key={tier.id} style={{ padding: 14, borderRadius: 12, border: '1px solid rgba(212,175,55,0.15)', background: 'rgba(212,175,55,0.03)' }}>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-              <input style={{...inp, flex: 1, marginBottom: 0}} value={tier.name} onChange={e => updateTier(tier.id, 'name', e.target.value)} placeholder="Tier name" />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '0 10px', whiteSpace: 'nowrap' }}>
-                <span style={{ color: C.gold, fontSize: 13, fontWeight: 900 }}>$</span>
-                <input style={{ width: 50, background: 'transparent', border: 'none', outline: 'none', color: '#f0ebe0', fontSize: 13, padding: '10px 0', fontFamily: 'inherit' }} type="number" step="0.01" value={tier.price} onChange={e => updateTier(tier.id, 'price', parseFloat(e.target.value))} />
+        {tiers.map(function(tier) {
+          return (
+            <div key={tier.id} style={{ padding: 14, borderRadius: 12, border: '1px solid rgba(212,175,55,0.15)', background: 'rgba(212,175,55,0.03)' }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                <input style={{width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#f0ebe0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 0, flex: 1}} value={tier.name} onChange={function(e) { updateTier(tier.id, 'name', e.target.value); }} placeholder="Tier name" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '0 10px', whiteSpace: 'nowrap' }}>
+                  <span style={{ color: C.gold, fontSize: 13, fontWeight: 900 }}>$</span>
+                  <input style={{ width: 50, background: 'transparent', border: 'none', outline: 'none', color: '#f0ebe0', fontSize: 13, padding: '10px 0', fontFamily: 'inherit' }} type="number" step="0.01" value={tier.price} onChange={function(e) { updateTier(tier.id, 'price', parseFloat(e.target.value)); }} />
+                </div>
               </div>
+              <textarea style={{width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#f0ebe0', fontSize: 12, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 0, height: 52, resize: 'none'}} value={tier.benefits} onChange={function(e) { updateTier(tier.id, 'benefits', e.target.value); }} placeholder="Benefits for this tier…" />
             </div>
-            <textarea style={{...inp, height: 52, resize: 'none', marginBottom: 0, fontSize: 12}} value={tier.benefits} onChange={e => updateTier(tier.id, 'benefits', e.target.value)} placeholder="Benefits for this tier…" />
-          </div>
-        ))}
+          );
+        })}
       </div>
-      {tiers.length < 4 && <button onClick={addTier} style={{ width:'100%', padding:'8px', background:'transparent', border:`1px dashed ${C.burg}`, borderRadius:6, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed', fontSize:12, letterSpacing:1, marginBottom:8 }}>+ ADD CUSTOM TIER</button>}
-      <NavButtons step={4} setStep={setStep} onSave={save} saving={saving} onSkip={() => onDone({ step_4_subscription: true, current_step: 5 })} />
+      {tiers.length < 4 && <button onClick={addTier} style={{ width:'100%', padding:'8px', background:'transparent', border:'1px dashed ' + C.burg, borderRadius:6, color:C.burg, cursor:'pointer', fontFamily:'Barlow Condensed, sans-serif', fontSize:12, letterSpacing:1, marginBottom:8 }}>+ ADD CUSTOM TIER</button>}
+      <NavButtons step={4} setStep={setStep} onSave={save} saving={saving} onSkip={function() { onDone({ step_4_subscription: true, current_step: 5 }); }} />
     </div>
   );
 }
@@ -371,7 +381,7 @@ function Step4({ user, onDone, setStep }) {
 function Step5({ user, onDone, setStep }) {
   var [form, setForm] = useState({ name: '', description: '', category: 'other', welcome_message: '' });
   var [saving, setSaving] = useState(false);
-  var save = async () => {
+  var save = async function() {
     setSaving(true);
     try {
       await base44.entities.Community.create({ name: form.name, description: form.description, category: form.category, owner_id: user.id });
@@ -386,21 +396,23 @@ function Step5({ user, onDone, setStep }) {
     <div style={{ padding: '0 20px 4px' }}>
       <StepHero step={5} />
       <label style={lbl}>Community Name *</label>
-      <input style={inp} value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} placeholder="e.g. GamingWithSwan" />
+      <input style={inp} value={form.name} onChange={function(e) { setForm(function(f) { return Object.assign({}, f, {name: e.target.value}); }); }} placeholder="e.g. GamingWithSwan" />
       <label style={lbl}>Description</label>
-      <textarea style={{...inp, height: 72, resize: 'none'}} value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} placeholder="What is your community about?" />
+      <textarea style={{width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#f0ebe0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 2, height: 72, resize: 'none'}} value={form.description} onChange={function(e) { setForm(function(f) { return Object.assign({}, f, {description: e.target.value}); }); }} placeholder="What is your community about?" />
       <label style={lbl}>Category</label>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
-        {['music','gaming','tech','education','entertainment','sports','lifestyle','other'].map(c => (
-          <button key={c} type="button" onClick={() => setForm(f => ({...f, category: c}))}
-            style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, border: `1px solid ${form.category === c ? C.gold : 'rgba(255,255,255,0.12)'}`, background: form.category === c ? 'rgba(212,175,55,0.12)' : 'transparent', color: form.category === c ? C.gold : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: FONT, transition: 'all 0.15s' }}>
-            {c.charAt(0).toUpperCase() + c.slice(1)}
-          </button>
-        ))}
+        {['music','gaming','tech','education','entertainment','sports','lifestyle','other'].map(function(c) {
+          return (
+            <button key={c} type="button" onClick={function() { setForm(function(f) { return Object.assign({}, f, {category: c}); }); }}
+              style={{ padding: '6px 14px', borderRadius: 99, fontSize: 12, border: '1px solid ' + (form.category === c ? C.gold : 'rgba(255,255,255,0.12)'), background: form.category === c ? 'rgba(212,175,55,0.12)' : 'transparent', color: form.category === c ? C.gold : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: FONT, transition: 'all 0.15s' }}>
+              {c.charAt(0).toUpperCase() + c.slice(1)}
+            </button>
+          );
+        })}
       </div>
       <label style={lbl}>Welcome Message</label>
-      <textarea style={{...inp, height:56, resize:'none'}} value={form.welcome_message} onChange={e => setForm(f => ({...f, welcome_message: e.target.value}))} placeholder="Message shown to new members…" />
-      <NavButtons step={5} setStep={setStep} onSave={save} saving={saving} canNext={!!form.name} onSkip={() => onDone({ step_5_community: true, current_step: 6 })} />
+      <textarea style={{width: '100%', padding: '12px 14px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#f0ebe0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 2, height:56, resize:'none'}} value={form.welcome_message} onChange={function(e) { setForm(function(f) { return Object.assign({}, f, {welcome_message: e.target.value}); }); }} placeholder="Message shown to new members…" />
+      <NavButtons step={5} setStep={setStep} onSave={save} saving={saving} canNext={!!form.name} onSkip={function() { onDone({ step_5_community: true, current_step: 6 }); }} />
     </div>
   );
 }
@@ -412,37 +424,37 @@ function Step6({ user, onDone, setStep }) {
   var [roomId, setRoomId] = useState(null);
   var [done, setDone] = useState(false);
   var [saving, setSaving] = useState(false);
-  useEffect(() => {
+  useEffect(function() {
     if (!started) return;
-    var t = setInterval(() => setCountdown(c => {
+    var t = setInterval(function() { setCountdown(function(c) {
       if (c <= 1) { clearInterval(t); finishStream(); return 0; }
       return c - 1;
-    }), 1000);
-    return () => clearInterval(t);
+    }); }, 1000);
+    return function() { clearInterval(t); };
   }, [started]);
-  var startStream = async () => {
+  var startStream = async function() {
     try {
-      var room = await base44.entities.Room.create({ title: `Test Stream — ${(user && user.full_name) || 'Creator'}`, status: 'live', creator_id: user.id });
+      var room = await base44.entities.Room.create({ title: 'Test Stream — ' + ((user && user.full_name) || 'Creator'), status: 'live', creator_id: user.id });
       setRoomId(room.id);
       setStarted(true);
     } catch {
       toast.error('Failed to start test stream.');
     }
   };
-  var finishStream = async () => {
+  var finishStream = async function() {
     try {
       if (roomId) await base44.entities.Room.update(roomId, { status: 'ended' });
     } catch {}
     setDone(true);
   };
-  var save = async () => { setSaving(true); onDone({ step_6_test_stream: true, test_stream_room_id: roomId, current_step: 7 }); setSaving(false); };
+  var save = async function() { setSaving(true); onDone({ step_6_test_stream: true, test_stream_room_id: roomId, current_step: 7 }); setSaving(false); };
   return (
     <div style={{ padding: '0 20px 4px' }}>
       <StepHero step={6} />
       <div style={{ textAlign: 'center', padding: '24px 0' }}>
         {!started && !done && (
           <button onClick={startStream}
-            style={{ padding: '14px 32px', background: `linear-gradient(90deg, ${C.burg}, ${C.gold})`, border: 'none', borderRadius: 12, color: '#000', fontFamily: FONT, fontSize: 16, fontWeight: 900, letterSpacing: '0.06em', cursor: 'pointer', boxShadow: `0 0 32px ${C.burg}44` }}>
+            style={{ padding: '14px 32px', background: 'linear-gradient(90deg, ' + C.burg + ', ' + C.gold + ')', border: 'none', borderRadius: 12, color: '#000', fontFamily: FONT, fontSize: 16, fontWeight: 900, letterSpacing: '0.06em', cursor: 'pointer', boxShadow: '0 0 32px ' + C.burg + '44' }}>
             🔴 START TEST STREAM
           </button>
         )}
@@ -451,21 +463,21 @@ function Step6({ user, onDone, setStep }) {
             <motion.div
               animate={{ boxShadow: ['0 0 0 0 rgba(128,0,32,0.4)', '0 0 0 20px rgba(128,0,32,0)', '0 0 0 0 rgba(128,0,32,0)'] }}
               transition={{ duration: 1.5, repeat: Infinity }}
-              style={{ width: 100, height: 100, borderRadius: '50%', border: `3px solid ${C.gold}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', background: 'rgba(212,175,55,0.08)' }}>
+              style={{ width: 100, height: 100, borderRadius: '50%', border: '3px solid ' + C.gold, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', background: 'rgba(212,175,55,0.08)' }}>
               <span style={{ fontFamily: FONT, fontSize: 38, fontWeight: 900, color: C.gold }}>{countdown}</span>
             </motion.div>
             <div style={{ fontFamily: FONT, fontSize: 13, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>STREAM LIVE · Auto-ends in {countdown}s</div>
-            <button onClick={finishStream} style={{ marginTop: 16, padding: '8px 20px', background: 'transparent', border: `1px solid ${C.burg}`, borderRadius: 8, color: C.burg, cursor: 'pointer', fontFamily: FONT, fontSize: 12, letterSpacing: '0.06em' }}>End Early</button>
+            <button onClick={finishStream} style={{ marginTop: 16, padding: '8px 20px', background: 'transparent', border: '1px solid ' + C.burg, borderRadius: 8, color: C.burg, cursor: 'pointer', fontFamily: FONT, fontSize: 12, letterSpacing: '0.06em' }}>End Early</button>
           </div>
         )}
         {done && (
         <div>
           <div style={{ fontSize:48, marginBottom:8 }}>✅</div>
-          <div style={{ fontFamily:'Barlow Condensed', fontSize:18, color:C.gold }}>TEST STREAM COMPLETE!</div>
+          <div style={{ fontFamily:'Barlow Condensed, sans-serif', fontSize:18, color:C.gold }}>TEST STREAM COMPLETE!</div>
           <div style={{ fontSize:12, color:C.gray, marginTop:4 }}>Your streaming setup is working perfectly.</div>
         </div>
       )}
-      <NavButtons step={6} setStep={setStep} onSave={save} saving={saving} canNext={done} onSkip={() => onDone({ step_6_test_stream: true, current_step: 7 })} />
+      <NavButtons step={6} setStep={setStep} onSave={save} saving={saving} canNext={done} onSkip={function() { onDone({ step_6_test_stream: true, current_step: 7 }); }} />
       </div>
     </div>
   );
@@ -475,7 +487,7 @@ function Step6({ user, onDone, setStep }) {
 function Step7({ onDone, setStep }) {
   var [saving, setSaving] = useState(false);
   var [complete, setComplete] = useState(false);
-  var finish = async (skipped) => {
+  var finish = async function(skipped) {
     setSaving(true);
     await onDone({ step_7_stripe: true, stripe_connected: !skipped, is_complete: true, completed_at: new Date().toISOString() });
     setComplete(true);
@@ -492,22 +504,24 @@ function Step7({ onDone, setStep }) {
               { label: 'Creator', pct: '90%', color: C.gold },
               { label: 'Platform', pct: '10%', color: 'rgba(255,255,255,0.3)' },
               { label: 'Your First $100', value: '$90', color: C.gold },
-            ].map(r => (
-              <div key={r.label}>
-                <div style={{ fontFamily: FONT, fontSize: 22, fontWeight: 900, color: r.color }}>{r.pct || r.value}</div>
-                <div style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>{r.label}</div>
-              </div>
-            ))}
+            ].map(function(r) {
+              return (
+                <div key={r.label}>
+                  <div style={{ fontFamily: FONT, fontSize: 22, fontWeight: 900, color: r.color }}>{r.pct || r.value}</div>
+                  <div style={{ fontFamily: FONT, fontSize: 10, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>{r.label}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 4 }}>
         <Link to="/CreatorDashboard" style={{ textDecoration: 'none' }}>
-          <button style={{ width: '100%', padding: '14px', background: `linear-gradient(90deg, ${C.burg}, ${C.gold})`, border: 'none', borderRadius: 12, color: '#000', fontFamily: FONT, fontSize: 15, fontWeight: 900, letterSpacing: '0.06em', cursor: 'pointer' }}>
+          <button style={{ width: '100%', padding: '14px', background: 'linear-gradient(90deg, ' + C.burg + ', ' + C.gold + ')', border: 'none', borderRadius: 12, color: '#000', fontFamily: FONT, fontSize: 15, fontWeight: 900, letterSpacing: '0.06em', cursor: 'pointer' }}>
             Connect Stripe →
           </button>
         </Link>
-        <button onClick={() => finish(true)} disabled={saving}
+        <button onClick={function() { finish(true); }} disabled={saving}
           style={{ width: '100%', padding: '12px', background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, color: 'rgba(255,255,255,0.35)', fontFamily: FONT, fontSize: 12, letterSpacing: '0.06em', cursor: 'pointer' }}>
           Skip for now — set up payouts later
         </button>
@@ -519,11 +533,11 @@ function Step7({ onDone, setStep }) {
 // ── Completion screen ─────────────────────────────────────────────────────────
 function CompletionScreen() {
   var nav = useNavigate();
-  useEffect(() => {
-    import('canvas-confetti').then(m => m.default({
+  useEffect(function() {
+    import('canvas-confetti').then(function(m) { return m.default({
       particleCount: 180, spread: 80,
       colors: ['#D4AF37', '#800020', '#D4AF37', '#fff', '#6DBF7E'],
-    }));
+    }); });
   }, []);
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
@@ -535,8 +549,8 @@ function CompletionScreen() {
       <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, marginBottom: 24, fontFamily: FONT }}>
         Your creator profile is live. Time to go broadcast.
       </p>
-      <button onClick={() => nav('/GoLive')}
-        style={{ padding: '14px 32px', background: `linear-gradient(90deg, ${C.burg}, ${C.gold})`, border: 'none', borderRadius: 12, color: '#000', fontFamily: FONT, fontSize: 16, fontWeight: 900, letterSpacing: '0.06em', cursor: 'pointer', marginBottom: 28 }}>
+      <button onClick={function() { nav('/GoLive'); }}
+        style={{ padding: '14px 32px', background: 'linear-gradient(90deg, ' + C.burg + ', ' + C.gold + ')', border: 'none', borderRadius: 12, color: '#000', fontFamily: FONT, fontSize: 16, fontWeight: 900, letterSpacing: '0.06em', cursor: 'pointer', marginBottom: 28 }}>
         🔴 GO LIVE NOW →
       </button>
       <div style={{ borderTop: '1px solid rgba(212,175,55,0.1)', paddingTop: 20 }}>
@@ -549,12 +563,14 @@ function CompletionScreen() {
             { emoji: '⚡', label: 'INS Forge',      href: '/INSForge' },
             { emoji: '🎵', label: 'AI Music',       href: '/AIMusic' },
             { emoji: '🛡️', label: 'Guardian AI',   href: '/GuardianAI' },
-          ].map(f => (
-            <a key={f.href} href={f.href} style={{ textDecoration: 'none', padding: '12px 8px', background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.12)', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-              <span style={{ fontSize: 22 }}>{f.emoji}</span>
-              <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 900, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.04em', textAlign: 'center' }}>{f.label}</span>
-            </a>
-          ))}
+          ].map(function(f) {
+            return (
+              <a key={f.href} href={f.href} style={{ textDecoration: 'none', padding: '12px 8px', background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.12)', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                <span style={{ fontSize: 22 }}>{f.emoji}</span>
+                <span style={{ fontFamily: FONT, fontSize: 10, fontWeight: 900, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.04em', textAlign: 'center' }}>{f.label}</span>
+              </a>
+            );
+          })}
         </div>
       </div>
     </motion.div>
@@ -565,23 +581,23 @@ function CompletionScreen() {
 export default function OnboardingPage() {
   var nav = useNavigate();
   var qc = useQueryClient();
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
   var { data: activeRoom } = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var { data: userCommunity } = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
   var userCommunityId = (userCommunity && userCommunity.id) || null;
   var { data: onboarding } = useQuery({
     queryKey: ['onboarding', (user && user.id)],
-    queryFn: async () => {
+    queryFn: async function() {
       var list = await base44.entities.CreatorOnboarding.filter({ user_id: user.id });
       return list[0] || null;
     },
@@ -590,7 +606,7 @@ export default function OnboardingPage() {
   var [step, setStep] = useState(1);
   var [flowOpen, setFlowOpen] = useState(false);
   var [showSplash, setShowSplash] = useState(true);
-  useEffect(() => {
+  useEffect(function() {
     if (onboarding) {
       setStep(onboarding.current_step || 1);
       setShowSplash(false); // already started setup, skip splash
@@ -598,41 +614,41 @@ export default function OnboardingPage() {
   }, [onboarding]);
 
   var updateOnboarding = useMutation({
-    mutationFn: async (data) => {
+    mutationFn: async function(data) {
       if (!(user && user.id)) throw new Error('Not authenticated');
       if ((onboarding && onboarding.id)) return base44.entities.CreatorOnboarding.update(onboarding.id, data);
-      return base44.entities.CreatorOnboarding.create({ user_id: user.id, ...data });
+      return base44.entities.CreatorOnboarding.create(Object.assign({ user_id: user.id }, data));
     },
-    onError: () => toast.error('Failed to save progress. Please try again.'),
-    onSuccess: (_, data) => {
+    onError: function() { toast.error('Failed to save progress. Please try again.'); },
+    onSuccess: function(_, data) {
       qc.invalidateQueries({ queryKey: ['onboarding', (user && user.id)] });
       if (data.is_complete && (user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
           title: 'Completed creator onboarding',
-        }).catch(() => {});
+        }).catch(function() {});
       }
     },
   });
 
-  var handleDone = async (data) => {
+  var handleDone = async function(data) {
     try {
       await updateOnboarding.mutateAsync(data);
     } catch { return; }
     if (data.current_step) setStep(data.current_step);
   };
 
-  if (!user) return <div style={{background:'#080B18',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',color:'#666',fontFamily:'Barlow Condensed',fontSize:14}}>Loading…</div>;
+  if (!user) return <div style={{background:'#080B18',minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',color:'#666',fontFamily:'Barlow Condensed, sans-serif',fontSize:14}}>Loading…</div>;
 
   return (
     <div style={{ minHeight:'100vh', background:'#080B18', display:'flex', alignItems:'center', justifyContent:'center', padding:16 }}>
       <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
-        style={{ width:'100%', maxWidth:480, background:'rgba(13,6,24,0.97)', borderRadius:12, border:`1px solid rgba(212,175,55,0.15)`, overflow:'hidden' }}>
+        style={{ width:'100%', maxWidth:480, background:'rgba(13,6,24,0.97)', borderRadius:12, border:'1px solid rgba(212,175,55,0.15)', overflow:'hidden' }}>
         {/* Logo bar */}
-        <div style={{ padding:'14px 20px', background:`linear-gradient(90deg, ${C.burg}22, transparent)`, borderBottom:'1px solid rgba(212,175,55,0.1)', display:'flex', alignItems:'center', gap:8 }}>
+        <div style={{ padding:'14px 20px', background:'linear-gradient(90deg, ' + C.burg + '22, transparent)', borderBottom:'1px solid rgba(212,175,55,0.1)', display:'flex', alignItems:'center', gap:8 }}>
           <span style={{ fontSize:18 }}>📡</span>
-          <span style={{ fontFamily:'Barlow Condensed', fontSize:14, color:C.gold, letterSpacing:2 }}>SEEWHY LIVE — CREATOR SETUP</span>
+          <span style={{ fontFamily:'Barlow Condensed, sans-serif', fontSize:14, color:C.gold, letterSpacing:2 }}>SEEWHY LIVE — CREATOR SETUP</span>
         </div>
         <ProgressBar step={step} onboarding={onboarding} />
         <AnimatePresence mode="wait">
@@ -647,7 +663,7 @@ export default function OnboardingPage() {
           </motion.div>
         </AnimatePresence>
       </motion.div>
-      <OnboardingFlow isOpen={flowOpen} onClose={() => setFlowOpen(false)} />
+      <OnboardingFlow isOpen={flowOpen} onClose={function() { setFlowOpen(false); }} />
     </div>
   );
 
