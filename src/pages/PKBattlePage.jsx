@@ -71,7 +71,7 @@ var GIFTS = [
 
 function OctCamTile({ stream, label, isLocal }) {
   var ref = useRef(null);
-  useEffect(() => { if (ref.current) ref.current.srcObject = stream || null; }, [stream]);
+  useEffect(function() { if (ref.current) ref.current.srcObject = stream || null; }, [stream]);
   return (
     <div className="relative shrink-0" style={{ width: 56, height: 56 }}>
       <div className="absolute inset-0" style={{ clipPath: OCT, background: isLocal ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)' }} />

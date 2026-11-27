@@ -179,36 +179,39 @@ function PermissionPill({ label, status }) {
 
   return (
     <span className="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-black uppercase"
-      style={{ background: `${cfg.color}15`, border: `1px solid ${cfg.border}`, color: cfg.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
+      style={{ background: cfg.color + '15', border: '1px solid ' + cfg.border, color: cfg.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
       {cfg.icon} {label}
     </span>
   );
 }
 
-function WaitingRoom({ waitlistEntry, onCancel }) {
+function WaitingRoom(props) {
+  var waitlistEntry = props.waitlistEntry;
+  var onCancel = props.onCancel;
   var [elapsed, setElapsed] = useState(0);
   var qc = useQueryClient();
   var navigate = useNavigate();
 
-  useEffect(() => {
-    var iv = setInterval(() => setElapsed(e => e + 1), 1000);
-    return () => clearInterval(iv);
+  useEffect(function() {
+    var iv = setInterval(function() { setElapsed(function(e) { return e + 1; }); }, 1000);
+    return function() { clearInterval(iv); };
   }, []);
 
   // Poll for admission
-  var { data: entry } = useQuery({
+  var entryQuery = useQuery({
     queryKey: ['greenroom-wl-status', (waitlistEntry && waitlistEntry.id)],
-    queryFn: () => base44.entities.GreenroomWaitlist.filter({ id: waitlistEntry.id }).then(r => r[0]),
+    queryFn: function() { return base44.entities.GreenroomWaitlist.filter({ id: waitlistEntry.id }).then(function(r) { return r[0]; }); },
     enabled: !!(waitlistEntry && waitlistEntry.id),
     refetchInterval: 2000,
   });
+  var entry = entryQuery.data || null;
 
-  useEffect(() => {
+  useEffect(function() {
     if (!entry) return;
     if (entry.status === 'admitted') {
       toast.success('You\'ve been admitted!');
       var roomId = new URLSearchParams(window.location.search).get('room_id');
-      navigate(`/LiveRoom?id=${roomId}`);
+      navigate('/LiveRoom?id=' + roomId);
     }
     if (entry.status === 'denied') {
       toast.error('The host isn\'t admitting new guests right now');
@@ -216,19 +219,19 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
   }, [(entry && entry.status)]);
 
   var cancelMut = useMutation({
-    mutationFn: () => base44.entities.GreenroomWaitlist.update(waitlistEntry.id, { status: 'cancelled' }),
-    onError: () => toast.error('Failed to cancel. Please try again.'),
-    onSuccess: () => onCancel(),
+    mutationFn: function() { return base44.entities.GreenroomWaitlist.update(waitlistEntry.id, { status: 'cancelled' }); },
+    onError: function() { toast.error('Failed to cancel. Please try again.'); },
+    onSuccess: function() { onCancel(); },
   });
 
-  var fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  var fmt = function(s) { return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
   var isDenied = (entry && entry.status) === 'denied';
 
   if (isDenied) {
     return (
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
         className="flex flex-col items-center gap-4 p-8 text-center rounded-2xl"
-        style={{ background: 'rgba(128,0,32,0.12)', border: `1px solid rgba(128,0,32,0.3)` }}>
+        style={{ background: 'rgba(128,0,32,0.12)', border: '1px solid rgba(128,0,32,0.3)' }}>
         <X className="w-12 h-12 text-[#C0392B]" />
         <div>
           <h3 className="font-black text-lg uppercase" style={{ color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>Not Admitted</h3>
@@ -237,7 +240,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
         </div>
         <Link to="/Discover">
           <button className="px-6 py-2 rounded-xl font-black uppercase text-[11px]"
-            style={{ background: `rgba(212,175,55,0.12)`, border: `1px solid rgba(212,175,55,0.3)`, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
             Browse Other Rooms
           </button>
         </Link>
@@ -248,13 +251,13 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
       className="flex flex-col items-center gap-5 p-8 text-center rounded-2xl"
-      style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.2)` }}>
+      style={{ background: '#1A1A1A', border: '1px solid rgba(212,175,55,0.2)' }}>
       {/* Spinning ring */}
       <div className="relative w-20 h-20">
         <motion.div className="absolute inset-0 rounded-full"
-          style={{ border: `2px solid rgba(212,175,55,0.15)` }} />
+          style={{ border: '2px solid rgba(212,175,55,0.15)' }} />
         <motion.div className="absolute inset-0 rounded-full"
-          style={{ border: `2px solid transparent`, borderTopColor: GOLD }}
+          style={{ border: '2px solid transparent', borderTopColor: GOLD }}
           animate={{ rotate: 360 }}
           transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }} />
         <div className="absolute inset-2 rounded-full overflow-hidden">
@@ -299,7 +302,7 @@ function WaitingRoom({ waitlistEntry, onCancel }) {
         </p>
       )}
 
-      <button onClick={() => cancelMut.mutate()}
+      <button onClick={function() { cancelMut.mutate(); }}
         className="px-5 py-2 rounded-xl font-black uppercase text-[10px] transition-all"
         style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
         Cancel &amp; Leave Queue
@@ -332,9 +335,9 @@ export default function GreenroomPage() {
   var [newRoomCategory, setNewRoomCategory] = useState('other');
   var [isSharing, setIsSharing] = useState(false);
   var screenStreamRef = useRef(null);
-  var _applyShareStream = (stream) => { screenStreamRef.current = stream; var vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
-  var handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
-  var handleStopShare = () => { if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); } screenStreamRef.current = null; setIsSharing(false); };
+  var _applyShareStream = function(stream) { screenStreamRef.current = stream; var vt = stream.getVideoTracks()[0]; if (vt) vt.onended = function() { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  var handleStartShare = function(stream) { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(function() {}); };
+  var handleStopShare = function() { if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); } screenStreamRef.current = null; setIsSharing(false); };
   var [showActivitySidebar, setShowActivitySidebar] = useState(false);
   var [activeScene, setActiveScene] = useState('main');
   var [selectedBitrate, setSelectedBitrate] = useState('auto');
@@ -352,34 +355,38 @@ export default function GreenroomPage() {
   var [reactEmoji, setReactEmoji] = useState(null);
 
   var [elapsed, setElapsed] = useState(0);
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  var { data: room } = useQuery({
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
+  var roomQuery = useQuery({
     queryKey: ['greenroom-target', roomId],
-    queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
+    queryFn: function() { return base44.entities.Room.filter({ id: roomId }).then(function(r) { return r[0]; }); },
     enabled: !!roomId && destType !== 'new_room',
   });
-  var { data: participants = [] } = useQuery({
+  var room = roomQuery.data || null;
+  var participantsQuery = useQuery({
     queryKey: ['greenroomParticipants', roomId],
-    queryFn: () => base44.entities.RoomParticipant.filter({ room_id: roomId }),
+    queryFn: function() { return base44.entities.RoomParticipant.filter({ room_id: roomId }); },
     enabled: !!roomId,
     refetchInterval: 10000,
   });
+  var participants = participantsQuery.data || [];
 
-  var { data: activePoll } = useQuery({
+  var activePollQuery = useQuery({
     queryKey: ['active-poll', roomId],
-    queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(function(r) { return r[0] || null; }); },
     enabled: !!roomId,
     refetchInterval: 5000,
   });
+  var activePoll = activePollQuery.data || null;
 
   var subCount = useSubscriptionCount((room && room.host_id) || (user && user.id));
 
-  useEffect(() => {
-    var iv = setInterval(() => setElapsed(s => s + 1), 1000);
-    return () => clearInterval(iv);
+  useEffect(function() {
+    var iv = setInterval(function() { setElapsed(function(s) { return s + 1; }); }, 1000);
+    return function() { clearInterval(iv); };
   }, []);
   var [peakViewers, setPeakViewers] = useState(0);
-  useEffect(() => { setPeakViewers(prev => Math.max(prev, participants.length)); }, [participants.length]);
+  useEffect(function() { setPeakViewers(function(prev) { return Math.max(prev, participants.length); }); }, [participants.length]);
   var [deviceRetryKey, setDeviceRetryKey] = useState(0);
   var [busViewerCount, setBusViewerCount] = useState(0);
   var [tipTotal, setTipTotal] = useState(0);
@@ -387,24 +394,24 @@ export default function GreenroomPage() {
   var [lastChatMsgObj, setLastChatMsgObj] = useState(null);
   useVoiceAgentRuntime({ chatMessage: lastChatMsgObj });
 
-  useEffect(() => {
+  useEffect(function() {
     if ((user && user.full_name)) setDisplayName(user.full_name);
   }, [(user && user.full_name)]);
 
   // Check permissions
-  useEffect(() => {
-    var check = async () => {
+  useEffect(function() {
+    var check = async function() {
       if (!navigator.permissions) return;
-      var cam = await navigator.permissions.query({ name: 'camera' }).catch(() => ({ state: 'prompt' }));
-      var mic = await navigator.permissions.query({ name: 'microphone' }).catch(() => ({ state: 'prompt' }));
-      setPermissions(p => ({ ...p, camera: cam.state, mic: mic.state }));
+      var cam = await navigator.permissions.query({ name: 'camera' }).catch(function() { return { state: 'prompt' }; });
+      var mic = await navigator.permissions.query({ name: 'microphone' }).catch(function() { return { state: 'prompt' }; });
+      setPermissions(function(p) { return Object.assign({}, p, { camera: cam.state, mic: mic.state }); });
     };
     check();
   }, []);
 
-  useEffect(() => {
-    if (deviceState.cameraOn) setPermissions(p => ({ ...p, camera: 'granted' }));
-    if (deviceState.micOn) setPermissions(p => ({ ...p, mic: 'granted' }));
+  useEffect(function() {
+    if (deviceState.cameraOn) setPermissions(function(p) { return Object.assign({}, p, { camera: 'granted' }); });
+    if (deviceState.micOn) setPermissions(function(p) { return Object.assign({}, p, { mic: 'granted' }); });
   }, [deviceState.cameraOn, deviceState.micOn]);
 
   var deviceCheckPassed = (deviceState.cameraOn || deviceState.micOn) || bypassDeviceCheck;
@@ -412,7 +419,7 @@ export default function GreenroomPage() {
   var isHost = (room && room.host_id) === (user && user.id) || destType === 'new_room' || (!roomId && (destType === 'room' || destType === 'panel'));
 
   var readyMut = useMutation({
-    mutationFn: async () => {
+    mutationFn: async function() {
       // Create/upsert GreenroomSession
       var sessionData = {
         user_id: user.id,
@@ -443,11 +450,11 @@ export default function GreenroomPage() {
           category: newRoomCategory,
           is_public: true,
         });
-        return { action: 'navigate', path: `/LiveRoom?id=${newRoom.id}` };
+        return { action: 'navigate', path: '/LiveRoom?id=' + newRoom.id };
       }
 
       if (destType === 'watch_party') {
-        return { action: 'navigate', path: `/WatchParty?id=${roomId}` };
+        return { action: 'navigate', path: '/WatchParty?id=' + roomId };
       }
 
       // room or panel — create waitlist entry
@@ -540,7 +547,7 @@ export default function GreenroomPage() {
             <Layers className="w-4 h-4 shrink-0" style={{ color: GOLD }} />
             <span className="font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.04em' }}>Greenroom</span>
             <span className="text-[11px] px-2 py-0.5 rounded-full font-black uppercase shrink-0"
-              style={{ background: destCfg.bg, color: destCfg.color, border: `1px solid ${destCfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+              style={{ background: destCfg.bg, color: destCfg.color, border: '1px solid ' + destCfg.border, fontFamily: 'Barlow Condensed, sans-serif' }}>
               {destCfg.label}
             </span>
           </div>
@@ -565,25 +572,25 @@ export default function GreenroomPage() {
 
           {/* Room identity card */}
           <div className="rounded-xl p-4"
-            style={{ background: '#1A1A1A', border: `1px solid rgba(212,175,55,0.15)` }}>
+            style={{ background: '#1A1A1A', border: '1px solid rgba(212,175,55,0.15)' }}>
             {destType === 'new_room' ? (
               <div className="space-y-2">
                 <p className="text-[11px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>New Room</p>
-                <input placeholder="Room title..." value={newRoomTitle} onChange={e => setNewRoomTitle(e.target.value)}
+                <input placeholder="Room title..." value={newRoomTitle} onChange={function(e) { setNewRoomTitle(e.target.value); }}
                   style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#fff', outline: 'none', boxSizing: 'border-box' }} />
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                  {['gaming','music','education','talk','fitness','tech','irl','other'].map(c => (
-                    <button key={c} onClick={() => setNewRoomCategory(c)}
-                      style={{ padding: '3px 8px', borderRadius: 99, fontSize: 10, border: `1px solid ${newRoomCategory === c ? '#D4AF37' : 'rgba(255,255,255,0.12)'}`, background: newRoomCategory === c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', color: newRoomCategory === c ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textTransform: 'capitalize' }}>
+                  {['gaming','music','education','talk','fitness','tech','irl','other'].map(function(c) { return (
+                    <button key={c} onClick={function() { setNewRoomCategory(c); }}
+                      style={{ padding: '3px 8px', borderRadius: 99, fontSize: 10, border: '1px solid ' + (newRoomCategory === c ? '#D4AF37' : 'rgba(255,255,255,0.12)'), background: newRoomCategory === c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', color: newRoomCategory === c ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, textTransform: 'capitalize' }}>
                       {c}
                     </button>
-                  ))}
+                  ); })}
                 </div>
               </div>
             ) : room ? (
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0"
-                  style={{ border: `1px solid rgba(212,175,55,0.2)`, background: BURGUNDY }}>
+                  style={{ border: '1px solid rgba(212,175,55,0.2)', background: BURGUNDY }}>
                   {room.thumbnail_url
                     ? <img src={room.thumbnail_url} className="w-full h-full object-cover" alt="" />
                     : <div className="w-full h-full flex items-center justify-center">
@@ -616,7 +623,7 @@ export default function GreenroomPage() {
                 style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 Display Name
               </label>
-              <input value={displayName} onChange={e => setDisplayName(e.target.value)}
+              <input value={displayName} onChange={function(e) { setDisplayName(e.target.value); }}
                 placeholder="Your name..."
                 style={{ width: '100%', height: 32, padding: '0 10px', fontSize: 11, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, color: '#fff', outline: 'none', boxSizing: 'border-box' }} />
             </div>
@@ -640,7 +647,7 @@ export default function GreenroomPage() {
                     Message to Host <span style={{ color: 'rgba(255,255,255,0.2)' }}>(optional)</span>
                   </label>
                   <textarea
-                    value={joinMessage} onChange={e => setJoinMessage(e.target.value.slice(0, 140))}
+                    value={joinMessage} onChange={function(e) { setJoinMessage(e.target.value.slice(0, 140)); }}
                     placeholder="Say hi to the host..." rows={2}
                     className="w-full px-3 py-2 rounded-lg resize-none text-[11px]"
                     style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'white', outline: 'none' }} />
@@ -654,7 +661,7 @@ export default function GreenroomPage() {
           <div className="rounded-xl overflow-hidden"
             style={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.08)' }}>
             <button className="w-full flex items-center justify-between px-4 py-3"
-              onClick={() => setSettingsOpen(s => !s)}>
+              onClick={function() { setSettingsOpen(function(s) { return !s; }); }}>
               <div className="flex items-center gap-2">
                 <Settings className="w-3.5 h-3.5" style={{ color: GOLD }} />
                 <span className="text-[10px] font-black uppercase"
@@ -675,16 +682,16 @@ export default function GreenroomPage() {
                         Video Quality
                       </label>
                       <div className="flex gap-1.5">
-                        {['360p', '480p', '720p', '1080p'].map(q => (
-                          <button key={q} onClick={() => setVideoQuality(q)}
+                        {['360p', '480p', '720p', '1080p'].map(function(q) { return (
+                          <button key={q} onClick={function() { setVideoQuality(q); }}
                             className="flex-1 py-1.5 rounded text-[11px] font-black uppercase transition-all"
                             style={{
-                              background: videoQuality === q ? `rgba(212,175,55,0.15)` : 'rgba(255,255,255,0.04)',
-                              border: videoQuality === q ? `1px solid rgba(212,175,55,0.4)` : '1px solid rgba(255,255,255,0.08)',
+                              background: videoQuality === q ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
+                              border: videoQuality === q ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)',
                               color: videoQuality === q ? GOLD : 'rgba(255,255,255,0.3)',
                               fontFamily: 'Barlow Condensed, sans-serif',
                             }}>{q}</button>
-                        ))}
+                        ); })}
                       </div>
                     </div>
 
@@ -693,10 +700,10 @@ export default function GreenroomPage() {
                       { label: 'Echo Cancellation', state: echoCancel, set: setEchoCancel },
                       { label: 'Noise Cancellation', state: noiseCancel, set: setNoiseCancel },
                       { label: 'Background Blur', state: bgBlur, set: setBgBlur },
-                    ].map(({ label, state, set }) => (
+                    ].map(function(item) { var label = item.label; var state = item.state; var set = item.set; return (
                       <div key={label} className="flex items-center justify-between">
                         <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>{label}</span>
-                        <button onClick={() => set(s => !s)}
+                        <button onClick={function() { set(function(s) { return !s; }); }}
                           className="w-10 h-5 rounded-full relative transition-all"
                           style={{ background: state ? GOLD : 'rgba(255,255,255,0.1)' }}>
                           <motion.div animate={{ x: state ? 20 : 2 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -704,16 +711,16 @@ export default function GreenroomPage() {
                             style={{ background: state ? '#000' : 'rgba(255,255,255,0.4)' }} />
                         </button>
                       </div>
-                    ))}
+                    ); })}
 
                     {bgBlur && (
                       <div>
                         <p className="text-[11px] mb-1.5" style={{ color: 'rgba(255,255,255,0.25)' }}>Background</p>
                         <div className="flex gap-2">
-                          {['#0D0D0D', BURGUNDY, '#0A0A2E'].map(c => (
+                          {['#0D0D0D', BURGUNDY, '#0A0A2E'].map(function(c) { return (
                             <button key={c} className="w-8 h-8 rounded-lg border transition-all"
-                              style={{ background: c, border: `2px solid rgba(212,175,55,0.3)` }} />
-                          ))}
+                              style={{ background: c, border: '2px solid rgba(212,175,55,0.3)' }} />
+                          ); })}
                           <button className="flex-1 h-8 rounded-lg text-[11px] font-bold"
                             style={{ background: 'rgba(255,255,255,0.04)', border: '1px dashed rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.3)' }}>
                             Upload
@@ -763,18 +770,18 @@ export default function GreenroomPage() {
           <div className="space-y-2">
             <motion.button
               whileTap={{ scale: 0.97 }}
-              onClick={() => isHost ? hostReadyMut.mutate() : readyMut.mutate()}
+              onClick={function() { if (isHost) { hostReadyMut.mutate(); } else { readyMut.mutate(); } }}
               disabled={(!deviceCheckPassed) || readyMut.isPending || hostReadyMut.isPending}
               className="w-full py-4 rounded-xl font-black uppercase text-base flex items-center justify-center gap-2 transition-all"
               style={{
                 background: deviceCheckPassed
-                  ? `linear-gradient(135deg, ${BURGUNDY}, #D4AF37)`
+                  ? 'linear-gradient(135deg, ' + BURGUNDY + ', #D4AF37)'
                   : 'rgba(255,255,255,0.06)',
-                border: deviceCheckPassed ? `1px solid rgba(212,175,55,0.5)` : '1px solid rgba(255,255,255,0.1)',
+                border: deviceCheckPassed ? '1px solid rgba(212,175,55,0.5)' : '1px solid rgba(255,255,255,0.1)',
                 color: deviceCheckPassed ? '#000' : 'rgba(255,255,255,0.25)',
                 fontFamily: 'Barlow Condensed, sans-serif',
                 letterSpacing: '0.12em',
-                boxShadow: deviceCheckPassed ? `0 0 40px rgba(128,0,32,0.6), 0 0 80px rgba(128,0,32,0.25)` : 'none',
+                boxShadow: deviceCheckPassed ? '0 0 40px rgba(128,0,32,0.6), 0 0 80px rgba(128,0,32,0.25)' : 'none',
               }}>
               {readyMut.isPending || hostReadyMut.isPending
                 ? 'Preparing…'
@@ -784,7 +791,7 @@ export default function GreenroomPage() {
             </motion.button>
 
             <label className="flex items-center gap-2 cursor-pointer px-1">
-              <input type="checkbox" checked={bypassDeviceCheck} onChange={e => setBypassDeviceCheck(e.target.checked)}
+              <input type="checkbox" checked={bypassDeviceCheck} onChange={function(e) { setBypassDeviceCheck(e.target.checked); }}
                 className="rounded" style={{ accentColor: GOLD }} />
               <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>Join without audio/video</span>
             </label>
@@ -795,7 +802,7 @@ export default function GreenroomPage() {
               <EnhancedAudioMixer roomId={(room && room.id) || null} isHost={isHost} />
               <PanelMusicPlayer roomId={(room && room.id) || null} isHost={isHost} />
               <PrivatePanel roomId={(room && room.id) || null} currentUser={user} isHost={isHost} />
-              {isHost && <GreenroomWaitlistPanel roomId={(room && room.id) || null} currentUser={user} onAdmit={() => {}} />}
+              {isHost && <GreenroomWaitlistPanel roomId={(room && room.id) || null} currentUser={user} onAdmit={function() {}} />}
               <OnlineUsersGrid compact maxVisible={10} />
               <ContentRecommendations />
               <CollaborationMatcher />

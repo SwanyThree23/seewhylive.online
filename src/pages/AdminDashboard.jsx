@@ -86,18 +86,37 @@ var TABS = ['overview', 'users', 'rooms', 'reports', 'revenue', 'security', 'aud
 
 export default function AdminDashboard() {
   var qc = useQueryClient();
-  var [activeTab, setActiveTab] = useState('overview');
-  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, roomId);
+  var activeTabState = useState('overview');
+  var activeTab = activeTabState[0];
+  var setActiveTab = activeTabState[1];
 
-  var [userSearch, setUserSearch] = useState('');
-  var [roomFilter, setRoomFilter] = useState('all');
-  var [bannedIPs, setBannedIPs] = useState([]);
-  var [newBanIP, setNewBanIP] = useState('');
-  var [banReason, setBanReason] = useState('');
-  var [suspensions, setSuspensions] = useState([]);
-  var [suspendUser, setSuspendUser] = useState('');
-  var [suspendDuration, setSuspendDuration] = useState('24h');
-  var [auditLog, setAuditLog] = useState([]);
+  var userSearchState = useState('');
+  var userSearch = userSearchState[0];
+  var setUserSearch = userSearchState[1];
+  var roomFilterState = useState('all');
+  var roomFilter = roomFilterState[0];
+  var setRoomFilter = roomFilterState[1];
+  var bannedIPsState = useState([]);
+  var bannedIPs = bannedIPsState[0];
+  var setBannedIPs = bannedIPsState[1];
+  var newBanIPState = useState('');
+  var newBanIP = newBanIPState[0];
+  var setNewBanIP = newBanIPState[1];
+  var banReasonState = useState('');
+  var banReason = banReasonState[0];
+  var setBanReason = banReasonState[1];
+  var suspensionsState = useState([]);
+  var suspensions = suspensionsState[0];
+  var setSuspensions = suspensionsState[1];
+  var suspendUserState = useState('');
+  var suspendUser = suspendUserState[0];
+  var setSuspendUser = suspendUserState[1];
+  var suspendDurationState = useState('24h');
+  var suspendDuration = suspendDurationState[0];
+  var setSuspendDuration = suspendDurationState[1];
+  var auditLogState = useState([]);
+  var auditLog = auditLogState[0];
+  var setAuditLog = auditLogState[1];
 
   var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
   var roomId = new URLSearchParams(window.location.search).get('room_id');
