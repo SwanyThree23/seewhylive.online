@@ -187,20 +187,20 @@ function fmt(ms) {
   var h = Math.floor(s / 3600);
   var m = Math.floor((s % 3600) / 60);
   var sec = s % 60;
-  return [h, m, sec].map(v => String(v).padStart(2, '0')).join(':');
+  return [h, m, sec].map(function(v) { return String(v).padStart(2, '0'); }).join(':');
 }
 
 function StatusBadge({ status }) {
   var cfg = {
     live:        { label: 'LIVE',        bg: 'rgba(109,191,126,0.12)', color: '#6DBF7E', border: 'rgba(109,191,126,0.3)', pulse: true },
-    connecting:  { label: 'CONNECTING',  bg: `rgba(212,175,55,0.12)`, color: GOLD, border: `rgba(212,175,55,0.3)`, spin: true },
+    connecting:  { label: 'CONNECTING',  bg: 'rgba(212,175,55,0.12)', color: GOLD, border: 'rgba(212,175,55,0.3)', spin: true },
     offline:     { label: 'OFFLINE',     bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)' },
     error:       { label: 'ERROR',       bg: 'rgba(255,50,50,0.12)', color: '#C0392B', border: 'rgba(255,50,50,0.3)', flash: true },
   }[status] || { label: (status && status.toUpperCase)(), bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)', border: 'rgba(255,255,255,0.1)' };
 
   return (
     <span className="flex items-center gap-1 text-[11px] font-black uppercase px-1.5 py-0.5 rounded"
-      style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+      style={{ background: cfg.bg, color: cfg.color, border: '1px solid ' + cfg.border, fontFamily: 'Barlow Condensed, sans-serif' }}>
       {cfg.pulse && <span className="w-1.5 h-1.5 rounded-full bg-[#6DBF7E] animate-pulse inline-block" />}
       {cfg.spin && <RefreshCw className="w-2.5 h-2.5 animate-spin inline-block" />}
       {cfg.flash && <span className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-ping inline-block" />}
@@ -211,7 +211,7 @@ function StatusBadge({ status }) {
 
 function BitrateSparkline({ data, degraded }) {
   if (!(data && data.length)) return <div className="h-8 opacity-20 flex items-center justify-center text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>No data</div>;
-  var chartData = data.map((v, i) => ({ v, i }));
+  var chartData = data.map(function(v, i) { return { v: v, i: i }; });
   return (
     <ResponsiveContainer width="100%" height={28}>
       <LineChart data={chartData}>
@@ -225,7 +225,7 @@ function StatPill({ label, value, color }) {
   var c = color || (value === 'OK' ? '#6DBF7E' : value === 'FAIR' ? '#FFD700' : value === 'BAD' ? '#C0392B' : GOLD);
   return (
     <div className="flex flex-col items-center px-2 py-1 rounded"
-      style={{ background: `${c}12`, border: `1px solid ${c}25` }}>
+      style={{ background: c + '12', border: '1px solid ' + c + '25' }}>
       <span className="text-[11px] font-black" style={{ color: c, fontFamily: 'Barlow Condensed, sans-serif' }}>{value}</span>
       <span className="text-[7px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{label}</span>
     </div>
@@ -249,14 +249,14 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
     <div className="rounded-xl p-4 space-y-3"
       style={{
         background: 'rgba(13,6,24,0.9)',
-        border: dest.status === 'live' ? `1px solid rgba(212,175,55,0.3)` : '1px solid rgba(255,255,255,0.08)',
-        boxShadow: dest.status === 'live' ? `0 0 20px rgba(212,175,55,0.08)` : 'none',
+        border: dest.status === 'live' ? '1px solid rgba(212,175,55,0.3)' : '1px solid rgba(255,255,255,0.08)',
+        boxShadow: dest.status === 'live' ? '0 0 20px rgba(212,175,55,0.08)' : 'none',
       }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-lg font-black"
-            style={{ background: `${pCfg.color}15`, border: `1px solid ${pCfg.color}30`, color: pCfg.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: pCfg.color + '15', border: '1px solid ' + pCfg.color + '30', color: pCfg.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
             {pCfg.icon}
           </div>
           <div>
@@ -272,7 +272,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
             </span>
           )}
           {/* Toggle */}
-          <button onClick={() => onToggle(dest)}
+          <button onClick={function() { onToggle(dest); }}
             className="w-9 h-5 rounded-full relative transition-all"
             style={{ background: dest.is_enabled ? GOLD : 'rgba(255,255,255,0.1)' }}>
             <motion.div animate={{ x: dest.is_enabled ? 16 : 2 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -293,7 +293,7 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
         <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
           <motion.div className="h-full rounded-full"
             style={{ background: bitrateDegraded ? '#C0392B' : GOLD }}
-            animate={{ width: `${Math.min(100, bitrateRatio * 100)}%` }}
+            animate={{ width: Math.min(100, bitrateRatio * 100) + '%' }}
             transition={{ duration: 0.5 }} />
         </div>
         <div className="mt-1.5">
@@ -304,12 +304,12 @@ function RTMPCard({ dest, health, onToggle, onReconnect }) {
       {/* Stats */}
       <div className="flex gap-1.5">
         <StatPill label="FPS" value={fps > 0 ? String(fps) : '--'} color={fps >= 29 ? '#6DBF7E' : fps >= 24 ? '#FFD700' : '#C0392B'} />
-        <StatPill label="LATENCY" value={latency > 0 ? `${latency}ms` : '--'} color={latency < 100 ? '#6DBF7E' : latency < 300 ? '#FFD700' : '#C0392B'} />
-        <StatPill label="DROPPED" value={dropped > 0 ? `${dropped.toFixed(1)}%` : '0%'} color={dropped < 0.5 ? '#6DBF7E' : dropped < 2 ? '#FFD700' : '#C0392B'} />
+        <StatPill label="LATENCY" value={latency > 0 ? latency + 'ms' : '--'} color={latency < 100 ? '#6DBF7E' : latency < 300 ? '#FFD700' : '#C0392B'} />
+        <StatPill label="DROPPED" value={dropped > 0 ? dropped.toFixed(1) + '%' : '0%'} color={dropped < 0.5 ? '#6DBF7E' : dropped < 2 ? '#FFD700' : '#C0392B'} />
       </div>
 
       {/* Force reconnect */}
-      <button onClick={() => onReconnect(dest)}
+      <button onClick={function() { onReconnect(dest); }}
         className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-black uppercase transition-all"
         style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
         <RefreshCw className="w-3 h-3" /> Force Reconnect
@@ -325,7 +325,7 @@ function EndStreamModal({ onConfirm, onCancel }) {
       style={{ background: 'rgba(0,0,0,0.8)' }}>
       <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}
         className="w-full max-w-sm rounded-2xl p-6 space-y-4"
-        style={{ background: 'rgba(13,6,24,0.9)', border: `1px solid rgba(128,0,32,0.4)` }}>
+        style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(128,0,32,0.4)' }}>
         <div className="flex items-center gap-3">
           <StopCircle className="w-8 h-8 text-[#C0392B]" />
           <h3 className="font-black text-lg uppercase" style={{ color: '#ff6680', fontFamily: 'Barlow Condensed, sans-serif' }}>End Stream?</h3>
@@ -334,7 +334,7 @@ function EndStreamModal({ onConfirm, onCancel }) {
         <div className="flex gap-2">
           <button onClick={onConfirm}
             className="flex-1 py-2.5 rounded-xl font-black uppercase text-[11px]"
-            style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+            style={{ background: BURGUNDY, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             End Stream
           </button>
           <button onClick={onCancel}
@@ -357,14 +357,14 @@ export default function ControlRoomPage() {
   var [showEndModal, setShowEndModal] = useState(false);
   var [showActivitySidebar, setShowActivitySidebar] = useState(false);
   var [uptime, setUptime] = useState(0);
-  var prefCamCR = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
-  var prefMicCR = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  var prefCamCR = (function() { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
+  var prefMicCR = (function() { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
   var [activeCamId, setActiveCamId] = useState(prefCamCR);
   var [activeMicId, setActiveMicId] = useState(prefMicCR);
   var { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamCR, audioDeviceId: prefMicCR });
-  var handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
-  var handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var handleCamChange = function(id) { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
+  var handleMicChange = function(id) { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
   var { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
   var { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: (user && user.id) || '', title: '', stream: localStream });
   var [crChatMessages, setCrChatMessages] = useState([]);
@@ -377,7 +377,11 @@ export default function ControlRoomPage() {
   var { quality: netQuality, rtt: netRtt } = useConnectionQuality(null, 5000);
   var subCount = useSubscriptionCount((user && user.id));
   var [remoteSpeakingIds, setRemoteSpeakingIds] = useState({});
-  var speakingIds = isSpeaking && (user && user.id) ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
+  var speakingIds = remoteSpeakingIds;
+  if (isSpeaking && (user && user.id)) {
+    speakingIds = Object.assign({}, remoteSpeakingIds);
+    speakingIds[user.id] = true;
+  }
   var [viewerCount, setViewerCount] = useState(0);
   var [peakViewers, setPeakViewers] = useState(0);
   var [tipTotal, setTipTotal] = useState(0);
@@ -391,96 +395,96 @@ export default function ControlRoomPage() {
   var [showGlobalSearch, setShowGlobalSearch] = useState(false);
   var [showModerationAppeal, setShowModerationAppeal] = useState(false);
   var screenStreamRef = useRef(null);
-  var _applyShareStream = (stream) => { screenStreamRef.current = stream; var vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
-  var handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
-  var handleStopShare = () => { if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); } screenStreamRef.current = null; setIsSharing(false); };
+  var _applyShareStream = function(stream) { screenStreamRef.current = stream; var vt = stream.getVideoTracks()[0]; if (vt) vt.onended = function() { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  var handleStartShare = function(stream) { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(function() {}); };
+  var handleStopShare = function() { if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); } screenStreamRef.current = null; setIsSharing(false); };
   var [lastChatMsg, setLastChatMsg] = useState(null);
   var [activeScene, setActiveScene] = useState('main');
   var [selectedBitrate, setSelectedBitrate] = useState(3000);
-  var handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
+  var handleBitrateChange = function(b) { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
 
   var { data: room } = useQuery({
     queryKey: ['cr-room', roomId],
-    queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
+    queryFn: function() { return base44.entities.Room.filter({ id: roomId }).then(function(r) { return r[0]; }); },
     enabled: !!roomId,
     refetchInterval: 8000,
   });
   var { data: destinations = [] } = useQuery({
     queryKey: ['cr-rtmp', (user && user.id)],
-    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: user.id }),
+    queryFn: function() { return base44.entities.RTMPDestination.filter({ creator_id: user.id }); },
     enabled: !!(user && user.id),
     refetchInterval: 5000,
   });
   var { data: session } = useQuery({
     queryKey: ['cr-session', roomId],
-    queryFn: () => base44.entities.StreamSession.filter({ room_id: roomId }).then(r => r[0]),
+    queryFn: function() { return base44.entities.StreamSession.filter({ room_id: roomId }).then(function(r) { return r[0]; }); },
     enabled: !!roomId,
     refetchInterval: 10000,
   });
   var { data: healthMetrics = [] } = useQuery({
     queryKey: ['cr-health', roomId],
-    queryFn: () => base44.entities.StreamHealthMetric ? base44.entities.StreamHealthMetric.filter({ room_id: roomId }, '-created_date', 20) : Promise.resolve([]),
+    queryFn: function() { return base44.entities.StreamHealthMetric ? base44.entities.StreamHealthMetric.filter({ room_id: roomId }, '-created_date', 20) : Promise.resolve([]); },
     enabled: !!roomId,
     refetchInterval: 5000,
   });
   var { data: participants = [] } = useQuery({
     queryKey: ['cr-participants', roomId],
-    queryFn: () => base44.entities.Participant.filter({ room_id: roomId }),
+    queryFn: function() { return base44.entities.Participant.filter({ room_id: roomId }); },
     enabled: !!roomId,
     refetchInterval: 10000,
   });
 
   var { data: activePoll } = useQuery({
     queryKey: ['active-poll', roomId],
-    queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(function(r) { return r[0] || null; }); },
     enabled: !!roomId,
     refetchInterval: 5000,
   });
 
   // Uptime counter
-  useEffect(() => {
+  useEffect(function() {
     if (!(session && session.started_at)) return;
-    var iv = setInterval(() => {
+    var iv = setInterval(function() {
       setUptime(Date.now() - new Date(session.started_at).getTime());
     }, 1000);
-    return () => clearInterval(iv);
+    return function() { clearInterval(iv); };
   }, [(session && session.started_at)]);
-  useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
+  useEffect(function() { setPeakViewers(function(prev) { return Math.max(prev, viewerCount); }); }, [viewerCount]);
 
   var toggleDest = useMutation({
-    mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { is_enabled: !dest.is_enabled }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['cr-rtmp', (user && user.id)] }),
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(dest) { return base44.entities.RTMPDestination.update(dest.id, { is_enabled: !dest.is_enabled }); },
+    onSuccess: function() { return qc.invalidateQueries({ queryKey: ['cr-rtmp', (user && user.id)] }); },
+    onError: function() { return toast.error('Action failed.'); },
   });
   var reconnectDest = useMutation({
-    mutationFn: (dest) => base44.entities.RTMPDestination.update(dest.id, { status: 'connecting', reconnect_count: (dest.reconnect_count || 0) + 1 }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['cr-rtmp', (user && user.id)] }); toast.success('Reconnecting…'); },
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(dest) { return base44.entities.RTMPDestination.update(dest.id, { status: 'connecting', reconnect_count: (dest.reconnect_count || 0) + 1 }); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['cr-rtmp', (user && user.id)] }); toast.success('Reconnecting…'); },
+    onError: function() { return toast.error('Action failed.'); },
   });
   var goLiveMut = useMutation({
-    mutationFn: async () => {
+    mutationFn: async function() {
       // Update room & session status
       await base44.entities.Room.update(roomId, { status: 'live', started_at: new Date().toISOString() });
       if ((session && session.id)) await base44.entities.StreamSession.update(session.id, { started_at: new Date().toISOString(), status: 'live' });
-      
+
       // Distribute to enabled RTMP destinations
-      var enabledDests = destinations.filter(d => d.is_enabled);
+      var enabledDests = destinations.filter(function(d) { return d.is_enabled; });
       if (enabledDests.length > 0 && (user && user.id)) {
         await base44.functions.invoke('distributeStreamToRTMP', {
           room_id: roomId,
           creator_id: user.id,
-          destinations: enabledDests.map(d => ({ id: d.id, platform: d.platform, label: d.label })),
+          destinations: enabledDests.map(function(d) { return { id: d.id, platform: d.platform, label: d.label }; }),
         });
       }
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { return toast.error('Action failed.'); },
   });
   var endStreamMut = useMutation({
-    mutationFn: async () => {
+    mutationFn: async function() {
       await base44.entities.Room.update(roomId, { status: 'ended', ended_at: new Date().toISOString() });
       if ((session && session.id)) await base44.entities.StreamSession.update(session.id, { ended_at: new Date().toISOString(), status: 'ended' });
     },
-    onSuccess: () => {
+    onSuccess: function() {
       qc.invalidateQueries({ queryKey: ['cr-room', roomId] });
       setShowEndModal(false);
       toast.success('Stream ended.');
@@ -488,19 +492,19 @@ export default function ControlRoomPage() {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'room_ended',
-          title: `Stream ended via Control Room`,
-        }).catch(() => {});
+          title: 'Stream ended via Control Room',
+        }).catch(function() {});
       }
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { return toast.error('Action failed.'); },
   });
 
   var elapsed = Math.floor(uptime / 1000);
   var latestHealth = healthMetrics[0];
-  var liveCount = destinations.filter(d => d.status === 'live').length;
-  var enabledCount = destinations.filter(d => d.is_enabled).length;
-  var hasError = destinations.some(d => d.status === 'error');
-  var hasDegraded = destinations.some(d => d.status !== 'live' && d.is_enabled);
+  var liveCount = destinations.filter(function(d) { return d.status === 'live'; }).length;
+  var enabledCount = destinations.filter(function(d) { return d.is_enabled; }).length;
+  var hasError = destinations.some(function(d) { return d.status === 'error'; });
+  var hasDegraded = destinations.some(function(d) { return d.status !== 'live' && d.is_enabled; });
   var overallHealth = hasError ? 'CRITICAL' : hasDegraded ? 'DEGRADED' : 'ALL HEALTHY';
   var healthColor = overallHealth === 'ALL HEALTHY' ? '#6DBF7E' : overallHealth === 'DEGRADED' ? GOLD : '#C0392B';
   var streamKey = (session && session.stream_key) || 'sk-live-XXXXXXXXXXXX';
@@ -509,12 +513,12 @@ export default function ControlRoomPage() {
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
       <AnimatePresence>
-        {showEndModal && <EndStreamModal onConfirm={() => endStreamMut.mutate()} onCancel={() => setShowEndModal(false)} />}
+        {showEndModal && <EndStreamModal onConfirm={function() { endStreamMut.mutate(); }} onCancel={function() { setShowEndModal(false); }} />}
       </AnimatePresence>
 
       {/* Header */}
       <div className="px-4 md:px-8 py-4 flex items-center justify-between"
-        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: `1px solid rgba(212,175,55,0.12)` }}>
+        style={{ background: 'rgba(13,6,24,0.9)', borderBottom: '1px solid rgba(212,175,55,0.12)' }}>
         <div className="flex items-center gap-2.5">
           <Monitor className="w-5 h-5" style={{ color: GOLD }} />
           <span className="font-black uppercase tracking-widest text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
@@ -524,16 +528,16 @@ export default function ControlRoomPage() {
         </div>
         <div className="flex items-center gap-2">
           {!isLive ? (
-            <ZEGOGoLiveFlow roomId={roomId} userId={(user && user.id)} onLive={() => goLiveMut.mutate()}>
+            <ZEGOGoLiveFlow roomId={roomId} userId={(user && user.id)} onLive={function() { goLiveMut.mutate(); }}>
               <motion.button whileTap={{ scale: 0.96 }}
                 disabled={goLiveMut.isPending}
                 className="flex items-center gap-2 px-5 py-2 rounded-xl font-black uppercase text-[12px]"
-                style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.4)`, boxShadow: `0 0 20px rgba(128,0,32,0.4)`, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                style={{ background: BURGUNDY, color: GOLD, border: '1px solid rgba(212,175,55,0.4)', boxShadow: '0 0 20px rgba(128,0,32,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 <Radio className="w-4 h-4" /> GO LIVE
               </motion.button>
             </ZEGOGoLiveFlow>
           ) : (
-            <button onClick={() => setShowEndModal(true)}
+            <button onClick={function() { setShowEndModal(true); }}
               className="flex items-center gap-2 px-5 py-2 rounded-xl font-black uppercase text-[12px]"
               style={{ background: 'rgba(255,50,50,0.15)', color: '#C0392B', border: '1px solid rgba(255,50,50,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <StopCircle className="w-4 h-4" /> END STREAM
@@ -560,7 +564,7 @@ export default function ControlRoomPage() {
           <div className="flex items-center gap-1.5">
             <Cpu className="w-3 h-3" style={{ color: GOLD }} />
             <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
-              <div className="h-full rounded-full" style={{ width: `${latestHealth.cpu_usage_pct}%`, background: latestHealth.cpu_usage_pct > 85 ? '#C0392B' : GOLD }} />
+              <div className="h-full rounded-full" style={{ width: latestHealth.cpu_usage_pct + '%', background: latestHealth.cpu_usage_pct > 85 ? '#C0392B' : GOLD }} />
             </div>
             <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.3)' }}>{latestHealth.cpu_usage_pct}%</span>
           </div>
@@ -572,10 +576,10 @@ export default function ControlRoomPage() {
             <span className="text-[11px] font-mono" style={{ color: 'rgba(255,255,255,0.4)' }}>
               {showStreamKey ? session.stream_key : '●'.repeat(Math.min(session.stream_key.length, 16))}
             </span>
-            <button onClick={() => setShowStreamKey(s => !s)}>
+            <button onClick={function() { setShowStreamKey(function(s) { return !s; }); }}>
               {showStreamKey ? <EyeOff className="w-3 h-3 text-white/40" /> : <Eye className="w-3 h-3 text-white/40" />}
             </button>
-            <button onClick={() => { navigator.clipboard.writeText(session.stream_key).then(() => toast.success('Stream key copied!')).catch(() => toast.error('Copy failed.')); }}>
+            <button onClick={function() { navigator.clipboard.writeText(session.stream_key).then(function() { toast.success('Stream key copied!'); }).catch(function() { toast.error('Copy failed.'); }); }}>
               <Copy className="w-3 h-3 text-white/40" />
             </button>
           </div>
@@ -596,14 +600,16 @@ export default function ControlRoomPage() {
           { label: '🎚️ Studio DSP',  page: 'StudioDSP',            color: 'rgba(201,168,76,0.12)' },
           { label: '🎬 Micro Drama', page: 'EpisodeSeries',         color: 'rgba(123,45,139,0.12)' },
           { label: '🎥 Creator Studio', page: 'EpisodeCreatorStudio', color: 'rgba(123,45,139,0.08)' },
-        ].map(t => (
-          <Link key={t.page} to={createPageUrl(t.page)} style={{ textDecoration: 'none' }}>
-            <button className="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg"
-              style={{ background: t.color, border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
-              {t.label}
-            </button>
-          </Link>
-        ))}
+        ].map(function(t) {
+          return (
+            <Link key={t.page} to={createPageUrl(t.page)} style={{ textDecoration: 'none' }}>
+              <button className="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg"
+                style={{ background: t.color, border: '1px solid rgba(212,175,55,0.2)', color: GOLD, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.05em' }}>
+                {t.label}
+              </button>
+            </Link>
+          );
+        })}
       </div>
 
       {/* ZEGOCLOUD Health Card */}
@@ -621,7 +627,7 @@ export default function ControlRoomPage() {
             userId={(user && user.id)}
             userName={(user && user.full_name) || (user && user.email) || ''}
             isHost={true}
-            onStreamHealth={() => {}}
+            onStreamHealth={function() {}}
             onSpeakingChange={setRemoteSpeakingIds}
           />
         </div>
@@ -636,7 +642,7 @@ export default function ControlRoomPage() {
 
       {/* Advanced Encoder Settings */}
       <div className="px-4 md:px-8 pt-4">
-        <AdvancedEncoderSettings onApply={(p) => { if ((p && p.resolution)) reacquireMedia({ resolution: p.resolution }); }} />
+        <AdvancedEncoderSettings onApply={function(p) { if ((p && p.resolution)) reacquireMedia({ resolution: p.resolution }); }} />
       </div>
 
       {/* Destinations Manager */}
@@ -648,15 +654,17 @@ export default function ControlRoomPage() {
       {destinations.length > 0 && (
         <div className="px-4 md:px-8 pb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {destinations.map(dest => (
-              <RTMPCard
-                key={dest.id}
-                dest={dest}
-                health={healthMetrics.find(h => h.destination_id === dest.id) || latestHealth}
-                onToggle={(d) => toggleDest.mutate(d)}
-                onReconnect={(d) => reconnectDest.mutate(d)}
-              />
-            ))}
+            {destinations.map(function(dest) {
+              return (
+                <RTMPCard
+                  key={dest.id}
+                  dest={dest}
+                  health={healthMetrics.find(function(h) { return h.destination_id === dest.id; }) || latestHealth}
+                  onToggle={function(d) { toggleDest.mutate(d); }}
+                  onReconnect={function(d) { reconnectDest.mutate(d); }}
+                />
+              );
+            })}
           </div>
         </div>
       )}
@@ -694,10 +702,10 @@ export default function ControlRoomPage() {
       {user && <ZEGOConfigPanel user={user} />}
       {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={(user && user.id)} />}
       {roomId && <LiveTranscription isLive={true} roomId={roomId} />}
-      {showViewerControls && roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
+      {showViewerControls && roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={function() { setShowViewerControls(false); }} />}
       {roomId && (user && user.id) && <VirtualCurrencyTips roomId={roomId} creatorId={(user && user.id)} currentUser={user} isHost={true} />}
       {roomId && <GoldenWall roomId={roomId} />}
-      {roomId && <SwanDirectorHUD roomId={roomId} hostId={(user && user.id)} onOpenPanel={() => setShowSwanPanel(true)} />}
+      {roomId && <SwanDirectorHUD roomId={roomId} hostId={(user && user.id)} onOpenPanel={function() { setShowSwanPanel(true); }} />}
       {roomId && <StreamerGoalsWidget creatorId={(user && user.id)} roomId={roomId} isCreator={true} embedded={true} />}
       {roomId && <PayPerViewManager roomId={roomId} />}
       {roomId && <MonetizationDashboard roomId={roomId} />}
@@ -724,9 +732,9 @@ export default function ControlRoomPage() {
       {roomId && <RedemptionQueue creatorId={(user && user.id)} roomId={roomId} />}
       {roomId && <RewardShop creatorId={(user && user.id)} roomId={roomId} currentUser={user} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={true} />}
-      {<StreamingPresets onApply={(p) => reacquireMedia({ resolution: p.resolution })} />}
+      {<StreamingPresets onApply={function(p) { reacquireMedia({ resolution: p.resolution }); }} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={(user && user.full_name) || ''} streamTitle={(room && room.title) || 'Control Room'} viewerCount={viewerCount} />}
-      <LiveTranslationWidget chatMessage={lastChatMsg} onTranslation={() => {}} />
+      <LiveTranslationWidget chatMessage={lastChatMsg} onTranslation={function() {}} />
       {(user && user.id) && <RecordingManager userId={user.id} />}
       {<OBSBridge />}
       <ZEGOMobileAppBanner />
@@ -743,8 +751,8 @@ export default function ControlRoomPage() {
       {roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
       {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
       <StreamHealthDashboard isLive={roomId != null} />
-      {<LowerThirdsBanner onBannerChange={(b) => { if (roomId) base44.entities.Room.update(roomId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
-      {<SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(null); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
+      {<LowerThirdsBanner onBannerChange={function(b) { if (roomId) base44.entities.Room.update(roomId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(function() {}); }} />}
+      {<SceneSwitcher activeScene={activeScene} onSceneChange={function(s) { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(null); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
       {roomId && <RaidPanelButton room={room} currentUser={user} isHost={true} triggerOpen={raidTick} />}
@@ -757,53 +765,53 @@ export default function ControlRoomPage() {
       {roomId && <AICopilotSidebar roomId={roomId} isHost={true} viewerCount={viewerCount} />}
       {roomId && <EnhancedPollingSystem roomId={roomId} hostId={(user && user.id)} isHost={true} />}
       {roomId && (user && user.id) && <SuperChatBar roomId={roomId} currentUser={user} recipientId={(user && user.id)} recipientName={''} />}
-      {(user && user.id) && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
+      {(user && user.id) && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={function() {}} />}
       {<LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={(user && user.full_name) || ''} isHost={true} isSpeaking={isSpeaking} />}
       {<OctagonalVideoWindow title={'My Camera'} isMuted={!audioEnabled} isVideoOff={!videoEnabled} onMicToggle={toggleAudio} onVideoToggle={toggleVideo} />}
       {<CameraDeviceSelector compact currentVideoId={activeCamId} currentAudioId={activeMicId} onVideoChange={handleCamChange} onAudioChange={handleMicChange} />}
       {<AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={participants} />}
-      {<EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
+      {<EvmuxWebSource isActive={showEvmux} onClose={function() { setShowEvmux(false); }} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={true} position={'bottom-left'} />}
       {<StripeConnectButton creatorId={(user && user.id)} />}
       {<SubscriptionTiers communityId={null} userId={(user && user.id)} />}
       {room && <WatchPartyAnalytics party={room} members={participants} pollCount={0} reactionCount={0} />}
-      {roomId && (user && user.id) && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={(user && user.full_name) || ''} onJoined={() => toast.success('Joined stream successfully!')} />}
-      {roomId && <PaymentMethodSelector creatorId={(user && user.id)} roomId={roomId} onPaymentComplete={() => toast.success('Payment complete!')} />}
+      {roomId && (user && user.id) && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={(user && user.full_name) || ''} onJoined={function() { toast.success('Joined stream successfully!'); }} />}
+      {roomId && <PaymentMethodSelector creatorId={(user && user.id)} roomId={roomId} onPaymentComplete={function() { toast.success('Payment complete!'); }} />}
       {<CreatorTierManager creatorId={(user && user.id)} />}
       {(user && user.id) && <TierBadge tier={null} size={'sm'} showName={false} />}
       {(user && user.id) && <LoyaltyBadge userId={user.id} creatorId={(user && user.id)} />}
-      {roomId && <GuestGrid participants={participants} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={(user && user.id)} speakingIds={speakingIds} />}
-      {roomId && <EnhancedRoomControls isHost={true} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
-      <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={(url) => { if (roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(() => {}); }} />
+      {roomId && <GuestGrid participants={participants} isHost={true} onInvite={function() { navigator.clipboard.writeText(window.location.href).then(function() { toast.success('Invite link copied!'); }).catch(function() {}); }} hostId={(user && user.id)} speakingIds={speakingIds} />}
+      {roomId && <EnhancedRoomControls isHost={true} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={function(s) { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
+      <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={function(url) { if (roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(function() {}); }} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
-      {showGlobalSearch && <GlobalSearch onClose={() => setShowGlobalSearch(false)} />}
-      {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => toast.success('Content unlocked!')} />}
-      <PaywallGate isHost={true} streamTitle={(room && room.title) || ''} onUnlock={() => {}} isUnlocked={true} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={function() { setShowActivitySidebar(false); }} />
+      {showGlobalSearch && <GlobalSearch onClose={function() { setShowGlobalSearch(false); }} />}
+      {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={function() { toast.success('Content unlocked!'); }} />}
+      <PaywallGate isHost={true} streamTitle={(room && room.title) || ''} onUnlock={function() {}} isUnlocked={true} />
       {roomId && <SubscriptionGate creatorId={(user && user.id)} roomId={roomId} />}
-      {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => setShowModerationAppeal(false)} />}
+      {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={function() { setShowModerationAppeal(false); }} />}
       {(user && user.id) && <GuestDestinationsPanel participantUserId={user.id} guestName={(user && user.full_name) || ''} />}
-      {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => toast.success('Permissions updated')} />}
+      {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={function() { toast.success('Permissions updated'); }} />}
       {roomId && <MultiStreamConfig roomId={roomId} isHost={true} />}
       {roomId && <RTMPFanoutPanelV49 roomId={roomId} isHost={true} />}
       {roomId && <WebSourceOverlayV49 roomId={roomId} isHost={true} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
       <WebRTCSetupBanner error={mediaError || null} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
-      {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={(user && user.id)} onClose={() => setShowSwanPanel(false)} />}
+      {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={(user && user.id)} onClose={function() { setShowSwanPanel(false); }} />}
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       {roomId && <WebhookHooks roomId={roomId} isHost={true} />}
       {<PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
       {roomId && <PollLaunchBar roomId={roomId} hostId={(user && user.id)} activePoll={activePoll} isHost={true} />}
-      {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => { if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} />}
+      {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={function() { if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(function() {}); }} />}
       <PrivatePanel isHost={true} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={true} elapsedSeconds={elapsed} hostName={(user && user.full_name) || ''} room={room} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={true} sessionId={roomId} onViewerUpdate={setViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor((msg && msg.tip_amount) || 0))} onMessageReceived={msg => setLastChatMsg((msg && msg.content) || null)} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={true} sessionId={roomId} onViewerUpdate={setViewerCount} onTipReceived={function(msg) { setTipTotal(function(t) { return t + Math.floor((msg && msg.tip_amount) || 0); }); }} onMessageReceived={function(msg) { setLastChatMsg((msg && msg.content) || null); }} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={(user && user.id)} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={true} />}
-      {roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => toast.success('AI persona configured!')} />}
+      {roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={function() { toast.success('AI persona configured!'); }} />}
       {<AudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} />}
-      {<EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
+      {<EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={function(s) { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       {<ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}
@@ -812,7 +820,7 @@ export default function ControlRoomPage() {
       {roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={true} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onPoll={() => setPollTick(t => t + 1)} onRaid={() => setRaidTick(t => t + 1)} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={function(emoji) { setReactEmoji({ emoji: emoji, ts: Date.now() }); }} onQuickTip={function() {}} onWebSource={function() { setShowEvmux(true); }} onPoll={function() { setPollTick(function(t) { return t + 1; }); }} onRaid={function() { setRaidTick(function(t) { return t + 1; }); }} roomId={roomId} />}
       {(user && user.id) && <PointsNotification userId={user.id} />}
       {roomId && (user && user.id) && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={(user && user.id)} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
@@ -831,7 +839,7 @@ export default function ControlRoomPage() {
       {roomId && (user && user.id) && <ClipCreator roomId={roomId} creatorId={user.id} streamTitle={(room && room.title) || ''} elapsedSeconds={elapsed} currentUser={user} />}
       {roomId && (user && user.id) && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
       {roomId && <QuickPollLauncher roomId={roomId} hostId={(user && user.id)} isHost={true} triggerOpen={pollTick} />}
-      {room && <RoomBrandingEditor roomData={room} onBrandingChange={(b) => { if ((room && room.id)) base44.entities.Room.update(room.id, b).catch(() => {}); }} isHost={true} />}
+      {room && <RoomBrandingEditor roomData={room} onBrandingChange={function(b) { if ((room && room.id)) base44.entities.Room.update(room.id, b).catch(function() {}); }} isHost={true} />}
       {/* Creator Studios */}
       <div style={{ margin: '0 0 16px', padding: 16, borderRadius: 16, border: '1px solid rgba(123,45,139,0.22)', background: 'rgba(13,6,24,0.5)' }}>
         <p style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(176,102,204,0.7)', marginBottom: 12 }}>Creator Studios</p>
@@ -862,7 +870,7 @@ export default function ControlRoomPage() {
       <WebSourceOverlay isStreamActive={isLive} />
       {roomId && <GuestInviteGeneratorV49 roomId={roomId} isHost={true} />}
       {roomId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={roomId} tipTotal={tipTotal} />}
-      <PreJoinSettingsModal open={showCRCamSettings} onClose={() => setShowCRCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
+      <PreJoinSettingsModal open={showCRCamSettings} onClose={function() { setShowCRCamSettings(false); }} stream={localStream} devices={{ cameras: [] }} onCameraChange={handleCamChange} onResolutionChange={function(res) { reacquireMedia({ resolution: res }); }} />
       <LiveCaptionOverlay stream={localStream} />
       {roomId && user && <RoomReactionOverlay roomId={roomId} currentUser={user} triggerReact={reactEmoji} />}
     </div>
