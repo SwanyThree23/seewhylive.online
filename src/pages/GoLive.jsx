@@ -452,11 +452,11 @@ function RtmpKeyRow({ streamKey }) {
   var [plainDisplay, setPlainDisplay] = useState('');      // transient — cleared on hide
 
   // Encrypt on mount so plain key never sits in state long-term
-  useEffect(() => {
+  useEffect(function() {
     if (!streamKey) return;
     encryptStreamKey(streamKey)
-      .then(p => setVaultPayload(p))
-      .catch(() => setVaultPayload(null));
+      .then(function(p) { setVaultPayload(p); })
+      .catch(function() { setVaultPayload(null); });
   }, [streamKey]);
 
   async function toggleReveal() {
@@ -477,14 +477,14 @@ function RtmpKeyRow({ streamKey }) {
   }
 
   async function copy() {
-    var plain = vaultPayload ? await decryptStreamKey(vaultPayload).catch(() => streamKey) : streamKey;
+    var plain = vaultPayload ? await decryptStreamKey(vaultPayload).catch(function() { return streamKey; }) : streamKey;
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(plain);
       }
     } catch {}
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(function() { setCopied(false); }, 2000);
     toast.success('Stream key copied');
   }
 
@@ -539,7 +539,7 @@ function RtmpKeyRow({ streamKey }) {
 
 function Countdown({ onDone }) {
   var [count, setCount] = useState(3);
-  useEffect(() => {
+  useEffect(function() {
     if (count <= 0) { onDone(); return; }
     var t = setTimeout(function() { setCount(function(c) { return c - 1; }); }, 1000);
     return function() { clearTimeout(t); };
@@ -616,8 +616,8 @@ export default function GoLive() {
   var cameraRetryRef = useRef(null);
   // cameras + handleVideoChange hoisted so PreJoinSettingsModal can access them
   var { cameras } = useCameraDevices();
-  var handleVideoChange = useCallback((id) => {
-    try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {}
+  var handleVideoChange = useCallback(function(id) {
+    try { if (id) localStorage.setItem('swl_pref_cam', id); } catch (e) {}
     if (cameraRetryRef.current) cameraRetryRef.current({ videoId: id });
   }, []);
   var { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
@@ -1250,7 +1250,7 @@ export default function GoLive() {
       {partyId && <ZEGOGuestApprovalPanel roomId={partyId} isHost={true} />}
       {user && <ZEGOConfigPanel user={user} />}
       {partyId && <LiveTranscription isLive={!!partyId} roomId={partyId} stream={localStream} speaker={(user && user.full_name)} />}
-      {partyId && <SwanDirectorHUD roomId={partyId} hostId={(user && user.id)} onOpenPanel={() => setShowSwanPanel(true)} />}
+      {partyId && <SwanDirectorHUD roomId={partyId} hostId={(user && user.id)} onOpenPanel={function() { setShowSwanPanel(true); }} />}
       <BackgroundCustomizer />
       {partyId && <StreamerGoalsWidget creatorId={(user && user.id)} roomId={partyId} isCreator={true} embedded={true} />}
       {partyId && <PayPerViewManager roomId={partyId} />}
@@ -1269,9 +1269,9 @@ export default function GoLive() {
       {partyId && <RedemptionQueue creatorId={(user && user.id)} roomId={partyId} />}
       {partyId && <RewardShop creatorId={(user && user.id)} roomId={partyId} currentUser={user} />}
       {partyId && <GreenroomQueue roomId={partyId} isHost={true} />}
-      {<StreamingPresets onApply={(p) => { try { localStorage.setItem('swl_pref_resolution', p.resolution); localStorage.setItem('swl_pref_bitrate', String(p.bitrate)); } catch {} }} />}
+      {<StreamingPresets onApply={function(p) { try { localStorage.setItem('swl_pref_resolution', p.resolution); localStorage.setItem('swl_pref_bitrate', String(p.bitrate)); } catch (e) {} }} />}
       {partyId && <EmbedPlayer roomId={partyId} creatorName={(user && user.full_name) || ''} streamTitle={'Live Stream'} viewerCount={viewerCount} />}
-      <LiveTranslationWidget chatMessage={(chatMessages[chatMessages.length - 1] && chatMessages[chatMessages.length - 1].content) || null} onTranslation={() => {}} />
+      <LiveTranslationWidget chatMessage={(chatMessages[chatMessages.length - 1] && chatMessages[chatMessages.length - 1].content) || null} onTranslation={function() {}} />
       {(user && user.id) && <RecordingManager userId={user.id} />}
       {<OBSBridge />}
       <ZEGOMobileAppBanner />
@@ -1287,8 +1287,8 @@ export default function GoLive() {
       {partyId && <AutomatedHighlightReels streamSession={{room_id: partyId}} />}
       {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
       <StreamHealthDashboard isLive={partyId != null} />
-      {<LowerThirdsBanner onBannerChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
-      {<SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
+      {<LowerThirdsBanner onBannerChange={function(b) { if (partyId) base44.entities.WatchParty.update(partyId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(function() {}); }} />}
+      {<SceneSwitcher activeScene={activeScene} onSceneChange={function(s) { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {<SoundboardWidget isVisible={true} />}
       {partyId && <RaidPanelButton room={null} currentUser={user} isHost={true} triggerOpen={raidTick} />}
@@ -1298,44 +1298,44 @@ export default function GoLive() {
       {<ChatModeration collapsed={true} />}
       <BrandChyron />
       {partyId && <RealtimeLeaderboard roomId={partyId} creatorId={(user && user.id)} />}
-      {showViewerControls && partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
+      {showViewerControls && partyId && <ViewerControlsPanel roomId={partyId} currentUser={user} onClose={function() { setShowViewerControls(false); }} />}
       {partyId && (user && user.id) && <VirtualCurrencyTips roomId={partyId} creatorId={(user && user.id)} currentUser={user} isHost={true} />}
       {partyId && <GoldenWall roomId={partyId} />}
       {partyId && (user && user.id) && <ClipCreator roomId={partyId} creatorId={user.id} streamTitle={''} elapsedSeconds={elapsed} currentUser={user} />}
       {partyId && (user && user.id) && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={true} />}
       {partyId && <QuickPollLauncher roomId={partyId} hostId={(user && user.id)} isHost={true} triggerOpen={pollTick} />}
-      <RoomBrandingEditor roomData={party || null} onBrandingChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, b).catch(() => {}); }} isHost={true} />
+      <RoomBrandingEditor roomData={party || null} onBrandingChange={function(b) { if (partyId) base44.entities.WatchParty.update(partyId, b).catch(function() {}); }} isHost={true} />
       <HostAlertCenter />
       {partyId && <AICopilotSidebar roomId={partyId} isHost={true} viewerCount={viewerCount} />}
       {partyId && <EnhancedPollingSystem roomId={partyId} hostId={(user && user.id)} isHost={true} />}
       {partyId && (user && user.id) && <SuperChatBar roomId={partyId} currentUser={user} recipientId={(user && user.id)} recipientName={''} />}
-      {(user && user.id) && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
+      {(user && user.id) && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={function() {}} />}
       {<LocalVideoTile stream={localStream} audioEnabled={micOn} videoEnabled={videoOn} userName={(user && user.full_name) || ''} isHost={true} isSpeaking={isSpeaking} />}
-      {<OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={!videoOn} onMicToggle={() => setMicOn(v => !v)} onVideoToggle={() => setVideoOn(v => !v)} />}
+      {<OctagonalVideoWindow title={'My Camera'} isMuted={!micOn} isVideoOff={!videoOn} onMicToggle={function() { setMicOn(function(v) { return !v; }); }} onVideoToggle={function() { setVideoOn(function(v) { return !v; }); }} />}
       {partyId && <PipCameraTile localStream={localStream} videoEnabled={videoOn} roomId={partyId} tipTotal={tipTotal} />}
-      <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras }} onCameraChange={handleVideoChange} onResolutionChange={() => {}} />
+      <PreJoinSettingsModal open={showCamSettings} onClose={function() { setShowCamSettings(false); }} stream={localStream} devices={{ cameras }} onCameraChange={handleVideoChange} onResolutionChange={function() {}} />
       <LiveCaptionOverlay stream={localStream} />
-      {<AudioPanel micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} participants={members} />}
-      {<EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
+      {<AudioPanel micMuted={!micOn} onMicToggle={function() { setMicOn(function(v) { return !v; }); }} participants={members} />}
+      {<EvmuxWebSource isActive={showEvmux} onClose={function() { setShowEvmux(false); }} />}
       {partyId && <LivePollOverlay roomId={partyId} currentUser={user} isHost={true} position={'bottom-left'} />}
       {<StripeConnectButton creatorId={(user && user.id)} />}
       {<SubscriptionTiers communityId={null} userId={(user && user.id)} />}
-      {partyId && (user && user.id) && <ZEGOGuestJoin roomId={partyId} userId={user.id} userName={(user && user.full_name) || ''} onJoined={() => toast.success('Joined stream successfully!')} />}
-      {partyId && <PaymentMethodSelector creatorId={(user && user.id)} roomId={partyId} onPaymentComplete={() => toast.success('Payment complete!')} />}
+      {partyId && (user && user.id) && <ZEGOGuestJoin roomId={partyId} userId={user.id} userName={(user && user.full_name) || ''} onJoined={function() { toast.success('Joined stream successfully!'); }} />}
+      {partyId && <PaymentMethodSelector creatorId={(user && user.id)} roomId={partyId} onPaymentComplete={function() { toast.success('Payment complete!'); }} />}
       {<CreatorTierManager creatorId={(user && user.id)} />}
       {(user && user.id) && <TierBadge tier={null} size={'sm'} showName={false} />}
       {(user && user.id) && <LoyaltyBadge userId={user.id} creatorId={(user && user.id)} />}
       {partyId && <GuestInviteGenerator roomId={partyId} isHost={true} />}
-      {partyId && <GuestGrid participants={members} isHost={true} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={(user && user.id)} speakingIds={speakingIds} />}
-      {partyId && <EnhancedRoomControls isHost={true} roomData={party || null} micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
-      <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={(url) => { if (partyId) base44.entities.WatchParty.update(partyId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
+      {partyId && <GuestGrid participants={members} isHost={true} onInvite={function() { navigator.clipboard.writeText(window.location.href).then(function() { toast.success('Invite link copied!'); }).catch(function() {}); }} hostId={(user && user.id)} speakingIds={speakingIds} />}
+      {partyId && <EnhancedRoomControls isHost={true} roomData={party || null} micMuted={!micOn} onMicToggle={function() { setMicOn(function(v) { return !v; }); }} onAudioSettingsChange={function(s) { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
+      <CollabPlaylist isHost={true} currentUser={user} onPlayVideo={function(url) { if (partyId) base44.entities.WatchParty.update(partyId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(function() {}); }} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
-      {showGlobalSearch && <GlobalSearch onClose={() => setShowGlobalSearch(false)} />}
-      {partyId && <PayPerViewGate roomId={partyId} ppvPrice={4.99} onPurchase={() => toast.success('Content unlocked!')} />}
-      <PaywallGate isHost={true} streamTitle={''} onUnlock={() => {}} isUnlocked={true} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={function() { setShowActivitySidebar(false); }} />
+      {showGlobalSearch && <GlobalSearch onClose={function() { setShowGlobalSearch(false); }} />}
+      {partyId && <PayPerViewGate roomId={partyId} ppvPrice={4.99} onPurchase={function() { toast.success('Content unlocked!'); }} />}
+      <PaywallGate isHost={true} streamTitle={''} onUnlock={function() {}} isUnlocked={true} />
       {partyId && <SubscriptionGate creatorId={(user && user.id)} roomId={partyId} />}
-      {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
+      {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={function() { setShowModerationAppeal(false); }} />}
       {(user && user.id) && <GuestDestinationsPanel participantUserId={user.id} guestName={(user && user.full_name) || ''} />}
       {(user && user.id) && <FanoutEnginePanel members={members} isHost={true} roomId={partyId} />}
       {partyId && (user && user.id) && (
@@ -1349,10 +1349,10 @@ export default function GoLive() {
           minHeight={280}
         />
       )}
-      {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={() => toast.success('Permissions updated')} />}
+      {<GuestStreamingPermissions participant={null} isHost={true} onPermissionChange={function() { toast.success('Permissions updated'); }} />}
       {partyId && <MultiStreamConfig roomId={partyId} isHost={true} />}
       {partyId && <VdoNinjaGuestLink roomId={partyId} />}
-      <WebRTCSetupBanner error={null} audioEnabled={micOn} videoEnabled={videoOn} onRetry={() => { if (cameraRetryRef.current) cameraRetryRef.current(); }} />
+      <WebRTCSetupBanner error={null} audioEnabled={micOn} videoEnabled={videoOn} onRetry={function() { if (cameraRetryRef.current) cameraRetryRef.current(); }} />
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
       {partyId && <WebhookHooks roomId={partyId} isHost={true} />}
       {<PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}
@@ -1360,12 +1360,12 @@ export default function GoLive() {
       {partyId && <PollLaunchBar roomId={partyId} hostId={(user && user.id)} activePoll={activePoll} isHost={true} />}
       <PrivatePanel isHost={true} currentUser={user} />
       {partyId && <StreamChatbot roomId={partyId} isHost={true} elapsedSeconds={elapsed} hostName={(user && user.full_name) || ''} room={null} />}
-      {partyId && <StreamEventBus roomId={partyId} isHost={true} sessionId={partyId} onViewerUpdate={setViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor((msg && msg.tip_amount) || 0))} onMessageReceived={msg => { if ((msg && msg.content)) setChatMessages(prev => [...prev, msg]); }} />}
+      {partyId && <StreamEventBus roomId={partyId} isHost={true} sessionId={partyId} onViewerUpdate={setViewerCount} onTipReceived={function(msg) { setTipTotal(function(t) { return t + Math.floor((msg && msg.tip_amount) || 0); }); }} onMessageReceived={function(msg) { if ((msg && msg.content)) setChatMessages(function(prev) { return prev.concat([msg]); }); }} />}
       {partyId && <TippingOverlay roomId={partyId} creatorId={(user && user.id)} isVisible={true} />}
       {partyId && <UnifiedChat roomId={partyId} currentUser={user} isHost={true} />}
-      {partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => toast.success('AI persona configured!')} />}
-      {<AudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} />}
-      {<EnhancedAudioMixer micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
+      {partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={function() { toast.success('AI persona configured!'); }} />}
+      {<AudioMixer micMuted={!micOn} onMicToggle={function() { setMicOn(function(v) { return !v; }); }} />}
+      {<EnhancedAudioMixer micMuted={!micOn} onMicToggle={function() { setMicOn(function(v) { return !v; }); }} onAudioSettingsChange={function(s) { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       {<ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {partyId && <AuraEmotionDisplay roomId={partyId} sessionId={partyId} auraPersona={'hype'} />}
       {partyId && <BattleScoreboard roomId={partyId} />}
@@ -1374,7 +1374,7 @@ export default function GoLive() {
       {partyId && <GuestConnector roomId={partyId} roomName={''} />}
       {partyId && <InteractivePollingSystem roomId={partyId} isHost={true} currentUser={user} />}
       {partyId && <LeaderboardPanel roomId={partyId} />}
-      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={() => setMicOn(v => !v)} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => {}} onWebSource={() => setShowEvmux(true)} onClip={() => setShowClipCreator(true)} onPoll={() => setPollTick(t => t + 1)} onRaid={() => setRaidTick(t => t + 1)} onGoal={() => setGoalTick(t => t + 1)} roomId={partyId} />}
+      {partyId && <MobileStreamControls micMuted={!micOn} onMicToggle={function() { setMicOn(function(v) { return !v; }); }} onReact={function(emoji) { setReactEmoji({ emoji: emoji, ts: Date.now() }); }} onQuickTip={function() {}} onWebSource={function() { setShowEvmux(true); }} onClip={function() { setShowClipCreator(true); }} onPoll={function() { setPollTick(function(t) { return t + 1; }); }} onRaid={function() { setRaidTick(function(t) { return t + 1; }); }} onGoal={function() { setGoalTick(function(t) { return t + 1; }); }} roomId={partyId} />}
       {(user && user.id) && <PointsNotification userId={user.id} />}
       {partyId && (user && user.id) && <EngagementBadgesDisplay roomId={partyId} userId={user.id} creatorId={(user && user.id)} />}
       {partyId && <ChatOverlay roomId={partyId} isVisible={true} />}
@@ -1391,52 +1391,52 @@ export default function GoLive() {
       <StreamMetricsBar startTime={elapsed > 0 ? Date.now() - elapsed * 1000 : null} memberCount={viewerCount} tipTotal={tipTotal} peakViewers={peakViewers} netQuality={netQuality} netRtt={netRtt} />
       <ViewerCount count={viewerCount} peakViewers={peakViewers} />
       <TipGoalBar roomId={partyId} goal={100} currentTotal={tipTotal} />
-      {partyId && <GuestControls roomId={partyId} isHost={true} participants={members} onMuteGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_audio_enabled: false }).catch(() => {})} onRemoveGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_active: false }).catch(() => {})} />}
+      {partyId && <GuestControls roomId={partyId} isHost={true} participants={members} onMuteGuest={function(id) { base44.entities.WatchPartyMember.update(id, { is_audio_enabled: false }).catch(function() {}); }} onRemoveGuest={function(id) { base44.entities.WatchPartyMember.update(id, { is_active: false }).catch(function() {}); }} />}
       {partyId && <AggregatedChat roomId={partyId} currentUser={user} isHost={true} onMessagesChange={setChatMessages} />}
       {partyId && user && <LiveEmoticonStorm partyId={partyId} currentUser={user} triggerReact={reactEmoji} />}
       {partyId && <PartyHypeMeter partyId={partyId} memberCount={viewerCount} onHypeChange={setHypeLevel} />}
-      {partyId && <AIModeration roomId={partyId} isHost={true} onFlag={() => {}} />}
+      {partyId && <AIModeration roomId={partyId} isHost={true} onFlag={function() {}} />}
       {partyId && <CoStreamHub roomId={partyId} isHost={true} currentUser={user} speakingIds={speakingIds} />}
-      {partyId && <PKBattle roomId={partyId} isHost={true} currentUser={user} onBattleEnd={() => setTimeout(() => navigate('/'), 2000)} />}
+      {partyId && <PKBattle roomId={partyId} isHost={true} currentUser={user} onBattleEnd={function() { setTimeout(function() { navigate('/'); }, 2000); }} />}
       {partyId && <SuperChatRail roomId={partyId} currentUser={user} isHost={true} />}
       {partyId && <LiveGoalWidget roomId={partyId} isHost={true} triggerEdit={goalTick} />}
-      {partyId && showAuraPanelDrawer && <AuraPanelDrawer roomId={partyId} hostId={(user && user.id)} onClose={() => setShowAuraPanelDrawer(false)} />}
-      {showSwanPanel && partyId && <SwanDirectorPanel roomId={partyId} hostId={(user && user.id)} onClose={() => setShowSwanPanel(false)} />}
-      {partyId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => setShowGreenRoomModal(false)} localStream={localStream} audioEnabled={micOn} videoEnabled={videoOn} />}
-      {partyId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={partyId} />}
-      {partyId && <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} />}
-      {partyId && (user && user.id) && showClipCreator && <ClipCreatorSheet roomId={partyId} creatorId={user.id} elapsedSeconds={elapsed} onClose={() => setShowClipCreator(false)} />}
-      {partyId && <OverlayThemeBuilder roomId={partyId} isHost={true} onThemeChange={() => {}} />}
+      {partyId && showAuraPanelDrawer && <AuraPanelDrawer roomId={partyId} hostId={(user && user.id)} onClose={function() { setShowAuraPanelDrawer(false); }} />}
+      {showSwanPanel && partyId && <SwanDirectorPanel roomId={partyId} hostId={(user && user.id)} onClose={function() { setShowSwanPanel(false); }} />}
+      {partyId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={function() { setShowGreenRoomModal(false); }} onReady={function() { setShowGreenRoomModal(false); }} localStream={localStream} audioEnabled={micOn} videoEnabled={videoOn} />}
+      {partyId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={function() { setShowBreakoutRooms(false); }} roomId={partyId} />}
+      {partyId && <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={function() { setShowWebRTCConfig(false); }} />}
+      {partyId && (user && user.id) && showClipCreator && <ClipCreatorSheet roomId={partyId} creatorId={user.id} elapsedSeconds={elapsed} onClose={function() { setShowClipCreator(false); }} />}
+      {partyId && <OverlayThemeBuilder roomId={partyId} isHost={true} onThemeChange={function() {}} />}
 
       {/* ── DM WHISPER SYSTEM ── */}
       {/* Incoming whisper toast (auto-dismisses after 4s) */}
-      <WhisperToast whisper={incomingWhisper} onDismiss={() => setIncomingWhisper(null)} />
+      <WhisperToast whisper={incomingWhisper} onDismiss={function() { setIncomingWhisper(null); }} />
       {/* Member whisper selector — click any active member to open DM */}
       {partyId && user && members.length > 0 && (
         <div style={{ position: 'fixed', bottom: 80, right: 20, zIndex: 9980, display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
           <button
-            onClick={() => setWhisperTarget(t => t ? null : 'picker')}
+            onClick={function() { setWhisperTarget(function(t) { return t ? null : 'picker'; }); }}
             style={{ background: 'rgba(255,21,100,0.9)', border: '1px solid #FFB800', borderRadius: 20, padding: '5px 12px', color: '#FFB800', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700, fontSize: 11, cursor: 'pointer', letterSpacing: 1 }}
           >
             🤫 WHISPER
           </button>
           {whisperTarget === 'picker' && (
             <div style={{ background: '#1A1A1A', border: '1px solid rgba(255,184,0,0.3)', borderRadius: 10, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.6)', maxHeight: 200, overflowY: 'auto', width: 180 }}>
-              {members.filter(m => m.user_id !== user.id).slice(0, 10).map(m => (
+              {members.filter(function(m) { return m.user_id !== user.id; }).slice(0, 10).map(function(m) { return (
                 <button
                   key={m.user_id || m.id}
-                  onClick={() => setWhisperTarget({ id: m.user_id || m.id, name: m.full_name || m.display_name || 'Guest' })}
+                  onClick={function() { setWhisperTarget({ id: m.user_id || m.id, name: m.full_name || m.display_name || 'Guest' }); }}
                   style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', borderBottom: '1px solid #2a2a2a', padding: '7px 12px', color: '#f0e8d4', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, cursor: 'pointer' }}
                 >
                   {m.full_name || m.display_name || 'Guest'}
                 </button>
-              ))}
+              ); })}
             </div>
           )}
         </div>
       )}
       {whisperTarget && whisperTarget !== 'picker' && (
-        <WhisperPanel roomId={partyId} currentUser={user} recipientId={whisperTarget.id} recipientName={whisperTarget.name} onClose={() => setWhisperTarget(null)} />
+        <WhisperPanel roomId={partyId} currentUser={user} recipientId={whisperTarget.id} recipientName={whisperTarget.name} onClose={function() { setWhisperTarget(null); }} />
       )}
     </div>
   );
