@@ -58,11 +58,11 @@ function toICSDate(d) {
 function generateICS(s) {
   var start = new Date(s.scheduled_start);
   var end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
-  var url = `${window.location.origin}/${s.room_id ? 'Room/' + s.room_id : 'Discover'}`;
+  var url = window.location.origin + '/' + (s.room_id ? 'Room/' + s.room_id : 'Discover');
   var desc = [
     s.description,
-    `Join on SeeWhy LIVE: ${url}`,
-    `Category: ${s.category || 'General'}`,
+    'Join on SeeWhy LIVE: ' + url,
+    'Category: ' + (s.category || 'General'),
   ].filter(Boolean).join('\\n');
 
   return [
@@ -72,13 +72,13 @@ function generateICS(s) {
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
-    `UID:${s.id}@seewhylive.online`,
-    `DTSTAMP:${toICSDate(new Date())}`,
-    `DTSTART:${toICSDate(start)}`,
-    `DTEND:${toICSDate(end)}`,
-    `SUMMARY:🔴 ${s.title}`,
-    `DESCRIPTION:${desc}`,
-    `URL:${url}`,
+    'UID:' + s.id + '@seewhylive.online',
+    'DTSTAMP:' + toICSDate(new Date()),
+    'DTSTART:' + toICSDate(start),
+    'DTEND:' + toICSDate(end),
+    'SUMMARY:🔴 ' + s.title,
+    'DESCRIPTION:' + desc,
+    'URL:' + url,
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n');
@@ -88,7 +88,7 @@ function downloadICS(s) {
   var blob = new Blob([generateICS(s)], { type: 'text/calendar;charset=utf-8' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `${s.title.replace(/[^a-z0-9]/gi, '_')}.ics`;
+  a.download = s.title.replace(/[^a-z0-9]/gi, '_') + '.ics';
   a.click();
   URL.revokeObjectURL(a.href);
 }
@@ -96,31 +96,31 @@ function downloadICS(s) {
 function getGoogleCalUrl(s) {
   var start = new Date(s.scheduled_start);
   var end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
-  var fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  var url = `${window.location.origin}/Discover`;
+  var fmt = function(d) { return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'; };
+  var url = window.location.origin + '/Discover';
   var params = new URLSearchParams({
     action: 'TEMPLATE',
-    text: `🔴 ${s.title}`,
-    dates: `${fmt(start)}/${fmt(end)}`,
-    details: `${s.description || ''}\n\nJoin: ${url}`,
+    text: '🔴 ' + s.title,
+    dates: fmt(start) + '/' + fmt(end),
+    details: (s.description || '') + '\n\nJoin: ' + url,
     location: url,
   });
-  return `https://calendar.google.com/calendar/render?${params}`;
+  return 'https://calendar.google.com/calendar/render?' + params;
 }
 
 function getOutlookUrl(s) {
   var start = new Date(s.scheduled_start);
   var end = new Date(start.getTime() + (s.estimated_duration_minutes || 60) * 60000);
-  var url = `${window.location.origin}/Discover`;
+  var url = window.location.origin + '/Discover';
   var params = new URLSearchParams({
     rru: 'addevent',
-    summary: `🔴 ${s.title}`,
+    summary: '🔴 ' + s.title,
     dtstart: start.toISOString(),
     dtend: end.toISOString(),
-    description: `${s.description || ''} | Join: ${url}`,
+    description: (s.description || '') + ' | Join: ' + url,
     location: url,
   });
-  return `https://outlook.live.com/calendar/0/action/compose?${params}`;
+  return 'https://outlook.live.com/calendar/0/action/compose?' + params;
 }
 
 function CalendarInviteMenu({ stream }) {
@@ -128,7 +128,7 @@ function CalendarInviteMenu({ stream }) {
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={function() { setOpen(function(o) { return !o; }); }}
         className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#7B5DA6]/20 flex items-center justify-center text-white/40 hover:text-[#7B5DA6] transition-all"
         title="Add to Calendar"
       >
@@ -137,7 +137,7 @@ function CalendarInviteMenu({ stream }) {
       <AnimatePresence>
         {open && (
           <>
-            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+            <div className="fixed inset-0 z-40" onClick={function() { setOpen(false); }} />
             <motion.div
               initial={{ opacity: 0, scale: 0.92, y: -4 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -150,7 +150,7 @@ function CalendarInviteMenu({ stream }) {
                 <p className="text-[10px] uppercase tracking-widest text-white/30 font-bold">Add to Calendar</p>
               </div>
               <button
-                onClick={() => { downloadICS(stream); setOpen(false); }}
+                onClick={function() { downloadICS(stream); setOpen(false); }}
                 className="flex items-center gap-2.5 w-full px-3 py-2.5 text-left hover:bg-white/5 transition-colors"
               >
                 <Download className="w-3.5 h-3.5 text-[#d4af37]" />
@@ -160,7 +160,7 @@ function CalendarInviteMenu({ stream }) {
                 href={getGoogleCalUrl(stream)}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => setOpen(false)}
+                onClick={function() { setOpen(false); }}
                 className="flex items-center gap-2.5 w-full px-3 py-2.5 hover:bg-white/5 transition-colors"
               >
                 <ExternalLink className="w-3.5 h-3.5 text-[#4A8A7A]" />
@@ -170,7 +170,7 @@ function CalendarInviteMenu({ stream }) {
                 href={getOutlookUrl(stream)}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => setOpen(false)}
+                onClick={function() { setOpen(false); }}
                 className="flex items-center gap-2.5 w-full px-3 py-2.5 hover:bg-white/5 transition-colors"
               >
                 <ExternalLink className="w-3.5 h-3.5 text-[#60a5fa]" />
@@ -188,7 +188,7 @@ function CalendarInviteMenu({ stream }) {
 
 function Toggle({ checked, onChange }) {
   return (
-    <div onClick={() => onChange(!checked)} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+    <div onClick={function() { onChange(!checked); }} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
       <div style={{ position: 'absolute', top: 3, left: checked ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
     </div>
   );
@@ -212,23 +212,23 @@ export default function StreamScheduler() {
   };
   var [form, setForm] = useState(blankForm);
 
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
   var { data: activeRoom } = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var { data: streams = [] } = useQuery({
     queryKey: ['scheduled-streams', (user && user.id)],
-    queryFn: () => base44.entities.ScheduledStream.filter({ creator_id: (user && user.id) }, 'scheduled_start', 50),
+    queryFn: function() { return base44.entities.ScheduledStream.filter({ creator_id: (user && user.id) }, 'scheduled_start', 50); },
     enabled: !!user,
   });
 
   var createMutation = useMutation({
-    mutationFn: (data) => base44.entities.ScheduledStream.create(data),
-    onSuccess: (created) => {
+    mutationFn: function(data) { return base44.entities.ScheduledStream.create(data); },
+    onSuccess: function(created) {
       qc.invalidateQueries({ queryKey: ['scheduled-streams'] });
       setShowForm(false);
       setForm(blankForm);
@@ -237,21 +237,21 @@ export default function StreamScheduler() {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'stream_scheduled',
-          title: `Scheduled: ${(created && created.title) || 'Stream'}`,
-        }).catch(() => {});
+          title: 'Scheduled: ' + ((created && created.title) || 'Stream'),
+        }).catch(function() {});
       }
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
   var updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ScheduledStream.update(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); setShowForm(false); setEditingStream(null); toast.success('Stream updated'); },
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(opts) { return base44.entities.ScheduledStream.update(opts.id, opts.data); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); setShowForm(false); setEditingStream(null); toast.success('Stream updated'); },
+    onError: function() { toast.error('Action failed.'); },
   });
   var deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.ScheduledStream.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); toast.success('Stream cancelled'); },
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(id) { return base44.entities.ScheduledStream.delete(id); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['scheduled-streams'] }); toast.success('Stream cancelled'); },
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var year = calendarDate.getFullYear();
@@ -260,9 +260,9 @@ export default function StreamScheduler() {
   var firstDay = getFirstDayOfMonth(year, month);
   var monthName = calendarDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-  var streamsByDay = useMemo(() => {
+  var streamsByDay = useMemo(function() {
     var map = {};
-    streams.forEach(s => {
+    streams.forEach(function(s) {
       var d = new Date(s.scheduled_start);
       if (d.getFullYear() === year && d.getMonth() === month) {
         var day = d.getDate();
@@ -274,10 +274,10 @@ export default function StreamScheduler() {
   }, [streams, year, month]);
 
   var upcomingStreams = streams
-    .filter(s => new Date(s.scheduled_start) > new Date() && s.status === 'scheduled')
-    .sort((a, b) => new Date(a.scheduled_start) - new Date(b.scheduled_start));
+    .filter(function(s) { return new Date(s.scheduled_start) > new Date() && s.status === 'scheduled'; })
+    .sort(function(a, b) { return new Date(a.scheduled_start) - new Date(b.scheduled_start); });
 
-  var openEdit = (stream) => {
+  var openEdit = function(stream) {
     setEditingStream(stream);
     setForm({
       title: stream.title, description: stream.description || '',
@@ -291,28 +291,28 @@ export default function StreamScheduler() {
     setShowForm(true);
   };
 
-  var handleSave = () => {
+  var handleSave = function() {
     if (!form.title.trim() || !form.scheduled_start) return toast.error('Title and start time required');
     if (new Date(form.scheduled_start) <= new Date()) return toast.error('Scheduled time must be in the future');
-    var data = { ...form, creator_id: (user && user.id), scheduled_start: new Date(form.scheduled_start).toISOString() };
-    if (editingStream) updateMutation.mutate({ id: editingStream.id, data });
+    var data = Object.assign({}, form, { creator_id: (user && user.id), scheduled_start: new Date(form.scheduled_start).toISOString() });
+    if (editingStream) updateMutation.mutate({ id: editingStream.id, data: data });
     else createMutation.mutate(data);
   };
 
-  var shareStream = (s) => {
-    var text = `🔴 I'm going LIVE: "${s.title}" — ${new Date(s.scheduled_start).toLocaleString()}\nJoin me at: ${window.location.origin}`;
-    navigator.clipboard.writeText(text).then(() => toast.success('Announcement copied!')).catch(() => toast.error('Copy failed.'));
+  var shareStream = function(s) {
+    var text = '🔴 I\'m going LIVE: "' + s.title + '" — ' + new Date(s.scheduled_start).toLocaleString() + '\nJoin me at: ' + window.location.origin;
+    navigator.clipboard.writeText(text).then(function() { toast.success('Announcement copied!'); }).catch(function() { toast.error('Copy failed.'); });
   };
 
-  var getCountdown = (dateStr) => {
+  var getCountdown = function(dateStr) {
     var diff = new Date(dateStr) - new Date();
     if (diff <= 0) return 'Starting now!';
     var d = Math.floor(diff / 86400000);
     var h = Math.floor((diff % 86400000) / 3600000);
     var m = Math.floor((diff % 3600000) / 60000);
-    if (d > 0) return `${d}d ${h}h`;
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m`;
+    if (d > 0) return d + 'd ' + h + 'h';
+    if (h > 0) return h + 'h ' + m + 'm';
+    return m + 'm';
   };
 
   return (
@@ -327,15 +327,17 @@ export default function StreamScheduler() {
           </div>
           <div className="flex items-center gap-2">
             <div className="flex bg-white/5 border border-white/10 rounded-lg overflow-hidden">
-              {['month', 'week', 'day'].map(v => (
-                <button key={v} onClick={() => setViewMode(v)}
-                  className={`px-3 py-1.5 text-xs capitalize transition-all ${viewMode === v ? 'bg-[#d4af37] text-black font-bold' : 'text-white/50 hover:text-white'}`}>
-                  {v}
-                </button>
-              ))}
+              {['month', 'week', 'day'].map(function(v) {
+                return (
+                  <button key={v} onClick={function() { setViewMode(v); }}
+                    className={'px-3 py-1.5 text-xs capitalize transition-all ' + (viewMode === v ? 'bg-[#d4af37] text-black font-bold' : 'text-white/50 hover:text-white')}>
+                    {v}
+                  </button>
+                );
+              })}
             </div>
             <button
-              onClick={() => { setEditingStream(null); setForm(blankForm); setShowForm(true); }}
+              onClick={function() { setEditingStream(null); setForm(blankForm); setShowForm(true); }}
               style={{ background: '#D4AF37', color: '#000', fontWeight: 900, padding: '8px 16px', borderRadius: 12, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, textTransform: 'uppercase' }}>
               <Plus className="w-4 h-4" /> Schedule Stream
             </button>
@@ -348,13 +350,13 @@ export default function StreamScheduler() {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-white">{monthName}</h2>
               <div className="flex gap-1">
-                <button onClick={() => setCalendarDate(new Date(year, month - 1, 1))}
+                <button onClick={function() { setCalendarDate(new Date(year, month - 1, 1)); }}
                   className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60">
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <button onClick={() => setCalendarDate(new Date())}
+                <button onClick={function() { setCalendarDate(new Date()); }}
                   className="px-3 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-xs text-white/60">Today</button>
-                <button onClick={() => setCalendarDate(new Date(year, month + 1, 1))}
+                <button onClick={function() { setCalendarDate(new Date(year, month + 1, 1)); }}
                   className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60">
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -363,13 +365,13 @@ export default function StreamScheduler() {
           </div>
           <div style={{ padding: 16 }}>
             <div className="grid grid-cols-7 mb-2">
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                <div key={d} className="text-center text-[10px] text-white/30 uppercase py-1">{d}</div>
-              ))}
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(function(d) {
+                return <div key={d} className="text-center text-[10px] text-white/30 uppercase py-1">{d}</div>;
+              })}
             </div>
             <div className="grid grid-cols-7 gap-1">
-              {Array.from({ length: firstDay }).map((_, i) => <div key={`empty-${i}`} />)}
-              {Array.from({ length: daysInMonth }).map((_, i) => {
+              {Array.from({ length: firstDay }).map(function(_, i) { return <div key={'empty-' + i} />; })}
+              {Array.from({ length: daysInMonth }).map(function(_, i) {
                 var day = i + 1;
                 var isToday = new Date().getDate() === day && new Date().getMonth() === month && new Date().getFullYear() === year;
                 var dayStreams = streamsByDay[day] || [];
@@ -377,21 +379,19 @@ export default function StreamScheduler() {
                   <motion.div
                     key={day}
                     whileHover={{ scale: 1.05 }}
-                    onClick={() => setSelectedDay(selectedDay === day ? null : day)}
-                    className={`min-h-[60px] rounded-lg p-1.5 cursor-pointer transition-all border ${
-                      isToday ? 'border-[#d4af37]/60 bg-[#d4af37]/5' :
-                      selectedDay === day ? 'border-white/30 bg-white/5' :
-                      'border-transparent hover:border-white/10 hover:bg-white/3'
-                    }`}
+                    onClick={function() { setSelectedDay(selectedDay === day ? null : day); }}
+                    className={'min-h-[60px] rounded-lg p-1.5 cursor-pointer transition-all border ' + (isToday ? 'border-[#d4af37]/60 bg-[#d4af37]/5' : selectedDay === day ? 'border-white/30 bg-white/5' : 'border-transparent hover:border-white/10 hover:bg-white/3')}
                   >
-                    <p className={`text-xs font-semibold mb-1 ${isToday ? 'text-[#d4af37]' : 'text-white/60'}`}>{day}</p>
+                    <p className={'text-xs font-semibold mb-1 ' + (isToday ? 'text-[#d4af37]' : 'text-white/60')}>{day}</p>
                     <div className="space-y-0.5">
-                      {dayStreams.slice(0, 2).map(s => (
-                        <div key={s.id} className="text-[11px] px-1 py-0.5 rounded truncate font-medium"
-                          style={{ background: `${CAT_COLORS[s.category] || '#d4af37'}25`, color: CAT_COLORS[s.category] || '#d4af37' }}>
-                          {s.title}
-                        </div>
-                      ))}
+                      {dayStreams.slice(0, 2).map(function(s) {
+                        return (
+                          <div key={s.id} className="text-[11px] px-1 py-0.5 rounded truncate font-medium"
+                            style={{ background: (CAT_COLORS[s.category] || '#d4af37') + '25', color: CAT_COLORS[s.category] || '#d4af37' }}>
+                            {s.title}
+                          </div>
+                        );
+                      })}
                       {dayStreams.length > 2 && (
                         <p className="text-[11px] text-white/30">+{dayStreams.length - 2} more</p>
                       )}
@@ -409,24 +409,26 @@ export default function StreamScheduler() {
                   className="overflow-hidden mt-3 border-t border-white/10 pt-3 space-y-2"
                 >
                   <p className="text-xs text-white/40">{monthName.split(' ')[0]} {selectedDay}</p>
-                  {streamsByDay[selectedDay].map(s => (
-                    <div key={s.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
-                      <div className="w-2 h-8 rounded-full shrink-0" style={{ background: CAT_COLORS[s.category] || '#d4af37' }} />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm text-white truncate">{s.title}</p>
-                        <p className="text-xs text-white/40">{new Date(s.scheduled_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {s.estimated_duration_minutes}min</p>
+                  {streamsByDay[selectedDay].map(function(s) {
+                    return (
+                      <div key={s.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5">
+                        <div className="w-2 h-8 rounded-full shrink-0" style={{ background: CAT_COLORS[s.category] || '#d4af37' }} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm text-white truncate">{s.title}</p>
+                          <p className="text-xs text-white/40">{new Date(s.scheduled_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {s.estimated_duration_minutes}min</p>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <button onClick={function() { openEdit(s); }} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                          <button onClick={function() { shareStream(s); }} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#4A8A7A]/10 flex items-center justify-center text-white/40 hover:text-[#4A8A7A]">
+                            <Share2 className="w-3 h-3" />
+                          </button>
+                          <CalendarInviteMenu stream={s} />
+                        </div>
                       </div>
-                      <div className="flex gap-1.5">
-                        <button onClick={() => openEdit(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
-                          <Pencil className="w-3 h-3" />
-                        </button>
-                        <button onClick={() => shareStream(s)} className="w-7 h-7 rounded-lg bg-white/5 hover:bg-[#4A8A7A]/10 flex items-center justify-center text-white/40 hover:text-[#4A8A7A]">
-                          <Share2 className="w-3 h-3" />
-                        </button>
-                        <CalendarInviteMenu stream={s} />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -446,53 +448,55 @@ export default function StreamScheduler() {
               </div>
             </div>
           ) : (
-            upcomingStreams.map(s => (
-              <motion.div key={s.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.12)', borderRadius: 16 }}>
-                  <div style={{ padding: 16 }}>
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
-                        style={{ background: `${CAT_COLORS[s.category] || '#d4af37'}20`, border: `1px solid ${CAT_COLORS[s.category] || '#d4af37'}40` }}>
-                        {(function() { var _cat = CATEGORIES.find(function(c) { return c.id === s.category; }); return (_cat && _cat.label && _cat.label.charAt(0)) || '🎬'; })()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-bold text-white truncate">{s.title}</p>
-                          {s.is_recurring && (
-                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: '#7B5DA6', border: '1px solid rgba(212,175,55,0.3)' }}>
-                              <RefreshCw className="w-2.5 h-2.5 mr-1 inline" />{s.recurrence}
-                            </span>
-                          )}
-                          {!s.is_public && (
-                            <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                              Private
-                            </span>
-                          )}
+            upcomingStreams.map(function(s) {
+              return (
+                <motion.div key={s.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                  <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(212,175,55,0.12)', borderRadius: 16 }}>
+                    <div style={{ padding: 16 }}>
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
+                          style={{ background: (CAT_COLORS[s.category] || '#d4af37') + '20', border: '1px solid ' + (CAT_COLORS[s.category] || '#d4af37') + '40' }}>
+                          {(function() { var _cat = CATEGORIES.find(function(c) { return c.id === s.category; }); return (_cat && _cat.label && _cat.label.charAt(0)) || '🎬'; })()}
                         </div>
-                        <p className="text-sm text-white/50 mt-0.5">{new Date(s.scheduled_start).toLocaleString()} · {s.estimated_duration_minutes}min</p>
-                        <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs font-semibold text-[#4A8A7A]">⏱ {getCountdown(s.scheduled_start)}</span>
-                          <span className="text-[10px] text-white/30 flex items-center gap-1"><Bell className="w-2.5 h-2.5" />{s.reminder_count || 0} reminders</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-bold text-white truncate">{s.title}</p>
+                            {s.is_recurring && (
+                              <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(212,175,55,0.2)', color: '#7B5DA6', border: '1px solid rgba(212,175,55,0.3)' }}>
+                                <RefreshCw className="w-2.5 h-2.5 mr-1 inline" />{s.recurrence}
+                              </span>
+                            )}
+                            {!s.is_public && (
+                              <span style={{ fontSize: 11, padding: '2px 6px', borderRadius: 99, background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                Private
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-white/50 mt-0.5">{new Date(s.scheduled_start).toLocaleString()} · {s.estimated_duration_minutes}min</p>
+                          <div className="flex items-center gap-3 mt-1">
+                            <span className="text-xs font-semibold text-[#4A8A7A]">⏱ {getCountdown(s.scheduled_start)}</span>
+                            <span className="text-[10px] text-white/30 flex items-center gap-1"><Bell className="w-2.5 h-2.5" />{s.reminder_count || 0} reminders</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => shareStream(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#4A8A7A]/10 flex items-center justify-center text-white/40 hover:text-[#4A8A7A]">
-                          <Share2 className="w-4 h-4" />
-                        </button>
-                        <CalendarInviteMenu stream={s} />
-                        <button onClick={() => openEdit(s)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { if (window.confirm('Cancel this stream?')) deleteMutation.mutate(s.id); }}
-                          className="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-900/20 flex items-center justify-center text-white/40 hover:text-[#C0392B]">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button onClick={function() { shareStream(s); }} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#4A8A7A]/10 flex items-center justify-center text-white/40 hover:text-[#4A8A7A]">
+                            <Share2 className="w-4 h-4" />
+                          </button>
+                          <CalendarInviteMenu stream={s} />
+                          <button onClick={function() { openEdit(s); }} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-[#d4af37]/10 flex items-center justify-center text-white/40 hover:text-[#d4af37]">
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button onClick={function() { if (window.confirm('Cancel this stream?')) deleteMutation.mutate(s.id); }}
+                            className="w-8 h-8 rounded-lg bg-white/5 hover:bg-red-900/20 flex items-center justify-center text-white/40 hover:text-[#C0392B]">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            ))
+                </motion.div>
+              );
+            })
           )}
         </div>
 
@@ -524,7 +528,7 @@ export default function StreamScheduler() {
         {showForm && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/70 z-40" onClick={() => { setShowForm(false); setEditingStream(null); }} />
+              className="fixed inset-0 bg-black/70 z-40" onClick={function() { setShowForm(false); setEditingStream(null); }} />
             <motion.div
               initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 20 }}
@@ -533,7 +537,7 @@ export default function StreamScheduler() {
               <div className="p-6 space-y-5">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-bold text-[#d4af37]">{editingStream ? 'Edit Stream' : 'Schedule New Stream'}</h2>
-                  <button onClick={() => { setShowForm(false); setEditingStream(null); }} className="text-white/40 hover:text-white">
+                  <button onClick={function() { setShowForm(false); setEditingStream(null); }} className="text-white/40 hover:text-white">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -546,7 +550,7 @@ export default function StreamScheduler() {
                   </div>
                   <input
                     value={form.title}
-                    onChange={e => setForm(f => ({ ...f, title: e.target.value.slice(0, 80) }))}
+                    onChange={function(e) { setForm(function(f) { return Object.assign({}, f, { title: e.target.value.slice(0, 80) }); }); }}
                     placeholder="What are you streaming?"
                     style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, padding: '8px 12px', color: 'white', fontSize: 14, outline: 'none' }}
                   />
@@ -560,7 +564,7 @@ export default function StreamScheduler() {
                   </div>
                   <textarea
                     value={form.description}
-                    onChange={e => setForm(f => ({ ...f, description: e.target.value.slice(0, 500) }))}
+                    onChange={function(e) { setForm(function(f) { return Object.assign({}, f, { description: e.target.value.slice(0, 500) }); }); }}
                     rows={3} placeholder="Tell viewers what to expect..."
                     className="w-full bg-white/5 border border-white/20 text-white text-sm rounded-lg px-3 py-2 outline-none focus:border-[#d4af37]/40 placeholder:text-white/25 resize-none"
                   />
@@ -570,16 +574,14 @@ export default function StreamScheduler() {
                 <div className="space-y-1.5">
                   <label className="text-xs text-white/50">Category</label>
                   <div className="grid grid-cols-2 gap-1.5">
-                    {CATEGORIES.map(c => (
-                      <button key={c.id} onClick={() => setForm(f => ({ ...f, category: c.id }))}
-                        className={`text-left px-3 py-2 rounded-lg border text-xs transition-all ${
-                          form.category === c.id
-                            ? 'border-[#d4af37] bg-[#d4af37]/10 text-white'
-                            : 'border-white/10 text-white/50 hover:border-white/20'
-                        }`}>
-                        {c.label}
-                      </button>
-                    ))}
+                    {CATEGORIES.map(function(c) {
+                      return (
+                        <button key={c.id} onClick={function() { setForm(function(f) { return Object.assign({}, f, { category: c.id }); }); }}
+                          className={'text-left px-3 py-2 rounded-lg border text-xs transition-all ' + (form.category === c.id ? 'border-[#d4af37] bg-[#d4af37]/10 text-white' : 'border-white/10 text-white/50 hover:border-white/20')}>
+                          {c.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -587,7 +589,7 @@ export default function StreamScheduler() {
                 <div className="space-y-1.5">
                   <label className="text-xs text-white/50">Date & Time *</label>
                   <input type="datetime-local" value={form.scheduled_start}
-                    onChange={e => setForm(f => ({ ...f, scheduled_start: e.target.value }))}
+                    onChange={function(e) { setForm(function(f) { return Object.assign({}, f, { scheduled_start: e.target.value }); }); }}
                     className="w-full bg-white/5 border border-white/20 text-white text-sm rounded-lg px-3 py-2 outline-none focus:border-[#d4af37]/40 [color-scheme:dark]" />
                 </div>
 
@@ -595,16 +597,14 @@ export default function StreamScheduler() {
                 <div className="space-y-1.5">
                   <label className="text-xs text-white/50">Estimated Duration</label>
                   <div className="flex gap-1.5 flex-wrap">
-                    {DURATIONS.map(d => (
-                      <button key={d.value} onClick={() => setForm(f => ({ ...f, estimated_duration_minutes: d.value }))}
-                        className={`px-3 py-1.5 rounded-lg border text-xs transition-all ${
-                          form.estimated_duration_minutes === d.value
-                            ? 'border-[#d4af37] bg-[#d4af37]/10 text-[#d4af37]'
-                            : 'border-white/10 text-white/50 hover:border-white/20'
-                        }`}>
-                        {d.label}
-                      </button>
-                    ))}
+                    {DURATIONS.map(function(d) {
+                      return (
+                        <button key={d.value} onClick={function() { setForm(function(f) { return Object.assign({}, f, { estimated_duration_minutes: d.value }); }); }}
+                          className={'px-3 py-1.5 rounded-lg border text-xs transition-all ' + (form.estimated_duration_minutes === d.value ? 'border-[#d4af37] bg-[#d4af37]/10 text-[#d4af37]' : 'border-white/10 text-white/50 hover:border-white/20')}>
+                          {d.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -615,16 +615,18 @@ export default function StreamScheduler() {
                       <p className="text-sm text-white">Recurring Stream</p>
                       <p className="text-[10px] text-white/40">Repeat on a schedule</p>
                     </div>
-                    <Toggle checked={form.is_recurring} onChange={v => setForm(f => ({ ...f, is_recurring: v }))} />
+                    <Toggle checked={form.is_recurring} onChange={function(v) { setForm(function(f) { return Object.assign({}, f, { is_recurring: v }); }); }} />
                   </div>
                   {form.is_recurring && (
                     <div style={{ display: 'flex', gap: 8 }}>
-                      {[{ v: 'daily', l: 'Daily' }, { v: 'weekly', l: 'Weekly' }, { v: 'biweekly', l: 'Every 2 weeks' }].map(opt => (
-                        <button key={opt.v} onClick={() => setForm(f => ({ ...f, recurrence: opt.v }))}
-                          style={{ padding: '6px 14px', borderRadius: 99, fontSize: 11, border: `1px solid ${form.recurrence === opt.v ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: form.recurrence === opt.v ? 'rgba(212,175,55,0.15)' : 'transparent', color: form.recurrence === opt.v ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
-                          {opt.l}
-                        </button>
-                      ))}
+                      {[{ v: 'daily', l: 'Daily' }, { v: 'weekly', l: 'Weekly' }, { v: 'biweekly', l: 'Every 2 weeks' }].map(function(opt) {
+                        return (
+                          <button key={opt.v} onClick={function() { setForm(function(f) { return Object.assign({}, f, { recurrence: opt.v }); }); }}
+                            style={{ padding: '6px 14px', borderRadius: 99, fontSize: 11, border: '1px solid ' + (form.recurrence === opt.v ? '#D4AF37' : 'rgba(255,255,255,0.1)'), background: form.recurrence === opt.v ? 'rgba(212,175,55,0.15)' : 'transparent', color: form.recurrence === opt.v ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                            {opt.l}
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                   <div className="flex items-center justify-between">
@@ -632,7 +634,7 @@ export default function StreamScheduler() {
                       <p className="text-sm text-white">Public Stream</p>
                       <p className="text-[10px] text-white/40">Visible on discover page</p>
                     </div>
-                    <Toggle checked={form.is_public} onChange={v => setForm(f => ({ ...f, is_public: v }))} />
+                    <Toggle checked={form.is_public} onChange={function(v) { setForm(function(f) { return Object.assign({}, f, { is_public: v }); }); }} />
                   </div>
                 </div>
 
@@ -641,7 +643,7 @@ export default function StreamScheduler() {
                   <p className="text-[10px] text-white/30 uppercase mb-2">Preview</p>
                   <div className="flex gap-2">
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg"
-                      style={{ background: `${CAT_COLORS[form.category] || '#d4af37'}20` }}>
+                      style={{ background: (CAT_COLORS[form.category] || '#d4af37') + '20' }}>
                       {(function() { var _cat2 = CATEGORIES.find(function(c) { return c.id === form.category; }); return (_cat2 && _cat2.label && _cat2.label.charAt(0)) || '🎬'; })()}
                     </div>
                     <div>
@@ -660,7 +662,7 @@ export default function StreamScheduler() {
                     {editingStream ? 'Save Changes' : 'Schedule Stream'}
                   </button>
                   <button
-                    onClick={() => { setShowForm(false); setEditingStream(null); }}
+                    onClick={function() { setShowForm(false); setEditingStream(null); }}
                     style={{ background: 'transparent', color: 'rgba(255,255,255,0.5)', padding: '8px 16px', borderRadius: 12, border: 'none', cursor: 'pointer' }}>
                     Cancel
                   </button>
