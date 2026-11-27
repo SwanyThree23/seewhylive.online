@@ -70,30 +70,34 @@ var STATUS_STYLE = {
 };
 
 export default function BetaStatusPage() {
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  var { data: activeRoom } = useQuery({
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
+  var activeRoomQ = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = activeRoomQ.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
-  var { data: userCommunity } = useQuery({
+  var userCommunityQ = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
+  var userCommunity = userCommunityQ.data || null;
   var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  var { data: rooms = [] } = useQuery({
+  var roomsQ = useQuery({
     queryKey: ['all-rooms-beta'],
-    queryFn: () => base44.entities.Room.list('-created_date', 100),
+    queryFn: function() { return base44.entities.Room.list('-created_date', 100); },
   });
+  var rooms = roomsQ.data || [];
 
-  var liveCount = FEATURE_STATUS.filter(f => f.status === 'live').length;
-  var betaCount = FEATURE_STATUS.filter(f => f.status === 'beta').length;
-  var liveRooms = rooms.filter(r => r.status === 'live').length;
+  var liveCount = FEATURE_STATUS.filter(function(f) { return f.status === 'live'; }).length;
+  var betaCount = FEATURE_STATUS.filter(function(f) { return f.status === 'beta'; }).length;
+  var liveRooms = rooms.filter(function(r) { return r.status === 'live'; }).length;
 
   return (
     <div className="min-h-screen pb-10" style={{ background: BG }}>
@@ -109,7 +113,7 @@ export default function BetaStatusPage() {
         </div>
         <Link to={createPageUrl('InviteUsers')}>
           <button className="flex items-center gap-2 px-4 py-2 rounded-xl font-black uppercase text-xs"
-            style={{ background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: '#000', cursor: 'pointer', ...T }}>
+            style={{ background: 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')', border: 'none', color: '#000', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <UserPlus className="w-3.5 h-3.5" /> Invite Users
           </button>
         </Link>
@@ -123,13 +127,13 @@ export default function BetaStatusPage() {
             { label: 'Live Rooms Now', value: liveRooms, color: '#4A8A7A' },
             { label: 'Revenue Split', value: '90/10', color: '#D4AF37' },
             { label: 'Access', value: 'Free', color: GOLD },
-          ].map(({ label, value, color }) => (
+          ].map(function(item) { var label = item.label; var value = item.value; var color = item.color; return (
             <div key={label} className="rounded-2xl p-4 text-center"
               style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
-              <p className="text-3xl font-black" style={{ fontFamily: 'Orbitron, monospace', color }}>{value}</p>
-              <p className="text-[10px] font-black uppercase mt-1" style={{ ...T, color: 'rgba(255,255,255,0.35)' }}>{label}</p>
+              <p className="text-3xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: color }}>{value}</p>
+              <p className="text-[10px] font-black uppercase mt-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.35)' }}>{label}</p>
             </div>
-          ))}
+          ); })}
         </div>
 
         {/* Feature checklist */}
@@ -144,7 +148,7 @@ export default function BetaStatusPage() {
             </p>
           </div>
           <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-            {FEATURE_STATUS.map((feature) => {
+            {FEATURE_STATUS.map(function(feature) {
               var cfg = STATUS_STYLE[feature.status];
               var Icon = feature.icon;
               return (
@@ -158,7 +162,7 @@ export default function BetaStatusPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-black text-sm text-white" style={T}>{feature.name}</p>
                       <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
-                        style={{ ...T, background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color }}>
+                        style={{ fontFamily: 'Barlow Condensed, sans-serif', background: cfg.bg, border: '1px solid ' + cfg.border, color: cfg.color }}>
                         {feature.status}
                       </span>
                     </div>
@@ -183,12 +187,12 @@ export default function BetaStatusPage() {
               { icon: '📡', text: 'Use Multi-Stream Manager to fanout to YouTube, Twitch, TikTok, and Facebook simultaneously' },
               { icon: '🤖', text: 'Run AI Moderation scans on chat — review flagged content from the admin queue' },
               { icon: '🔍', text: 'Press ⌘K (or Ctrl+K) anywhere for instant spotlight search across rooms & communities' },
-            ].map((tip, i) => (
+            ].map(function(tip, i) { return (
               <div key={i} className="flex items-start gap-3">
                 <span className="text-base">{tip.icon}</span>
                 <p className="text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>{tip.text}</p>
               </div>
-            ))}
+            ); })}
           </div>
         </div>
 
@@ -210,14 +214,14 @@ export default function BetaStatusPage() {
             { label: 'Stream Ref Dash',   href: 'StreamRefDash' },
             { label: 'Newsletter Hub',    href: 'NewsletterHub' },
             { label: 'Social Expo',       href: 'SocialExpo' },
-          ].map(item => (
+          ].map(function(item) { return (
             <Link key={item.href} to={createPageUrl(item.href)}>
               <button className="w-full py-2.5 rounded-xl font-black uppercase text-[10px]"
-                style={{ ...T, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
+                style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
                 {item.label}
               </button>
             </Link>
-          ))}
+          ); })}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16, paddingBottom: 24 }}>

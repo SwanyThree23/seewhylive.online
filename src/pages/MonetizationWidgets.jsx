@@ -46,20 +46,23 @@ export default function MonetizationWidgets() {
   var [activeTab, setActiveTab] = useState('goals');
   var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
 
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
 
-  var { data: userCommunity } = useQuery({
+  var userCommunityQ = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
+  var userCommunity = userCommunityQ.data || null;
   var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  var { data: myRooms = [] } = useQuery({
+  var myRoomsQ = useQuery({
     queryKey: ['my-live-rooms', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }, '-created_date', 5),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }, '-created_date', 5); },
     enabled: !!user,
   });
+  var myRooms = myRoomsQ.data || [];
 
   var activeRoom = myRooms[0];
 
@@ -81,7 +84,7 @@ export default function MonetizationWidgets() {
           style={{ background: 'rgba(74,138,122,0.05)', border: '1px solid rgba(74,138,122,0.2)' }}>
           <Info className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#4A8A7A' }} />
           <div>
-            <p className="text-sm font-black" style={{ ...T, color: '#4A8A7A' }}>Monetization Widgets</p>
+            <p className="text-sm font-black" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#4A8A7A' }}>Monetization Widgets</p>
             <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.45)' }}>
               Goals update in real-time, sound alerts fire during streams, and auctions var viewers bid during live sessions.
               {activeRoom ? (
@@ -95,34 +98,34 @@ export default function MonetizationWidgets() {
 
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-3">
-          {TABS.map((s, i) => (
+          {TABS.map(function(s, i) { return (
             <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-              <button onClick={() => setActiveTab(s.id)}
+              <button onClick={function() { setActiveTab(s.id); }}
                 className="w-full flex items-center gap-3 p-4 rounded-2xl transition-all"
-                style={{ background: activeTab === s.id ? `${s.color}10` : 'rgba(8,11,24,0.9)', border: `1px solid ${activeTab === s.id ? s.color + '30' : 'rgba(212,175,55,0.08)'}`, cursor: 'pointer' }}>
+                style={{ background: activeTab === s.id ? (s.color + '10') : 'rgba(8,11,24,0.9)', border: '1px solid ' + (activeTab === s.id ? s.color + '30' : 'rgba(212,175,55,0.08)'), cursor: 'pointer' }}>
                 <s.icon className="w-5 h-5 shrink-0" style={{ color: s.color }} />
-                <p className="text-xs font-black" style={{ ...T, color: activeTab === s.id ? s.color : 'rgba(255,255,255,0.5)' }}>{s.label}</p>
+                <p className="text-xs font-black" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: activeTab === s.id ? s.color : 'rgba(255,255,255,0.5)' }}>{s.label}</p>
               </button>
             </motion.div>
-          ))}
+          ); })}
         </div>
 
         {/* Tab bar */}
         <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => setActiveTab(t.id)}
+          {TABS.map(function(t) { return (
+            <button key={t.id} onClick={function() { setActiveTab(t.id); }}
               className="px-4 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all"
-              style={{ ...T, color: activeTab === t.id ? t.color : 'rgba(255,255,255,0.35)', borderBottomColor: activeTab === t.id ? t.color : 'transparent', background: 'transparent' }}>
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: activeTab === t.id ? t.color : 'rgba(255,255,255,0.35)', borderBottomColor: activeTab === t.id ? t.color : 'transparent', background: 'transparent' }}>
               {t.label}
             </button>
-          ))}
+          ); })}
         </div>
 
         {/* Goals */}
         {activeTab === 'goals' && (
           <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              <p className="font-black text-sm" style={{ ...T, color: GOLD }}>Streamer Goals — Real-Time</p>
+              <p className="font-black text-sm" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: GOLD }}>Streamer Goals — Real-Time</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Goals update live and celebrate when reached with confetti</p>
             </div>
             <div className="p-5">
@@ -135,7 +138,7 @@ export default function MonetizationWidgets() {
         {activeTab === 'alerts' && (
           <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(109,191,126,0.1)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              <p className="font-black text-sm" style={{ ...T, color: '#6DBF7E' }}>Sound Alert Configuration</p>
+              <p className="font-black text-sm" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#6DBF7E' }}>Sound Alert Configuration</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Alerts trigger automatically when donation thresholds are met</p>
             </div>
             <div className="p-5">
@@ -148,7 +151,7 @@ export default function MonetizationWidgets() {
         {activeTab === 'auctions' && (
           <div className="rounded-2xl overflow-hidden" style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(123,93,166,0.1)' }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              <p className="font-black text-sm" style={{ ...T, color: '#7B5DA6' }}>Live Auctions</p>
+              <p className="font-black text-sm" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#7B5DA6' }}>Live Auctions</p>
               <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>Start real-time auctions — viewers bid live during your stream</p>
             </div>
             <div className="p-5">
@@ -163,9 +166,9 @@ export default function MonetizationWidgets() {
           </div>
         )}
         <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <AnimatedGiftShop recipientId={(user && user.id)} roomId={(activeRoom && activeRoom.id) || null} onClose={() => {}} />
+          <AnimatedGiftShop recipientId={(user && user.id)} roomId={(activeRoom && activeRoom.id) || null} onClose={function() {}} />
           <TipAlert roomId={(activeRoom && activeRoom.id) || null} recipientId={(user && user.id)} />
-          <TippingModal isOpen={false} onClose={() => {}} recipient={null} roomId={(activeRoom && activeRoom.id) || null} communityId={null} />
+          <TippingModal isOpen={false} onClose={function() {}} recipient={null} roomId={(activeRoom && activeRoom.id) || null} communityId={null} />
         </div>
       </div>
 

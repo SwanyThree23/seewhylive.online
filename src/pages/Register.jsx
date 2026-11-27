@@ -22,7 +22,7 @@ export default function Register() {
   var [usernameStatus, setUsernameStatus] = useState(null);
   var debounceRef = useRef(null);
 
-  var handleSubmit = async (e) => {
+  var handleSubmit = async function(e) {
     e.preventDefault();
     setError("");
     if (!username.trim() || username.trim().length < 3) {
@@ -62,7 +62,7 @@ export default function Register() {
     }, 500);
   }
 
-  var handleVerify = async () => {
+  var handleVerify = async function() {
     setError("");
     setLoading(true);
     try {
@@ -78,7 +78,7 @@ export default function Register() {
     }
   };
 
-  var handleResend = async () => {
+  var handleResend = async function() {
     setError("");
     try {
       await base44.auth.resendOtp(email);
@@ -91,19 +91,19 @@ export default function Register() {
     }
   };
 
-  var handleGoogle = () => {
+  var handleGoogle = function() {
     base44.auth.loginWithProvider("google", "/");
   };
 
-  var handleMicrosoft = () => {
+  var handleMicrosoft = function() {
     base44.auth.loginWithProvider("microsoft", "/");
   };
 
-  var handleFacebook = () => {
+  var handleFacebook = function() {
     base44.auth.loginWithProvider("facebook", "/");
   };
 
-  var handleApple = () => {
+  var handleApple = function() {
     base44.auth.loginWithProvider("apple", "/");
   };
 
@@ -247,7 +247,7 @@ export default function Register() {
               autoFocus
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={function(e) { setEmail(e.target.value); }}
               className="pl-10 h-12"
               required
             />
@@ -291,7 +291,7 @@ export default function Register() {
               autoComplete="new-password"
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={function(e) { setPassword(e.target.value); }}
               className="pl-10 h-12"
               required
             />
@@ -346,7 +346,7 @@ export default function Register() {
               autoComplete="new-password"
               placeholder="••••••••"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={function(e) { setConfirmPassword(e.target.value); }}
               className="pl-10 h-12"
               required
             />

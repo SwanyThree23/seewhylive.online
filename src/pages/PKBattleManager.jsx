@@ -203,7 +203,7 @@ function WinnerOverlay({ battle, onClose }) {
 
         <div className="flex gap-3">
           <Button
-            onClick={function() { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Link copied!')).catch(() => toast.error('Copy failed.')); }}
+            onClick={function() { navigator.clipboard.writeText(window.location.href).then(function() { toast.success('Link copied!'); }).catch(function() { toast.error('Copy failed.'); }); }}
             className="flex-1 gap-1.5 text-xs"
             style={{ background: 'rgba(201,168,76,0.12)', color: '#C9A84C', border: '1px solid rgba(201,168,76,0.25)' }}
           >
@@ -256,11 +256,11 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'room_created',
-          title: `PK Battle challenge sent to ${(b && b.challenger_name) || 'challenger'}`,
-        }).catch(() => {});
+          title: 'PK Battle challenge sent to ' + ((b && b.challenger_name) || 'challenger'),
+        }).catch(function() {});
       }
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var respondMutation = useMutation({
@@ -269,7 +269,7 @@ function InvitationsTab({ user, battles, onBattleSelect }) {
       qc.invalidateQueries({ queryKey: ['pk-battles'] });
       toast.success(vars.status === 'accepted' ? 'Battle accepted! Get ready!' : 'Invitation declined.');
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   function handleCreate() {
@@ -554,7 +554,7 @@ function ScoreboardTab({ battle, user, onBattleUpdate }) {
             isCoHost={isCoHost}
             playlist={playlist}
             onPlaylistChange={setPlaylist}
-            onSelect={(src) => { setBattleVideo(src); }}
+            onSelect={function(src) { setBattleVideo(src); }}
           />
           {battleVideo && (
             <span className="text-xs text-white/40 truncate flex-1">
@@ -729,7 +729,7 @@ export default function PKBattleManager() {
       });
     },
     onSuccess: function() { qc.invalidateQueries({ queryKey: ['pk-battles'] }); toast.success('Battle started!'); },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   function handleBattleSelect(b) {

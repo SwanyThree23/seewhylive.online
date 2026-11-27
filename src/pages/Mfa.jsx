@@ -26,15 +26,15 @@ export default function Mfa() {
   var [resuming, setResuming] = useState(true);
   var [error, setError] = useState(null);
 
-  useEffect(() => {
+  useEffect(function() {
     resumeMfa()
-      .then((result) => {
+      .then(function(result) {
         // A remembered device signs in straight away; otherwise continue the second step here.
         if ((result && result.access_token)) return finishSignIn(result.access_token, returnTo);
         if (result) setChallenge(result);
         setResuming(false);
       })
-      .catch((err) => { setError(err); setResuming(false); });
+      .catch(function(err) { setError(err); setResuming(false); });
   }, []);
 
   if (resuming) {
@@ -62,7 +62,7 @@ function ConfirmIdentity({ returnTo, onChallenge, initialError }) {
   var [error, setError] = useState(initialError);
   var [busy, setBusy] = useState(false);
 
-  var submit = async (e) => {
+  var submit = async function(e) {
     e.preventDefault();
     setError(null);
     setBusy(true);
@@ -74,24 +74,24 @@ function ConfirmIdentity({ returnTo, onChallenge, initialError }) {
     }
   };
 
-  var withProvider = (provider) => signInWithProvider(provider, returnTo, { manage: true }).catch(setError);
-  var providers = options ? PROVIDERS.filter((provider) => options[provider.flag] || provider.id === "google") : [];
+  var withProvider = function(provider) { return signInWithProvider(provider, returnTo, { manage: true }).catch(setError); };
+  var providers = options ? PROVIDERS.filter(function(provider) { return options[provider.flag] || provider.id === "google"; }) : [];
 
   return (
     <>
-      <MfaHeader title={info && `Welcome to ${info.name || "the app"}`} description="Sign in to continue" />
+      <MfaHeader title={info && ('Welcome to ' + (info.name || 'the app'))} description="Sign in to continue" />
       <MfaNotice error={error} />
       {!options && !error && <Loader2 className="mx-auto w-6 h-6 animate-spin text-muted-foreground" />}
       {options && (
         <div className="space-y-4">
-          {providers.map((provider) => (
-            <Button key={provider.id} variant="outline" className="w-full h-12 text-sm font-medium" onClick={() => withProvider(provider.id)}>
+          {providers.map(function(provider) { return (
+            <Button key={provider.id} variant="outline" className="w-full h-12 text-sm font-medium" onClick={function() { withProvider(provider.id); }}>
               {provider.id === "google" && <GoogleIcon className="w-5 h-5 mr-2" />}
               Continue with {provider.name}
             </Button>
-          ))}
+          ); })}
           {(options.enable_sso_login || options.use_workspace_sso) && (
-            <Button variant="outline" className="w-full h-12 text-sm font-medium" onClick={() => withProvider("sso")}>
+            <Button variant="outline" className="w-full h-12 text-sm font-medium" onClick={function() { withProvider("sso"); }}>
               Continue with SSO
             </Button>
           )}
@@ -102,7 +102,7 @@ function ConfirmIdentity({ returnTo, onChallenge, initialError }) {
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
                   <Input id="mfa-email" type="email" autoComplete="email" placeholder="you@example.com" value={email}
-                    onChange={(e) => setEmail(e.target.value)} className="pl-10 h-12" required />
+                    onChange={function(e) { setEmail(e.target.value); }} className="pl-10 h-12" required />
                 </div>
               </div>
               <div className="space-y-2">
@@ -110,7 +110,7 @@ function ConfirmIdentity({ returnTo, onChallenge, initialError }) {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
                   <Input id="mfa-password" type="password" autoComplete="current-password" placeholder="••••••••" value={password}
-                    onChange={(e) => setPassword(e.target.value)} className="pl-10 h-12" required />
+                    onChange={function(e) { setPassword(e.target.value); }} className="pl-10 h-12" required />
                 </div>
               </div>
               <Button type="submit" className="w-full h-12 font-medium" disabled={busy}>
