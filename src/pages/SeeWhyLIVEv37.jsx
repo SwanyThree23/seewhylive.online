@@ -84,36 +84,36 @@ function TabBtn({ label, active, onClick, badge }) {
 }
 
 function Card({ children, style }) {
+  var baseStyle = {
+    background: C.bg3,
+    border: '1px solid ' + C.slate,
+    borderRadius: 10,
+    padding: 16,
+  };
   return (
-    <div style={{
-      background: C.bg3,
-      border: `1px solid ${C.slate}`,
-      borderRadius: 10,
-      padding: 16,
-      ...style,
-    }}>
+    <div style={Object.assign({}, baseStyle, style || {})}>
       {children}
     </div>
   );
 }
 
 function Btn({ children, onClick, color, disabled, small, style }) {
+  var baseStyle = {
+    background: color || C.gold,
+    color: color ? '#fff' : C.bg,
+    border: 'none',
+    borderRadius: 6,
+    padding: small ? '5px 12px' : '8px 18px',
+    fontWeight: 700,
+    fontSize: small ? 11 : 13,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.5 : 1,
+  };
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      style={{
-        background: color || C.gold,
-        color: color ? '#fff' : C.bg,
-        border: 'none',
-        borderRadius: 6,
-        padding: small ? '5px 12px' : '8px 18px',
-        fontWeight: 700,
-        fontSize: small ? 11 : 13,
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 0.5 : 1,
-        ...style,
-      }}
+      style={Object.assign({}, baseStyle, style || {})}
     >
       {children}
     </button>
@@ -121,9 +121,9 @@ function Btn({ children, onClick, color, disabled, small, style }) {
 }
 
 function Input({ value, onChange, placeholder, type, style, rows }) {
-  var common = {
+  var common = Object.assign({
     background: C.bg2,
-    border: `1px solid ${C.slate}`,
+    border: '1px solid ' + C.slate,
     borderRadius: 6,
     color: C.text,
     padding: '8px 12px',
@@ -131,8 +131,7 @@ function Input({ value, onChange, placeholder, type, style, rows }) {
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
-    ...style,
-  };
+  }, style || {});
   if (rows) return <textarea value={value} onChange={onChange} placeholder={placeholder} rows={rows} style={common} />;
   return <input type={type || 'text'} value={value} onChange={onChange} placeholder={placeholder} style={common} />;
 }
@@ -154,8 +153,8 @@ function Spinner() {
   return (
     <div style={{
       width: 18, height: 18,
-      border: `2px solid ${C.slate}`,
-      borderTop: `2px solid ${C.gold}`,
+      border: '2px solid ' + C.slate,
+      borderTop: '2px solid ' + C.gold,
       borderRadius: '50%',
       animation: 'spin 0.7s linear infinite',
       display: 'inline-block',
@@ -165,7 +164,7 @@ function Spinner() {
 
 function toast(msg, setToastFn) {
   setToastFn(msg);
-  setTimeout(() => setToastFn(''), 2800);
+  setTimeout(function() { setToastFn(''); }, 2800);
 }
 
 // ── STAGE PANEL ────────────────────────────────────────────────────────────
@@ -193,13 +192,15 @@ function StagePanel() {
     toast('Stream ended', setToastMsg);
   }
 
-  useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+  useEffect(function() {
+    return function() { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
 
   var metrics = [
     { label: 'Viewers', val: viewers, color: C.gold },
-    { label: 'Bitrate', val: health ? `${health.bitrate}kbps` : '—', color: C.teal },
+    { label: 'Bitrate', val: health ? (health.bitrate + 'kbps') : '—', color: C.teal },
     { label: 'FPS', val: health ? health.fps : '—', color: C.green },
-    { label: 'Latency', val: health ? `${health.latency}ms` : '—', color: C.amber },
+    { label: 'Latency', val: health ? (health.latency + 'ms') : '—', color: C.amber },
     { label: 'Dropped', val: health ? health.dropped : '—', color: health && health.dropped > 5 ? C.red : C.textD },
   ];
 
@@ -209,12 +210,12 @@ function StagePanel() {
         <div style={{
           width: 12, height: 12, borderRadius: '50%',
           background: live ? C.green : C.red,
-          boxShadow: live ? `0 0 8px ${C.green}` : 'none',
+          boxShadow: live ? ('0 0 8px ' + C.green) : 'none',
         }} />
         <span style={{ color: live ? C.green : C.red, fontWeight: 700, fontSize: 14 }}>
           {live ? 'LIVE' : 'OFFLINE'}
         </span>
-        {live && <Badge label={`${viewers} viewers`} color={C.goldD} />}
+        {live && <Badge label={viewers + ' viewers'} color={C.goldD} />}
         {toastMsg && <span style={{ color: C.gold, fontSize: 12, marginLeft: 'auto' }}>{toastMsg}</span>}
       </div>
 
@@ -222,7 +223,7 @@ function StagePanel() {
         <Card style={{ marginBottom: 16 }}>
           <p style={{ color: C.textD, fontSize: 12, marginBottom: 8 }}>Room Name</p>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Input value={roomName} onChange={e => setRoomName(e.target.value)} placeholder="e.g. NYC vs LA Dominos" />
+            <Input value={roomName} onChange={function(e) { setRoomName(e.target.value); }} placeholder="e.g. NYC vs LA Dominos" />
             <Btn onClick={startStream} color={C.ruby}>Go Live</Btn>
           </div>
         </Card>
@@ -235,12 +236,14 @@ function StagePanel() {
             <Btn onClick={endStream} color={C.red} small>End Stream</Btn>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px,1fr))', gap: 10 }}>
-            {metrics.map(m => (
-              <div key={m.label} style={{ background: C.bg2, borderRadius: 8, padding: '10px 12px', textAlign: 'center' }}>
-                <div style={{ color: m.color, fontWeight: 700, fontSize: 18 }}>{m.val}</div>
-                <div style={{ color: C.textM, fontSize: 10, marginTop: 2 }}>{m.label}</div>
-              </div>
-            ))}
+            {metrics.map(function(m) {
+              return (
+                <div key={m.label} style={{ background: C.bg2, borderRadius: 8, padding: '10px 12px', textAlign: 'center' }}>
+                  <div style={{ color: m.color, fontWeight: 700, fontSize: 18 }}>{m.val}</div>
+                  <div style={{ color: C.textM, fontSize: 10, marginTop: 2 }}>{m.label}</div>
+                </div>
+              );
+            })}
           </div>
         </Card>
       )}
@@ -259,13 +262,19 @@ function SVSPanel() {
   var [s1, setS1] = useState('NY');
   var [s2, setS2] = useState('TX');
   var [scores, setScores] = useState({ s1: 0, s2: 0 });
-  var [judges, setJudges] = useState(['Judge A','Judge B','Judge C']);
-  var [judgeScores] = useState(() => ['Judge A','Judge B','Judge C'].map(() => ({ s1: 0, s2: 0 })));
+  var [judges] = useState(['Judge A','Judge B','Judge C']);
+  var [judgeScores] = useState(function() {
+    return ['Judge A','Judge B','Judge C'].map(function() { return { s1: 0, s2: 0 }; });
+  });
   var [toastMsg, setToastMsg] = useState('');
 
   function vote(side) {
-    setScores(prev => ({ ...prev, [side]: prev[side] + 1 }));
-    toast(`+1 for ${side === 's1' ? s1 : s2}`, setToastMsg);
+    setScores(function(prev) {
+      var obj = Object.assign({}, prev);
+      obj[side] = prev[side] + 1;
+      return obj;
+    });
+    toast('+1 for ' + (side === 's1' ? s1 : s2), setToastMsg);
   }
 
   var total = scores.s1 + scores.s2 || 1;
@@ -280,20 +289,20 @@ function SVSPanel() {
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 12, fontWeight: 600 }}>Set Up Battle</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 10, alignItems: 'center' }}>
           <Select value={s1} onValueChange={setS1}>
-            <SelectTrigger aria-label="Battle side 1" style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, fontSize: 14 }}>
+            <SelectTrigger aria-label="Battle side 1" style={{ background: C.bg2, color: C.text, border: '1px solid ' + C.slate, borderRadius: 6, fontSize: 14 }}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              {STATES.map(function(s) { return <SelectItem key={s} value={s}>{s}</SelectItem>; })}
             </SelectContent>
           </Select>
           <span style={{ color: C.gold, fontWeight: 900, fontSize: 18 }}>VS</span>
           <Select value={s2} onValueChange={setS2}>
-            <SelectTrigger aria-label="Battle side 2" style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, fontSize: 14 }}>
+            <SelectTrigger aria-label="Battle side 2" style={{ background: C.bg2, color: C.text, border: '1px solid ' + C.slate, borderRadius: 6, fontSize: 14 }}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {STATES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              {STATES.map(function(s) { return <SelectItem key={s} value={s}>{s}</SelectItem>; })}
             </SelectContent>
           </Select>
         </div>
@@ -301,13 +310,15 @@ function SVSPanel() {
 
       <Card style={{ marginBottom: 16 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-          {[{ key: 's1', state: s1, score: scores.s1, color: C.state1 }, { key: 's2', state: s2, score: scores.s2, color: C.state2 }].map(side => (
-            <div key={side.key} style={{ textAlign: 'center', background: C.bg2, borderRadius: 8, padding: 16, border: `2px solid ${side.color}` }}>
-              <div style={{ color: side.color, fontWeight: 900, fontSize: 28 }}>{side.state}</div>
-              <div style={{ color: C.text, fontSize: 32, fontWeight: 700, margin: '8px 0' }}>{side.score}</div>
-              <Btn onClick={() => vote(side.key)} color={side.color} small>Vote +1</Btn>
-            </div>
-          ))}
+          {[{ key: 's1', state: s1, score: scores.s1, color: C.state1 }, { key: 's2', state: s2, score: scores.s2, color: C.state2 }].map(function(side) {
+            return (
+              <div key={side.key} style={{ textAlign: 'center', background: C.bg2, borderRadius: 8, padding: 16, border: '2px solid ' + side.color }}>
+                <div style={{ color: side.color, fontWeight: 900, fontSize: 28 }}>{side.state}</div>
+                <div style={{ color: C.text, fontSize: 32, fontWeight: 700, margin: '8px 0' }}>{side.score}</div>
+                <Btn onClick={function() { vote(side.key); }} color={side.color} small>Vote +1</Btn>
+              </div>
+            );
+          })}
         </div>
 
         <div style={{ marginBottom: 12 }}>
@@ -316,22 +327,24 @@ function SVSPanel() {
             <span style={{ color: C.state2, fontSize: 12, fontWeight: 700 }}>{pct2}% {s2}</span>
           </div>
           <div style={{ height: 8, background: C.slate, borderRadius: 99, overflow: 'hidden' }}>
-            <div style={{ width: `${pct1}%`, height: '100%', background: C.state1, transition: 'width 0.4s' }} />
+            <div style={{ width: pct1 + '%', height: '100%', background: C.state1, transition: 'width 0.4s' }} />
           </div>
         </div>
       </Card>
 
       <Card>
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>Judges Panel</p>
-        {judges.map((j, i) => (
-          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${C.slate2}` }}>
-            <span style={{ color: C.textD, fontSize: 13 }}>{j}</span>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <Badge label={(s1 + ': ' + ((judgeScores[i] && judgeScores[i].s1) || 0))} color={C.state1} />
-              <Badge label={(s2 + ': ' + ((judgeScores[i] && judgeScores[i].s2) || 0))} color={C.state2} />
+        {judges.map(function(j, i) {
+          return (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid ' + C.slate2 }}>
+              <span style={{ color: C.textD, fontSize: 13 }}>{j}</span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <Badge label={(s1 + ': ' + ((judgeScores[i] && judgeScores[i].s1) || 0))} color={C.state1} />
+                <Badge label={(s2 + ': ' + ((judgeScores[i] && judgeScores[i].s2) || 0))} color={C.state2} />
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </Card>
     </div>
   );
@@ -339,31 +352,31 @@ function SVSPanel() {
 
 // ── TRIBUTE PANEL ──────────────────────────────────────────────────────────
 function TributePanel() {
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
   var [tributes, setTributes] = useState([]);
   var [name, setName] = useState('');
   var [msg, setMsg] = useState('');
   var [era, setEra] = useState('');
   var [toastMsg, setToastMsg] = useState('');
 
-  useEffect(() => {
+  useEffect(function() {
     if ((user && user.v37_tributes)) setTributes(user.v37_tributes);
   }, [(user && user.id)]);
 
   function addTribute() {
     if (!name.trim()) { toast('Enter a name', setToastMsg); return; }
     var t = { id: Date.now(), name: name.trim(), msg: msg.trim(), era: era.trim(), at: new Date().toLocaleDateString() };
-    var updated = [t, ...tributes].slice(0, 30);
+    var updated = [t].concat(tributes).slice(0, 30);
     setTributes(updated);
-    base44.auth.updateMe({ v37_tributes: updated }).catch(() => {});
+    base44.auth.updateMe({ v37_tributes: updated }).catch(function() {});
     setName(''); setMsg(''); setEra('');
     toast('Tribute added', setToastMsg);
   }
 
   function removeTribute(id) {
-    var updated = tributes.filter(t => t.id !== id);
+    var updated = tributes.filter(function(t) { return t.id !== id; });
     setTributes(updated);
-    base44.auth.updateMe({ v37_tributes: updated }).catch(() => {});
+    base44.auth.updateMe({ v37_tributes: updated }).catch(function() {});
   }
 
   return (
@@ -372,9 +385,9 @@ function TributePanel() {
 
       <Card style={{ marginBottom: 16 }}>
         <p style={{ color: C.tribL, fontSize: 13, fontWeight: 700, marginBottom: 12 }}>🕊 Add a Tribute</p>
-        <Input value={name} onChange={e => setName(e.target.value)} placeholder="Name (required)" style={{ marginBottom: 8 }} />
-        <Input value={era} onChange={e => setEra(e.target.value)} placeholder="Era / Year (optional)" style={{ marginBottom: 8 }} />
-        <Input value={msg} onChange={e => setMsg(e.target.value)} placeholder="Message..." rows={3} style={{ marginBottom: 10 }} />
+        <Input value={name} onChange={function(e) { setName(e.target.value); }} placeholder="Name (required)" style={{ marginBottom: 8 }} />
+        <Input value={era} onChange={function(e) { setEra(e.target.value); }} placeholder="Era / Year (optional)" style={{ marginBottom: 8 }} />
+        <Input value={msg} onChange={function(e) { setMsg(e.target.value); }} placeholder="Message..." rows={3} style={{ marginBottom: 10 }} />
         <Btn onClick={addTribute} color={C.tribute}>Add to Wall</Btn>
       </Card>
 
@@ -382,15 +395,17 @@ function TributePanel() {
         {tributes.length === 0 && (
           <div style={{ color: C.textM, fontSize: 13, padding: 20, textAlign: 'center' }}>No tributes yet. Be first to honor a legend.</div>
         )}
-        {tributes.map(t => (
-          <Card key={t.id} style={{ borderColor: C.tribute, position: 'relative' }}>
-            <button aria-label="Remove tribute" onClick={() => removeTribute(t.id)} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 16 }}>×</button>
-            <div style={{ color: C.tribL, fontWeight: 700, fontSize: 16, marginBottom: 4 }}>🕊 {t.name}</div>
-            {t.era && <div style={{ color: C.textM, fontSize: 11, marginBottom: 6 }}>{t.era}</div>}
-            {t.msg && <div style={{ color: C.textD, fontSize: 13, lineHeight: 1.5 }}>{t.msg}</div>}
-            <div style={{ color: C.textM, fontSize: 10, marginTop: 8 }}>{t.at}</div>
-          </Card>
-        ))}
+        {tributes.map(function(t) {
+          return (
+            <Card key={t.id} style={{ borderColor: C.tribute, position: 'relative' }}>
+              <button aria-label="Remove tribute" onClick={function() { removeTribute(t.id); }} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 16 }}>\xD7</button>
+              <div style={{ color: C.tribL, fontWeight: 700, fontSize: 16, marginBottom: 4 }}>🕊 {t.name}</div>
+              {t.era && <div style={{ color: C.textM, fontSize: 11, marginBottom: 6 }}>{t.era}</div>}
+              {t.msg && <div style={{ color: C.textD, fontSize: 13, lineHeight: 1.5 }}>{t.msg}</div>}
+              <div style={{ color: C.textM, fontSize: 10, marginTop: 8 }}>{t.at}</div>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
@@ -406,18 +421,18 @@ function PodcastPanel() {
   var [ep, setEp] = useState(null);
   var [loading, setLoading] = useState(false);
   var [toastMsg, setToastMsg] = useState('');
-  var { data: podUser } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: podUser } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
   var [nlmUrl, setNlmUrl] = useState('');
   var [nlmLabel, setNlmLabel] = useState('');
   var [nlmSources, setNlmSources] = useState([]);
 
-  useEffect(() => {
+  useEffect(function() {
     if ((podUser && podUser.v37_nlm_sources)) setNlmSources(podUser.v37_nlm_sources);
   }, [(podUser && podUser.id)]);
 
   function addSource() {
     if (!srcInput.trim() || sources.length >= 5) return;
-    setSources(prev => [...prev, { type: 'text', label: srcInput.slice(0, 40), content: srcInput }]);
+    setSources(function(prev) { return prev.concat([{ type: 'text', label: srcInput.slice(0, 40), content: srcInput }]); });
     setSrcInput('');
   }
 
@@ -425,11 +440,11 @@ function PodcastPanel() {
     if (!nlmUrl.trim() || !nlmUrl.includes('notebooklm.google.com')) { toast('Need a notebooklm.google.com URL', setToastMsg); return; }
     var m = nlmUrl.match(/\/notebook\/([^/?#]+)(?:\/artifact\/([^/?#]+))?/);
     if (!m) { toast('Cannot parse NLM URL', setToastMsg); return; }
-    var label = nlmLabel.trim() || `NLM ${nlmSources.length + 1}`;
-    var src = { id: Date.now(), label, url: nlmUrl.trim(), notebookId: m[1], artifactId: m[2] || null, at: new Date().toISOString() };
-    var updated = [src, ...nlmSources].slice(0, 20);
+    var label = nlmLabel.trim() || ('NLM ' + (nlmSources.length + 1));
+    var src = { id: Date.now(), label: label, url: nlmUrl.trim(), notebookId: m[1], artifactId: m[2] || null, at: new Date().toISOString() };
+    var updated = [src].concat(nlmSources).slice(0, 20);
     setNlmSources(updated);
-    base44.auth.updateMe({ v37_nlm_sources: updated }).catch(() => {});
+    base44.auth.updateMe({ v37_nlm_sources: updated }).catch(function() {});
     setNlmUrl(''); setNlmLabel('');
     toast('NLM source saved!', setToastMsg);
   }
@@ -438,10 +453,10 @@ function PodcastPanel() {
     if (!topic.trim()) { toast('Enter a topic', setToastMsg); return; }
     setLoading(true);
     try {
-      var srcCtx = sources.map(s => `- ${s.label}: ${s.content}`).join('\n');
-      var nlmCtx = nlmSources.slice(0, 3).map(s => `- ${s.label} [${s.notebookId.slice(0,8)}...]`).join('\n');
+      var srcCtx = sources.map(function(s) { return '- ' + s.label + ': ' + s.content; }).join('\n');
+      var nlmCtx = nlmSources.slice(0, 3).map(function(s) { return '- ' + s.label + ' [' + s.notebookId.slice(0,8) + '...]'; }).join('\n');
       var result = await base44.integrations.Core.InvokeLLM({
-        prompt: `SeeWhy LIVE AI Podcast Producer.\nTopic: "${topic}"\nHosts: ${hosts || 'Co-hosts TBD'}\nSources:\n${srcCtx}\nNotebookLM References:\n${nlmCtx}\nPlatform: SeeWhy LIVE — domino culture, State vs State, 90/10 creator split.\nGenerate a complete podcast episode outline with title, tagline, 4-6 segments, cold open, and call to action.`,
+        prompt: 'SeeWhy LIVE AI Podcast Producer.\nTopic: "' + topic + '"\nHosts: ' + (hosts || 'Co-hosts TBD') + '\nSources:\n' + srcCtx + '\nNotebookLM References:\n' + nlmCtx + '\nPlatform: SeeWhy LIVE — domino culture, State vs State, 90/10 creator split.\nGenerate a complete podcast episode outline with title, tagline, 4-6 segments, cold open, and call to action.',
         response_json_schema: {
           type: 'object',
           properties: {
@@ -480,23 +495,27 @@ function PodcastPanel() {
       {toastMsg && <div style={{ color: C.gold, fontSize: 12, marginBottom: 10 }}>{toastMsg}</div>}
 
       <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
-        {['create','sources','outline'].map(t => <TabBtn key={t} label={t === 'create' ? '🎙 Create' : t === 'sources' ? '📓 Sources' : '📋 Outline'} active={tab === t} onClick={() => setTab(t)} />)}
+        {['create','sources','outline'].map(function(t) {
+          return <TabBtn key={t} label={t === 'create' ? '🎤 Create' : t === 'sources' ? '📓 Sources' : '📋 Outline'} active={tab === t} onClick={function() { setTab(t); }} />;
+        })}
       </div>
 
       {tab === 'create' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <Input value={topic} onChange={e => setTopic(e.target.value)} placeholder="Episode topic…" />
-          <Input value={hosts} onChange={e => setHosts(e.target.value)} placeholder="Host names (comma-separated)" />
+          <Input value={topic} onChange={function(e) { setTopic(e.target.value); }} placeholder="Episode topic…" />
+          <Input value={hosts} onChange={function(e) { setHosts(e.target.value); }} placeholder="Host names (comma-separated)" />
           <div style={{ display: 'flex', gap: 8 }}>
-            <Input value={srcInput} onChange={e => setSrcInput(e.target.value)} placeholder="Add a source / talking point (max 5)" />
+            <Input value={srcInput} onChange={function(e) { setSrcInput(e.target.value); }} placeholder="Add a source / talking point (max 5)" />
             <Btn onClick={addSource} disabled={sources.length >= 5} small>Add</Btn>
           </div>
-          {sources.map((s, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', background: C.bg2, borderRadius: 6, padding: '6px 10px', fontSize: 12, color: C.textD }}>
-              <span>{s.label}</span>
-              <button aria-label="Remove source" onClick={() => setSources(prev => prev.filter((_, j) => j !== i))} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer' }}>×</button>
-            </div>
-          ))}
+          {sources.map(function(s, i) {
+            return (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', background: C.bg2, borderRadius: 6, padding: '6px 10px', fontSize: 12, color: C.textD }}>
+                <span>{s.label}</span>
+                <button aria-label="Remove source" onClick={function() { setSources(function(prev) { return prev.filter(function(_, j) { return j !== i; }); }); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer' }}>\xD7</button>
+              </div>
+            );
+          })}
           <Btn onClick={generate} disabled={loading || !topic.trim()} color={C.ruby} style={{ alignSelf: 'flex-start' }}>
             {loading ? '⏳ Generating…' : '✨ Generate Episode'}
           </Btn>
@@ -507,27 +526,29 @@ function PodcastPanel() {
         <div>
           <Card style={{ marginBottom: 14 }}>
             <p style={{ color: C.textD, fontSize: 12, marginBottom: 8, fontWeight: 600 }}>Add NotebookLM Source</p>
-            <Input value={nlmUrl} onChange={e => setNlmUrl(e.target.value)} placeholder="https://notebooklm.google.com/notebook/…" style={{ marginBottom: 8 }} />
+            <Input value={nlmUrl} onChange={function(e) { setNlmUrl(e.target.value); }} placeholder="https://notebooklm.google.com/notebook/…" style={{ marginBottom: 8 }} />
             <div style={{ display: 'flex', gap: 8 }}>
-              <Input value={nlmLabel} onChange={e => setNlmLabel(e.target.value)} placeholder="Label (optional)" />
+              <Input value={nlmLabel} onChange={function(e) { setNlmLabel(e.target.value); }} placeholder="Label (optional)" />
               <Btn onClick={addNlm} small>Save</Btn>
             </div>
           </Card>
           {nlmSources.length === 0 && <div style={{ color: C.textM, fontSize: 13, textAlign: 'center', padding: 20 }}>No NLM sources yet.</div>}
-          {nlmSources.map(s => (
-            <Card key={s.id} style={{ marginBottom: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ color: C.gold, fontWeight: 700, fontSize: 13 }}>{s.label}</div>
-                  <div style={{ color: C.textM, fontSize: 10, marginTop: 4 }}>{s.notebookId.slice(0, 12)}… {s.artifactId ? `/ ${s.artifactId.slice(0, 8)}…` : ''}</div>
+          {nlmSources.map(function(s) {
+            return (
+              <Card key={s.id} style={{ marginBottom: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ color: C.gold, fontWeight: 700, fontSize: 13 }}>{s.label}</div>
+                    <div style={{ color: C.textM, fontSize: 10, marginTop: 4 }}>{s.notebookId.slice(0, 12)}… {s.artifactId ? ('/ ' + s.artifactId.slice(0, 8) + '…') : ''}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <a href={isSafeUrl(s.url) ? s.url : undefined} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
+                    <button aria-label="Remove news source" onClick={function() { var u = nlmSources.filter(function(x) { return x.id !== s.id; }); setNlmSources(u); base44.auth.updateMe({ v37_nlm_sources: u }).catch(function() {}); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>\xD7</button>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <a href={isSafeUrl(s.url) ? s.url : undefined} target="_blank" rel="noreferrer" style={{ color: C.amber, fontSize: 11 }}>Open ↗</a>
-                  <button aria-label="Remove news source" onClick={() => { var u = nlmSources.filter(x => x.id !== s.id); setNlmSources(u); base44.auth.updateMe({ v37_nlm_sources: u }).catch(() => {}); }} style={{ background: 'none', border: 'none', color: C.textM, cursor: 'pointer', fontSize: 14 }}>×</button>
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
 
@@ -544,16 +565,18 @@ function PodcastPanel() {
               <p style={{ color: C.textD, fontSize: 13 }}>{ep.cold_open}</p>
             </Card>
           )}
-          {(ep.segments || []).map((seg, i) => (
-            <Card key={i} style={{ marginBottom: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{i + 1}. {seg.title}</span>
-                <span style={{ color: C.textM, fontSize: 11 }}>{seg.duration}</span>
-              </div>
-              {seg.host && <Badge label={seg.host} color={C.goldD} />}
-              {seg.notes && <p style={{ color: C.textD, fontSize: 12, marginTop: 6, lineHeight: 1.5 }}>{seg.notes}</p>}
-            </Card>
-          ))}
+          {(ep.segments || []).map(function(seg, i) {
+            return (
+              <Card key={i} style={{ marginBottom: 10 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ color: C.text, fontWeight: 700, fontSize: 13 }}>{i + 1}. {seg.title}</span>
+                  <span style={{ color: C.textM, fontSize: 11 }}>{seg.duration}</span>
+                </div>
+                {seg.host && <Badge label={seg.host} color={C.goldD} />}
+                {seg.notes && <p style={{ color: C.textD, fontSize: 12, marginTop: 6, lineHeight: 1.5 }}>{seg.notes}</p>}
+              </Card>
+            );
+          })}
           {ep.call_to_action && (
             <Card style={{ borderColor: C.ruby }}>
               <p style={{ color: C.rubyL, fontSize: 11, fontWeight: 700, marginBottom: 4 }}>CALL TO ACTION</p>
@@ -587,7 +610,7 @@ function MusicPanel() {
     setLoading(true);
     try {
       var result = await base44.integrations.Core.InvokeLLM({
-        prompt: `SeeWhy LIVE AI Music Director.\nConcept: "${prompt}"\nGenre: ${genre} | BPM: ${bpm} | Key: ${keyV}\nCreate a detailed track arrangement with sections, hooks, and mix tips for a broadcast performance.`,
+        prompt: 'SeeWhy LIVE AI Music Director.\nConcept: "' + prompt + '"\nGenre: ' + genre + ' | BPM: ' + bpm + ' | Key: ' + keyV + '\nCreate a detailed track arrangement with sections, hooks, and mix tips for a broadcast performance.',
         response_json_schema: {
           type: 'object',
           properties: {
@@ -623,31 +646,31 @@ function MusicPanel() {
       {toastMsg && <div style={{ color: C.gold, fontSize: 12, marginBottom: 10 }}>{toastMsg}</div>}
 
       <Card style={{ marginBottom: 14 }}>
-        <Input value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe your track concept…" rows={2} style={{ marginBottom: 10 }} />
+        <Input value={prompt} onChange={function(e) { setPrompt(e.target.value); }} placeholder="Describe your track concept…" rows={2} style={{ marginBottom: 10 }} />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>Genre</p>
             <Select value={genre} onValueChange={setGenre}>
-              <SelectTrigger aria-label="Genre" style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, fontSize: 12, width: '100%' }}>
+              <SelectTrigger aria-label="Genre" style={{ background: C.bg2, color: C.text, border: '1px solid ' + C.slate, borderRadius: 6, fontSize: 12, width: '100%' }}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {GENRES.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                {GENRES.map(function(g) { return <SelectItem key={g} value={g}>{g}</SelectItem>; })}
               </SelectContent>
             </Select>
           </div>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>BPM</p>
-            <Input value={bpm} onChange={e => setBpm(e.target.value)} type="number" style={{ padding: '6px 8px', fontSize: 12 }} />
+            <Input value={bpm} onChange={function(e) { setBpm(e.target.value); }} type="number" style={{ padding: '6px 8px', fontSize: 12 }} />
           </div>
           <div>
             <p style={{ color: C.textM, fontSize: 10, marginBottom: 4 }}>Key</p>
             <Select value={keyV} onValueChange={setKeyV}>
-              <SelectTrigger aria-label="Key" style={{ background: C.bg2, color: C.text, border: `1px solid ${C.slate}`, borderRadius: 6, fontSize: 12, width: '100%' }}>
+              <SelectTrigger aria-label="Key" style={{ background: C.bg2, color: C.text, border: '1px solid ' + C.slate, borderRadius: 6, fontSize: 12, width: '100%' }}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {KEYS.map(k => <SelectItem key={k} value={k}>{k}</SelectItem>)}
+                {KEYS.map(function(k) { return <SelectItem key={k} value={k}>{k}</SelectItem>; })}
               </SelectContent>
             </Select>
           </div>
@@ -661,27 +684,29 @@ function MusicPanel() {
             <div style={{ color: C.gold, fontWeight: 900, fontSize: 18 }}>{track.title}</div>
             <div style={{ color: C.textD, fontSize: 13, marginTop: 4 }}>{track.vibe}</div>
           </Card>
-          {(track.arrangement || []).map((sec, i) => (
-            <Card key={i} style={{ marginBottom: 8 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ color: C.amber, fontWeight: 700, fontSize: 13 }}>{sec.section}</span>
-                <Badge label={`${sec.bars} bars`} color={C.slate} />
-              </div>
-              <p style={{ color: C.textD, fontSize: 12, lineHeight: 1.5 }}>{sec.notes}</p>
-            </Card>
-          ))}
+          {(track.arrangement || []).map(function(sec, i) {
+            return (
+              <Card key={i} style={{ marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ color: C.amber, fontWeight: 700, fontSize: 13 }}>{sec.section}</span>
+                  <Badge label={sec.bars + ' bars'} color={C.slate} />
+                </div>
+                <p style={{ color: C.textD, fontSize: 12, lineHeight: 1.5 }}>{sec.notes}</p>
+              </Card>
+            );
+          })}
           {track.hook && (
             <Card style={{ borderColor: C.gold, marginBottom: 8 }}>
               <p style={{ color: C.gold, fontSize: 11, fontWeight: 700, marginBottom: 4 }}>HOOK</p>
-              <p style={{ color: C.text, fontSize: 13, fontStyle: 'italic' }}>"{track.hook}"</p>
+              <p style={{ color: C.text, fontSize: 13, fontStyle: 'italic' }>"{track.hook}"</p>
             </Card>
           )}
           {track.mix_tips && track.mix_tips.length > 0 && (
             <Card style={{ marginBottom: 8 }}>
               <p style={{ color: C.textD, fontSize: 11, fontWeight: 700, marginBottom: 6 }}>MIX TIPS</p>
-              {track.mix_tips.map((tip, i) => (
-                <div key={i} style={{ color: C.textM, fontSize: 12, padding: '3px 0' }}>• {tip}</div>
-              ))}
+              {track.mix_tips.map(function(tip, i) {
+                return <div key={i} style={{ color: C.textM, fontSize: 12, padding: '3px 0' }}>• {tip}</div>;
+              })}
             </Card>
           )}
           {track.collab_suggestion && (
@@ -713,53 +738,65 @@ function PlatformsPanel() {
   var [toastMsg, setToastMsg] = useState('');
 
   function toggle(name) {
-    setActive(prev => ({ ...prev, [name]: !prev[name] }));
-    toast(`${name} ${active[name] ? 'disabled' : 'enabled'}`, setToastMsg);
+    setActive(function(prev) {
+      var obj = Object.assign({}, prev);
+      obj[name] = !prev[name];
+      return obj;
+    });
+    toast(name + ' ' + (active[name] ? 'disabled' : 'enabled'), setToastMsg);
   }
 
   return (
     <div>
       {toastMsg && <div style={{ color: C.gold, fontSize: 12, marginBottom: 10 }}>{toastMsg}</div>}
 
-      <div style={{ background: C.bg4, border: `1px solid ${C.goldD}`, borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 12, color: C.textM }}>
+      <div style={{ background: C.bg4, border: '1px solid ' + C.goldD, borderRadius: 8, padding: 12, marginBottom: 16, fontSize: 12, color: C.textM }}>
         ⚠ Stream keys are managed server-side. Enable destinations below — actual RTMP keys are never exposed in this interface.
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px,1fr))', gap: 12 }}>
-        {PLATFORMS.map(p => (
-          <Card key={p.name} style={{ borderColor: active[p.name] ? p.color : C.slate }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <span style={{ fontSize: 18 }}>{p.icon}</span>
-                <span style={{ color: C.text, fontWeight: 700, fontSize: 14 }}>{p.name}</span>
+        {PLATFORMS.map(function(p) {
+          return (
+            <Card key={p.name} style={{ borderColor: active[p.name] ? p.color : C.slate }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <span style={{ fontSize: 18 }}>{p.icon}</span>
+                  <span style={{ color: C.text, fontWeight: 700, fontSize: 14 }}>{p.name}</span>
+                </div>
+                <button
+                  className="tap-44"
+                  aria-label={'Toggle ' + p.name}
+                  onClick={function() { toggle(p.name); }}
+                  style={{
+                    background: active[p.name] ? C.green : C.slate,
+                    border: 'none', borderRadius: 99, width: 40, height: 22,
+                    cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
+                  }}
+                >
+                  <span style={{
+                    position: 'absolute', top: 3, left: active[p.name] ? 20 : 3,
+                    width: 16, height: 16, background: '#fff', borderRadius: '50%', transition: 'left 0.2s',
+                  }} />
+                </button>
               </div>
-              <button
-                className="tap-44"
-                aria-label={`Toggle ${p.name}`}
-                onClick={() => toggle(p.name)}
-                style={{
-                  background: active[p.name] ? C.green : C.slate,
-                  border: 'none', borderRadius: 99, width: 40, height: 22,
-                  cursor: 'pointer', position: 'relative', transition: 'background 0.2s',
-                }}
-              >
-                <span style={{
-                  position: 'absolute', top: 3, left: active[p.name] ? 20 : 3,
-                  width: 16, height: 16, background: '#fff', borderRadius: '50%', transition: 'left 0.2s',
-                }} />
-              </button>
-            </div>
-            {active[p.name] && (
-              <Input
-                value={keys[p.name] || ''}
-                onChange={e => setKeys(prev => ({ ...prev, [p.name]: e.target.value }))}
-                placeholder="Stream key (stored locally only)"
-                type="password"
-                style={{ fontSize: 11 }}
-              />
-            )}
-          </Card>
-        ))}
+              {active[p.name] && (
+                <Input
+                  value={keys[p.name] || ''}
+                  onChange={function(e) {
+                    setKeys(function(prev) {
+                      var obj = Object.assign({}, prev);
+                      obj[p.name] = e.target.value;
+                      return obj;
+                    });
+                  }}
+                  placeholder="Stream key (stored locally only)"
+                  type="password"
+                  style={{ fontSize: 11 }}
+                />
+              )}
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
@@ -777,7 +814,8 @@ function WatchPartyPanel() {
   function createParty() {
     if (!url.trim()) { toast('Enter a video URL', setToastMsg); return; }
     var arr = crypto.getRandomValues(new Uint8Array(4));
-    setPartyId(`PARTY-${Array.from(arr, b => b.toString(16).padStart(2,'0')).join('').slice(0,6).toUpperCase()}`);
+    var hex = Array.from(arr, function(b) { return b.toString(16).padStart(2,'0'); }).join('').slice(0,6).toUpperCase();
+    setPartyId('PARTY-' + hex);
     setGuests(['Host (You)', 'Guest1', 'Guest2']);
     setChat([{ user: 'System', msg: 'Watch party started! Share the party ID with friends.' }]);
     toast('Watch party created!', setToastMsg);
@@ -785,7 +823,7 @@ function WatchPartyPanel() {
 
   function sendChat() {
     if (!chatInput.trim()) return;
-    setChat(prev => [...prev, { user: 'You', msg: chatInput }]);
+    setChat(function(prev) { return prev.concat([{ user: 'You', msg: chatInput }]); });
     setChatInput('');
   }
 
@@ -796,7 +834,7 @@ function WatchPartyPanel() {
       {!partyId ? (
         <Card>
           <p style={{ color: C.textD, fontSize: 12, marginBottom: 10, fontWeight: 600 }}>Start a Watch Party</p>
-          <Input value={url} onChange={e => setUrl(e.target.value)} placeholder="Video URL (YouTube, Twitch, etc.)" style={{ marginBottom: 10 }} />
+          <Input value={url} onChange={function(e) { setUrl(e.target.value); }} placeholder="Video URL (YouTube, Twitch, etc.)" style={{ marginBottom: 10 }} />
           <Btn onClick={createParty} color={C.ruby}>🎬 Create Party</Btn>
         </Card>
       ) : (
@@ -804,7 +842,7 @@ function WatchPartyPanel() {
           <Card style={{ marginBottom: 12 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <span style={{ color: C.gold, fontWeight: 700 }}>Party: {partyId}</span>
-              <Badge label={`${guests.length} guests`} color={C.ruby} />
+              <Badge label={guests.length + ' guests'} color={C.ruby} />
             </div>
             <div style={{ color: C.textM, fontSize: 12, wordBreak: 'break-all' }}>{url}</div>
           </Card>
@@ -812,24 +850,28 @@ function WatchPartyPanel() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12 }}>
             <Card>
               <p style={{ color: C.textD, fontSize: 11, fontWeight: 600, marginBottom: 8 }}>Guests</p>
-              {guests.map((g, i) => (
-                <div key={i} style={{ color: C.textD, fontSize: 12, padding: '4px 0', borderBottom: `1px solid ${C.slate2}` }}>
-                  <span style={{ color: C.green, marginRight: 6 }}>●</span>{g}
-                </div>
-              ))}
+              {guests.map(function(g, i) {
+                return (
+                  <div key={i} style={{ color: C.textD, fontSize: 12, padding: '4px 0', borderBottom: '1px solid ' + C.slate2 }}>
+                    <span style={{ color: C.green, marginRight: 6 }}>●</span>{g}
+                  </div>
+                );
+              })}
             </Card>
             <Card>
               <p style={{ color: C.textD, fontSize: 11, fontWeight: 600, marginBottom: 8 }}>Party Chat</p>
               <div style={{ height: 140, overflowY: 'auto', marginBottom: 8 }}>
-                {chat.map((c, i) => (
-                  <div key={i} style={{ fontSize: 12, marginBottom: 4 }}>
-                    <span style={{ color: C.gold, fontWeight: 700 }}>{c.user}: </span>
-                    <span style={{ color: C.textD }}>{c.msg}</span>
-                  </div>
-                ))}
+                {chat.map(function(c, i) {
+                  return (
+                    <div key={i} style={{ fontSize: 12, marginBottom: 4 }}>
+                      <span style={{ color: C.gold, fontWeight: 700 }}>{c.user}: </span>
+                      <span style={{ color: C.textD }}>{c.msg}</span>
+                    </div>
+                  );
+                })}
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
-                <Input value={chatInput} onChange={e => setChatInput(e.target.value)} placeholder="Message…" onKeyDown={e => e.key === 'Enter' && sendChat()} style={{ fontSize: 12 }} />
+                <Input value={chatInput} onChange={function(e) { setChatInput(e.target.value); }} placeholder="Message…" onKeyDown={function(e) { if (e.key === 'Enter') sendChat(); }} style={{ fontSize: 12 }} />
                 <Btn onClick={sendChat} small>Send</Btn>
               </div>
             </Card>
@@ -856,13 +898,15 @@ function AnalyticsPanel() {
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px,1fr))', gap: 12, marginBottom: 20 }}>
-        {stats.map(s => (
-          <Card key={s.label} style={{ textAlign: 'center' }}>
-            <div style={{ color: s.color, fontWeight: 900, fontSize: 22 }}>{s.val}</div>
-            <div style={{ color: C.textM, fontSize: 10, margin: '4px 0' }}>{s.label}</div>
-            <Badge label={s.delta} color={s.delta.startsWith('+') ? '#1a3d1a' : '#3d1a1a'} />
-          </Card>
-        ))}
+        {stats.map(function(s) {
+          return (
+            <Card key={s.label} style={{ textAlign: 'center' }}>
+              <div style={{ color: s.color, fontWeight: 900, fontSize: 22 }}>{s.val}</div>
+              <div style={{ color: C.textM, fontSize: 10, margin: '4px 0' }}>{s.label}</div>
+              <Badge label={s.delta} color={s.delta.startsWith('+') ? '#1a3d1a' : '#3d1a1a'} />
+            </Card>
+          );
+        })}
       </div>
 
       <Card>
@@ -874,13 +918,15 @@ function AnalyticsPanel() {
           {topContent.length === 0 && (
             <span style={{ color: C.textM, fontSize: 12, gridColumn: '1/-1' }}>No streams yet — go live to see top content.</span>
           )}
-          {topContent.map(c => (
-            <React.Fragment key={c.title}>
-              <span style={{ color: C.textD, fontSize: 13 }}>{c.title}</span>
-              <span style={{ color: C.teal, fontSize: 12, textAlign: 'right' }}>{c.views}</span>
-              <span style={{ color: C.gold, fontSize: 12, textAlign: 'right' }}>{c.rev}</span>
-            </React.Fragment>
-          ))}
+          {topContent.map(function(c) {
+            return (
+              <React.Fragment key={c.title}>
+                <span style={{ color: C.textD, fontSize: 13 }}>{c.title}</span>
+                <span style={{ color: C.teal, fontSize: 12, textAlign: 'right' }}>{c.views}</span>
+                <span style={{ color: C.gold, fontSize: 12, textAlign: 'right' }}>{c.rev}</span>
+              </React.Fragment>
+            );
+          })}
         </div>
       </Card>
     </div>
@@ -899,13 +945,13 @@ function MonetizePanel() {
   var streams = [
     { name: 'Subscriptions', icon: '🔒', amount: '$412.00', color: C.gold },
     { name: 'Tips & Gifts', icon: '🎁', amount: '$234.50', color: C.amber },
-    { name: 'PPV Events', icon: '🎟', amount: '$180.00', color: C.ruby },
+    { name: 'PPV Events', icon: '🎫', amount: '$180.00', color: C.ruby },
     { name: 'Merch Cut', icon: '👕', amount: '$65.30', color: C.teal },
   ];
 
   return (
     <div>
-      <div style={{ background: C.bg4, border: `2px solid ${C.goldD}`, borderRadius: 10, padding: 16, marginBottom: 16, textAlign: 'center' }}>
+      <div style={{ background: C.bg4, border: '2px solid ' + C.goldD, borderRadius: 10, padding: 16, marginBottom: 16, textAlign: 'center' }}>
         <div style={{ color: C.gold, fontSize: 12, fontWeight: 700, marginBottom: 4 }}>CREATOR REVENUE SPLIT</div>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginTop: 8 }}>
           <div>
@@ -923,7 +969,7 @@ function MonetizePanel() {
         <p style={{ color: C.textD, fontSize: 12, marginBottom: 8, fontWeight: 600 }}>Revenue Calculator</p>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
           <span style={{ color: C.textM, fontSize: 13 }}>Gross $</span>
-          <Input value={gross} onChange={e => setGross(e.target.value)} type="number" style={{ maxWidth: 120 }} />
+          <Input value={gross} onChange={function(e) { setGross(e.target.value); }} type="number" style={{ maxWidth: 120 }} />
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
           <div style={{ background: C.bg2, borderRadius: 8, padding: '10px 16px', flex: 1, textAlign: 'center' }}>
@@ -938,13 +984,15 @@ function MonetizePanel() {
       </Card>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px,1fr))', gap: 10 }}>
-        {streams.map(s => (
-          <Card key={s.name} style={{ borderColor: s.color }}>
-            <div style={{ fontSize: 20, marginBottom: 6 }}>{s.icon}</div>
-            <div style={{ color: s.color, fontWeight: 900, fontSize: 18 }}>{s.amount}</div>
-            <div style={{ color: C.textM, fontSize: 11 }}>{s.name}</div>
-          </Card>
-        ))}
+        {streams.map(function(s) {
+          return (
+            <Card key={s.name} style={{ borderColor: s.color }}>
+              <div style={{ fontSize: 20, marginBottom: 6 }}>{s.icon}</div>
+              <div style={{ color: s.color, fontWeight: 900, fontSize: 18 }}>{s.amount}</div>
+              <div style={{ color: C.textM, fontSize: 11 }}>{s.name}</div>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
@@ -965,7 +1013,14 @@ function GuardianPanel() {
   ]);
 
   function toggleRule(id) {
-    setRules(prev => prev.map(r => r.id === id ? { ...r, active: !r.active } : r));
+    setRules(function(prev) {
+      return prev.map(function(r) {
+        if (r.id === id) {
+          return Object.assign({}, r, { active: !r.active });
+        }
+        return r;
+      });
+    });
   }
 
   var levelColor = { high: C.red, medium: C.warn, low: C.teal };
@@ -973,51 +1028,57 @@ function GuardianPanel() {
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
-        {[{ label: 'Monitored', val: '1,240', color: C.teal }, { label: 'Flagged', val: flagged.length, color: C.warn }, { label: 'Removed', val: '3', color: C.red }, { label: 'Clear', val: '97%', color: C.green }].map(s => (
-          <Card key={s.label} style={{ textAlign: 'center', padding: 10 }}>
-            <div style={{ color: s.color, fontWeight: 700, fontSize: 20 }}>{s.val}</div>
-            <div style={{ color: C.textM, fontSize: 10 }}>{s.label}</div>
-          </Card>
-        ))}
+        {[{ label: 'Monitored', val: '1,240', color: C.teal }, { label: 'Flagged', val: flagged.length, color: C.warn }, { label: 'Removed', val: '3', color: C.red }, { label: 'Clear', val: '97%', color: C.green }].map(function(s) {
+          return (
+            <Card key={s.label} style={{ textAlign: 'center', padding: 10 }}>
+              <div style={{ color: s.color, fontWeight: 700, fontSize: 20 }}>{s.val}</div>
+              <div style={{ color: C.textM, fontSize: 10 }}>{s.label}</div>
+            </Card>
+          );
+        })}
       </div>
 
       <Card style={{ marginBottom: 14 }}>
         <p style={{ color: C.textD, fontSize: 12, fontWeight: 600, marginBottom: 10 }}>Moderation Rules</p>
-        {rules.map(r => (
-          <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: `1px solid ${C.slate2}` }}>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: levelColor[r.level], display: 'inline-block' }} />
-              <span style={{ color: C.textD, fontSize: 12 }}>{r.text}</span>
+        {rules.map(function(r) {
+          return (
+            <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid ' + C.slate2 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: levelColor[r.level], display: 'inline-block' }} />
+                <span style={{ color: C.textD, fontSize: 12 }}>{r.text}</span>
+              </div>
+              <button
+                className="tap-44"
+                aria-label={'Toggle rule: ' + r.text}
+                onClick={function() { toggleRule(r.id); }}
+                style={{ background: r.active ? C.green : C.slate, border: 'none', borderRadius: 99, width: 36, height: 20, cursor: 'pointer', position: 'relative' }}
+              >
+                <span style={{ position: 'absolute', top: 2, left: r.active ? 17 : 2, width: 16, height: 16, background: '#fff', borderRadius: '50%', transition: 'left 0.2s' }} />
+              </button>
             </div>
-            <button
-              className="tap-44"
-              aria-label={`Toggle rule: ${r.text}`}
-              onClick={() => toggleRule(r.id)}
-              style={{ background: r.active ? C.green : C.slate, border: 'none', borderRadius: 99, width: 36, height: 20, cursor: 'pointer', position: 'relative' }}
-            >
-              <span style={{ position: 'absolute', top: 2, left: r.active ? 17 : 2, width: 16, height: 16, background: '#fff', borderRadius: '50%', transition: 'left 0.2s' }} />
-            </button>
-          </div>
-        ))}
+          );
+        })}
       </Card>
 
       <Card>
         <p style={{ color: C.textD, fontSize: 12, fontWeight: 600, marginBottom: 10 }}>Flagged Content</p>
         {flagged.length === 0 && <div style={{ color: C.textM, fontSize: 12 }}>No flagged content.</div>}
-        {flagged.map(f => (
-          <div key={f.id} style={{ background: C.bg2, borderRadius: 8, padding: 10, marginBottom: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ color: C.warn, fontWeight: 700, fontSize: 12 }}>{f.user}</span>
-              <span style={{ color: C.textM, fontSize: 10 }}>{f.time}</span>
+        {flagged.map(function(f) {
+          return (
+            <div key={f.id} style={{ background: C.bg2, borderRadius: 8, padding: 10, marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ color: C.warn, fontWeight: 700, fontSize: 12 }}>{f.user}</span>
+                <span style={{ color: C.textM, fontSize: 10 }}>{f.time}</span>
+              </div>
+              <div style={{ color: C.textD, fontSize: 12, marginBottom: 4 }}>{f.msg}</div>
+              <Badge label={f.reason} color={C.ruby} />
+              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                <Btn onClick={function() { setFlagged(function(prev) { return prev.filter(function(x) { return x.id !== f.id; }); }); }} color={C.red} small>Remove</Btn>
+                <Btn onClick={function() { setFlagged(function(prev) { return prev.filter(function(x) { return x.id !== f.id; }); }); }} color={C.green} small>Clear</Btn>
+              </div>
             </div>
-            <div style={{ color: C.textD, fontSize: 12, marginBottom: 4 }}>{f.msg}</div>
-            <Badge label={f.reason} color={C.ruby} />
-            <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-              <Btn onClick={() => setFlagged(prev => prev.filter(x => x.id !== f.id))} color={C.red} small>Remove</Btn>
-              <Btn onClick={() => setFlagged(prev => prev.filter(x => x.id !== f.id))} color={C.green} small>Clear</Btn>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </Card>
     </div>
   );
@@ -1031,7 +1092,7 @@ function InsForgePanel() {
     { id: 'endcard', label: 'End Card', icon: '🎬' },
     { id: 'overlay', label: 'Lower Third', icon: '📺' },
     { id: 'social', label: 'Social Post', icon: '📱' },
-    { id: 'promo', label: 'Promo Card', icon: '🎟' },
+    { id: 'promo', label: 'Promo Card', icon: '🎫' },
   ];
   var [sel, setSel] = useState(ASSETS[0]);
   var [prompt, setPrompt] = useState('');
@@ -1044,7 +1105,7 @@ function InsForgePanel() {
     setLoading(true);
     try {
       var result = await base44.integrations.Core.InvokeLLM({
-        prompt: `SeeWhy LIVE INS Forge — Content Asset Generator.\nAsset Type: ${sel.label}\nConcept: "${prompt}"\nBrand: Dark background (#0E0C09), gold (#C9A84C) accents, Bebas Neue font, broadcast aesthetic, domino culture.\nGenerate complete copy, layout instructions, and dimensions for this asset.`,
+        prompt: 'SeeWhy LIVE INS Forge — Content Asset Generator.\nAsset Type: ' + sel.label + '\nConcept: "' + prompt + '"\nBrand: Dark background (#0E0C09), gold (#C9A84C) accents, Bebas Neue font, broadcast aesthetic, domino culture.\nGenerate complete copy, layout instructions, and dimensions for this asset.',
         response_json_schema: {
           type: 'object',
           properties: {
@@ -1071,25 +1132,27 @@ function InsForgePanel() {
       {toastMsg && <div style={{ color: C.gold, fontSize: 12, marginBottom: 10 }}>{toastMsg}</div>}
 
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
-        {ASSETS.map(a => (
-          <button
-            key={a.id}
-            onClick={() => setSel(a)}
-            style={{
-              background: sel.id === a.id ? C.goldD : C.bg3,
-              border: `1px solid ${sel.id === a.id ? C.gold : C.slate}`,
-              borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
-              color: sel.id === a.id ? C.text : C.textM, fontSize: 12,
-            }}
-          >
-            {a.icon} {a.label}
-          </button>
-        ))}
+        {ASSETS.map(function(a) {
+          return (
+            <button
+              key={a.id}
+              onClick={function() { setSel(a); }}
+              style={{
+                background: sel.id === a.id ? C.goldD : C.bg3,
+                border: '1px solid ' + (sel.id === a.id ? C.gold : C.slate),
+                borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
+                color: sel.id === a.id ? C.text : C.textM, fontSize: 12,
+              }}
+            >
+              {a.icon} {a.label}
+            </button>
+          );
+        })}
       </div>
 
       <Card style={{ marginBottom: 14 }}>
-        <Input value={prompt} onChange={e => setPrompt(e.target.value)} placeholder={`Describe your ${sel.label} concept…`} rows={3} style={{ marginBottom: 10 }} />
-        <Btn onClick={gen} disabled={loading} color={C.ruby}>{loading ? '⏳ Forging…' : `⚒ Forge ${sel.label}`}</Btn>
+        <Input value={prompt} onChange={function(e) { setPrompt(e.target.value); }} placeholder={'Describe your ' + sel.label + ' concept…'} rows={3} style={{ marginBottom: 10 }} />
+        <Btn onClick={gen} disabled={loading} color={C.ruby}>{loading ? '⏳ Forging…' : ('⚒ Forge ' + sel.label)}</Btn>
       </Card>
 
       {res && (
@@ -1099,9 +1162,9 @@ function InsForgePanel() {
           <div style={{ marginTop: 12 }}>
             <div style={{ color: C.text, fontWeight: 700, fontSize: 16, marginBottom: 4 }}>{res.headline}</div>
             {res.subline && <div style={{ color: C.textD, fontSize: 13, marginBottom: 8 }}>{res.subline}</div>}
-            {(res.copy_lines || []).map((line, i) => (
-              <div key={i} style={{ color: C.textM, fontSize: 12, padding: '3px 0' }}>• {line}</div>
-            ))}
+            {(res.copy_lines || []).map(function(line, i) {
+              return <div key={i} style={{ color: C.textM, fontSize: 12, padding: '3px 0' }}>• {line}</div>;
+            })}
           </div>
           {res.layout_notes && (
             <div style={{ background: C.bg2, borderRadius: 8, padding: 10, marginTop: 10 }}>
@@ -1122,7 +1185,7 @@ function InsForgePanel() {
 
 // ── JOYCE AI PANEL ─────────────────────────────────────────────────────────
 function JoyceAIPanel() {
-  var SYS_PROMPT = `You are Joyce AI — SeeWhy LIVE's intelligent creator assistant. You are an expert in streaming, domino culture, State vs State competition format, content creation, monetization, and the African American broadcasting community. You speak directly, knowledgeably, and with cultural fluency. The platform gives creators 90% revenue, uses earth-tone dark design, and celebrates domino culture as a competitive sport and cultural art form.`;
+  var SYS_PROMPT = "You are Joyce AI — SeeWhy LIVE's intelligent creator assistant. You are an expert in streaming, domino culture, State vs State competition format, content creation, monetization, and the African American broadcasting community. You speak directly, knowledgeably, and with cultural fluency. The platform gives creators 90% revenue, uses earth-tone dark design, and celebrates domino culture as a competitive sport and cultural art form.";
 
   var [msgs, setMsgs] = useState([
     { r: 'assistant', c: "Hey! I'm Joyce AI — your SeeWhy LIVE creator assistant. Ask me anything about streaming, content strategy, monetization, or domino culture." },
@@ -1131,25 +1194,25 @@ function JoyceAIPanel() {
   var [loading, setLoading] = useState(false);
   var endRef = useRef(null);
 
-  useEffect(() => {
+  useEffect(function() {
     if (endRef.current) endRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [msgs]);
 
   async function send() {
     var q = input.trim();
     if (!q) return;
-    setMsgs(prev => [...prev, { r: 'user', c: q }]);
+    setMsgs(function(prev) { return prev.concat([{ r: 'user', c: q }]); });
     setInput('');
     setLoading(true);
     try {
-      var history = msgs.slice(-8).map(m => `${m.r === 'user' ? 'USER' : 'JOYCE AI'}: ${m.c}`).join('\n');
+      var history = msgs.slice(-8).map(function(m) { return (m.r === 'user' ? 'USER' : 'JOYCE AI') + ': ' + m.c; }).join('\n');
       var result = await base44.integrations.Core.InvokeLLM({
-        prompt: `${SYS_PROMPT}\n\nConversation:\n${history}\nUSER: ${q}\n\nRespond as Joyce AI in 2-4 sentences, direct and helpful.`,
+        prompt: SYS_PROMPT + '\n\nConversation:\n' + history + '\nUSER: ' + q + '\n\nRespond as Joyce AI in 2-4 sentences, direct and helpful.',
       });
       var reply = typeof result === 'string' ? result : (result.response || result.text || result.content || JSON.stringify(result));
-      setMsgs(prev => [...prev, { r: 'assistant', c: reply }]);
+      setMsgs(function(prev) { return prev.concat([{ r: 'assistant', c: reply }]); });
     } catch (e) {
-      setMsgs(prev => [...prev, { r: 'assistant', c: 'Having trouble connecting right now — try again in a moment.' }]);
+      setMsgs(function(prev) { return prev.concat([{ r: 'assistant', c: 'Having trouble connecting right now — try again in a moment.' }]); });
     } finally {
       setLoading(false);
     }
@@ -1158,37 +1221,39 @@ function JoyceAIPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '60vh' }}>
       <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 10 }}>
-        {msgs.map((m, i) => (
-          <div
-            key={i}
-            style={{
-              display: 'flex',
-              justifyContent: m.r === 'user' ? 'flex-end' : 'flex-start',
-              marginBottom: 10,
-            }}
-          >
+        {msgs.map(function(m, i) {
+          return (
             <div
+              key={i}
               style={{
-                maxWidth: '80%',
-                background: m.r === 'user' ? C.ruby : C.bg3,
-                border: `1px solid ${m.r === 'user' ? C.rubyL : C.slate}`,
-                borderRadius: m.r === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                padding: '10px 14px',
-                color: C.text,
-                fontSize: 13,
-                lineHeight: 1.5,
+                display: 'flex',
+                justifyContent: m.r === 'user' ? 'flex-end' : 'flex-start',
+                marginBottom: 10,
               }}
             >
-              {m.r === 'assistant' && (
-                <div style={{ color: C.gold, fontSize: 10, fontWeight: 700, marginBottom: 4 }}>JOYCE AI</div>
-              )}
-              {m.c}
+              <div
+                style={{
+                  maxWidth: '80%',
+                  background: m.r === 'user' ? C.ruby : C.bg3,
+                  border: '1px solid ' + (m.r === 'user' ? C.rubyL : C.slate),
+                  borderRadius: m.r === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                  padding: '10px 14px',
+                  color: C.text,
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                }}
+              >
+                {m.r === 'assistant' && (
+                  <div style={{ color: C.gold, fontSize: 10, fontWeight: 700, marginBottom: 4 }}>JOYCE AI</div>
+                )}
+                {m.c}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         {loading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 10 }}>
-            <div style={{ background: C.bg3, border: `1px solid ${C.slate}`, borderRadius: '12px 12px 12px 2px', padding: '10px 14px' }}>
+            <div style={{ background: C.bg3, border: '1px solid ' + C.slate, borderRadius: '12px 12px 12px 2px', padding: '10px 14px' }}>
               <Spinner />
             </div>
           </div>
@@ -1196,12 +1261,12 @@ function JoyceAIPanel() {
         <div ref={endRef} />
       </div>
 
-      <div style={{ display: 'flex', gap: 8, paddingTop: 10, borderTop: `1px solid ${C.slate}` }}>
+      <div style={{ display: 'flex', gap: 8, paddingTop: 10, borderTop: '1px solid ' + C.slate }}>
         <Input
           value={input}
-          onChange={e => setInput(e.target.value)}
+          onChange={function(e) { setInput(e.target.value); }}
           placeholder="Ask Joyce AI…"
-          onKeyDown={e => e.key === 'Enter' && !loading && send()}
+          onKeyDown={function(e) { if (e.key === 'Enter' && !loading) send(); }}
         />
         <Btn onClick={send} disabled={loading || !input.trim()} color={C.ruby}>Send</Btn>
       </div>
@@ -1219,19 +1284,19 @@ function SettingsPanel() {
 
   async function save() {
     try {
-      await base44.auth.updateMe({ creator_handle: handle, contact_email: email, bio, notification_prefs: notifs });
+      await base44.auth.updateMe({ creator_handle: handle, contact_email: email, bio: bio, notification_prefs: notifs });
       setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch {}
+      setTimeout(function() { setSaved(false); }, 2000);
+    } catch (e) {}
   }
 
-  useEffect(() => {
-    base44.auth.me().then(user => {
+  useEffect(function() {
+    base44.auth.me().then(function(user) {
       if (user.creator_handle) setHandle(user.creator_handle);
       if (user.contact_email || user.email) setEmail(user.contact_email || user.email || '');
       if (user.bio) setBio(user.bio);
-      if (user.notification_prefs) setNotifs(prev => ({ ...prev, ...user.notification_prefs }));
-    }).catch(() => {});
+      if (user.notification_prefs) setNotifs(function(prev) { return Object.assign({}, prev, user.notification_prefs); });
+    }).catch(function() {});
   }, []);
 
   return (
@@ -1241,27 +1306,37 @@ function SettingsPanel() {
       <Card style={{ marginBottom: 14 }}>
         <p style={{ color: C.textD, fontSize: 12, fontWeight: 600, marginBottom: 10 }}>Creator Profile</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <Input value={handle} onChange={e => setHandle(e.target.value)} placeholder="@handle" />
-          <Input value={email} onChange={e => setEmail(e.target.value)} placeholder="Contact email" type="email" />
-          <Input value={bio} onChange={e => setBio(e.target.value)} placeholder="Creator bio…" rows={3} />
+          <Input value={handle} onChange={function(e) { setHandle(e.target.value); }} placeholder="@handle" />
+          <Input value={email} onChange={function(e) { setEmail(e.target.value); }} placeholder="Contact email" type="email" />
+          <Input value={bio} onChange={function(e) { setBio(e.target.value); }} placeholder="Creator bio…" rows={3} />
         </div>
       </Card>
 
       <Card style={{ marginBottom: 14 }}>
         <p style={{ color: C.textD, fontSize: 12, fontWeight: 600, marginBottom: 10 }}>Notifications</p>
-        {Object.entries({ email: 'Email alerts', push: 'Push notifications', subs: 'New subscriber alerts', tips: 'Tip notifications' }).map(([k, label]) => (
-          <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${C.slate2}` }}>
-            <span style={{ color: C.textD, fontSize: 13 }}>{label}</span>
-            <button
-              className="tap-44"
-              aria-label={`Toggle ${label}`}
-              onClick={() => setNotifs(prev => ({ ...prev, [k]: !prev[k] }))}
-              style={{ background: notifs[k] ? C.green : C.slate, border: 'none', borderRadius: 99, width: 36, height: 20, cursor: 'pointer', position: 'relative' }}
-            >
-              <span style={{ position: 'absolute', top: 2, left: notifs[k] ? 17 : 2, width: 16, height: 16, background: '#fff', borderRadius: '50%', transition: 'left 0.2s' }} />
-            </button>
-          </div>
-        ))}
+        {Object.entries({ email: 'Email alerts', push: 'Push notifications', subs: 'New subscriber alerts', tips: 'Tip notifications' }).map(function(entry) {
+          var k = entry[0];
+          var label = entry[1];
+          return (
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid ' + C.slate2 }}>
+              <span style={{ color: C.textD, fontSize: 13 }}>{label}</span>
+              <button
+                className="tap-44"
+                aria-label={'Toggle ' + label}
+                onClick={function() {
+                  setNotifs(function(prev) {
+                    var obj = Object.assign({}, prev);
+                    obj[k] = !prev[k];
+                    return obj;
+                  });
+                }}
+                style={{ background: notifs[k] ? C.green : C.slate, border: 'none', borderRadius: 99, width: 36, height: 20, cursor: 'pointer', position: 'relative' }}
+              >
+                <span style={{ position: 'absolute', top: 2, left: notifs[k] ? 17 : 2, width: 16, height: 16, background: '#fff', borderRadius: '50%', transition: 'left 0.2s' }} />
+              </button>
+            </div>
+          );
+        })}
       </Card>
 
       <Card style={{ marginBottom: 14 }}>
@@ -1282,7 +1357,7 @@ var TABS = [
   { id: 'stage',    label: '📡 Stage' },
   { id: 'svs',      label: '⚔️ SVS' },
   { id: 'tribute',  label: '🕊 Tribute' },
-  { id: 'podcast',  label: '🎙 Podcast' },
+  { id: 'podcast',  label: '🎤 Podcast' },
   { id: 'music',    label: '🎵 Music' },
   { id: 'platforms',label: '🌐 Platforms' },
   { id: 'party',    label: '🎬 Watch Party' },
@@ -1295,10 +1370,12 @@ var TABS = [
 ];
 
 export default function SeeWhyLIVEv37() {
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
   var { data: activeRoom } = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() {
+      return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; });
+    },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
@@ -1306,7 +1383,9 @@ export default function SeeWhyLIVEv37() {
   var roomId = activeRoomId;
   var { data: userCommunity } = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() {
+      return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; });
+    },
     enabled: !!(user && user.id),
   });
   var userCommunityId = (userCommunity && userCommunity.id) || null;
@@ -1331,19 +1410,12 @@ export default function SeeWhyLIVEv37() {
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, color: C.text, fontFamily: "'Inter', 'Segoe UI', sans-serif" }}>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        * { box-sizing: border-box; }
-        textarea, input, select { font-family: inherit; }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: ${C.bg}; }
-        ::-webkit-scrollbar-thumb { background: ${C.slate}; border-radius: 2px; }
-      `}</style>
+      <style>{'@keyframes spin { to { transform: rotate(360deg); } } * { box-sizing: border-box; } textarea, input, select { font-family: inherit; } ::-webkit-scrollbar { width: 4px; height: 4px; } ::-webkit-scrollbar-track { background: ' + C.bg + '; } ::-webkit-scrollbar-thumb { background: ' + C.slate + '; border-radius: 2px; }'}</style>
 
       {/* Header */}
       <div style={{
         background: C.bg2,
-        borderBottom: `1px solid ${C.slate}`,
+        borderBottom: '1px solid ' + C.slate,
         padding: '12px 20px',
         display: 'flex',
         alignItems: 'center',
@@ -1360,16 +1432,16 @@ export default function SeeWhyLIVEv37() {
       {/* Tab Nav */}
       <div style={{
         background: C.bg2,
-        borderBottom: `1px solid ${C.slate}`,
+        borderBottom: '1px solid ' + C.slate,
         padding: '6px 16px',
         overflowX: 'auto',
         display: 'flex',
         gap: 2,
         scrollbarWidth: 'none',
       }}>
-        {TABS.map(t => (
-          <TabBtn key={t.id} label={t.label} active={activeTab === t.id} onClick={() => setActiveTab(t.id)} />
-        ))}
+        {TABS.map(function(t) {
+          return <TabBtn key={t.id} label={t.label} active={activeTab === t.id} onClick={function() { setActiveTab(t.id); }} />;
+        })}
       </div>
 
       {/* Panel Content */}
@@ -1381,15 +1453,15 @@ export default function SeeWhyLIVEv37() {
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentUser={user} isHost={true} />
       <SwanyBotWidget />
-      <SwanyBotEnhanced userId={(user && user.id) || null} conversationId={null} onContextReady={() => {}} />
+      <SwanyBotEnhanced userId={(user && user.id) || null} conversationId={null} onContextReady={function() {}} />
       <StreamGoals hostId={(user && user.id) || null} roomId={activeRoomId} isHost={true} />
       <ViewerCount roomId={activeRoomId} />
       <NotificationHub userId={(user && user.id) || null} roomId={activeRoomId} />
       <BroadcastAnalyticsDashboard roomId={activeRoomId} isHost={true} />
       <ShareToSocial content={{ url: window.location.href, title: activeRoomId ? 'Join my live stream on SeeWhy LIVE!' : 'SeeWhy LIVE' }} />
       <StreamHealthDashboard roomId={activeRoomId} isHost={true} />
-      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
-      <GlobalSearch onClose={() => {}} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={function() { setShowActivitySidebar(false); }} />
+      <GlobalSearch onClose={function() {}} />
     </div>
   );
 }
