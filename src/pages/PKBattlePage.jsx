@@ -110,9 +110,11 @@ function AudienceCameraStrip({ localStream, remoteStreams, currentUserId }) {
       style={{ background: 'rgba(0,0,0,0.6)', borderTop: '1px solid rgba(212,175,55,0.1)' }}>
       <span className="text-[11px] uppercase tracking-widest shrink-0" style={{ color: 'rgba(212,175,55,0.5)' }}>Audience</span>
       {localStream && <OctCamTile stream={localStream} label="You" isLocal />}
-      {remoteStreams && Array.from(remoteStreams.entries()).map(([peerId, stream]) => (
-        <OctCamTile key={peerId} stream={stream} label="Viewer" isLocal={false} />
-      ))}
+      {remoteStreams && Array.from(remoteStreams.entries()).map(function(entry) {
+        var peerId = entry[0];
+        var stream = entry[1];
+        return <OctCamTile key={peerId} stream={stream} label="Viewer" isLocal={false} />;
+      })}
       {!hasStreams && (
         <>
           <GhostOctTile />
@@ -149,7 +151,7 @@ function ComboBadge({ combo }) {
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.5, opacity: 0 }}
       className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full font-black text-sm px-2 py-0.5 rounded-full z-20"
-      style={{ background: color + '30', color, border: `1px solid ${color}60`, boxShadow: glow, fontFamily: 'Barlow Condensed, sans-serif' }}
+      style={{ background: color + '30', color: color, border: '1px solid ' + color + '60', boxShadow: glow, fontFamily: 'Barlow Condensed, sans-serif' }}
     >
       x{combo}
     </motion.div>
@@ -187,11 +189,11 @@ function ScoreBar({ leftVotes, rightVotes, leftName, rightName }) {
       <div className="h-3 rounded-full flex overflow-hidden bg-white/10">
         <motion.div
           className="bg-[#D4AF37] transition-all duration-700"
-          style={{ width: `${leftPct}%` }}
+          style={{ width: leftPct + '%' }}
         />
         <motion.div
           className="bg-[#C0392B] transition-all duration-700"
-          style={{ width: `${100 - leftPct}%` }}
+          style={{ width: (100 - leftPct) + '%' }}
         />
       </div>
       <div className="flex items-center justify-between text-xs font-bold mt-1">
@@ -222,7 +224,7 @@ function CircularTimer({ timeLeft, totalTime }) {
           strokeDasharray={circumference}
           strokeDashoffset={offset}
           strokeLinecap="round"
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          transform={'rotate(-90 ' + (size / 2) + ' ' + (size / 2) + ')'}
           style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s' }}
         />
       </svg>
@@ -284,36 +286,80 @@ function WinnerOverlay({ winner, onClose }) {
 }
 
 export default function PKBattlePage() {
-  var [searchParams, setSearchParams] = useSearchParams();
+  var searchParamsState = useSearchParams();
+  var searchParams = searchParamsState[0];
+  var setSearchParams = searchParamsState[1];
   var battleId = searchParams.get('id');
   var qc = useQueryClient();
   var navigate = useNavigate();
 
-  var [leftName, setLeftName] = useState('');
+  var leftNameState = useState('');
+  var leftName = leftNameState[0];
+  var setLeftName = leftNameState[1];
   var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
 
-  var [rightName, setRightName] = useState('');
-  var [leftStream, setLeftStream] = useState('');
-  var [rightStream, setRightStream] = useState('');
-  var [duration, setDuration] = useState(BATTLE_DURATION);
+  var rightNameState = useState('');
+  var rightName = rightNameState[0];
+  var setRightName = rightNameState[1];
+  var leftStreamState = useState('');
+  var leftStream = leftStreamState[0];
+  var setLeftStream = leftStreamState[1];
+  var rightStreamState = useState('');
+  var rightStream = rightStreamState[0];
+  var setRightStream = rightStreamState[1];
+  var durationState = useState(BATTLE_DURATION);
+  var duration = durationState[0];
+  var setDuration = durationState[1];
 
-  var [timeLeft, setTimeLeft] = useState(BATTLE_DURATION);
-  var [leftVotes, setLeftVotes] = useState(0);
-  var [rightVotes, setRightVotes] = useState(0);
-  var [flyingGifts, setFlyingGifts] = useState([]);
-  var [winner, setWinner] = useState(null);
-  var [countdown, setCountdown] = useState(null);
-  var [countdownDone, setCountdownDone] = useState(false);
-  var [leftCombo, setLeftCombo] = useState(0);
-  var [rightCombo, setRightCombo] = useState(0);
-  var [leftOnFire, setLeftOnFire] = useState(false);
-  var [rightOnFire, setRightOnFire] = useState(false);
-  var [showChat, setShowChat] = useState(false);
+  var timeLeftState = useState(BATTLE_DURATION);
+  var timeLeft = timeLeftState[0];
+  var setTimeLeft = timeLeftState[1];
+  var leftVotesState = useState(0);
+  var leftVotes = leftVotesState[0];
+  var setLeftVotes = leftVotesState[1];
+  var rightVotesState = useState(0);
+  var rightVotes = rightVotesState[0];
+  var setRightVotes = rightVotesState[1];
+  var flyingGiftsState = useState([]);
+  var flyingGifts = flyingGiftsState[0];
+  var setFlyingGifts = flyingGiftsState[1];
+  var winnerState = useState(null);
+  var winner = winnerState[0];
+  var setWinner = winnerState[1];
+  var countdownState = useState(null);
+  var countdown = countdownState[0];
+  var setCountdown = countdownState[1];
+  var countdownDoneState = useState(false);
+  var countdownDone = countdownDoneState[0];
+  var setCountdownDone = countdownDoneState[1];
+  var leftComboState = useState(0);
+  var leftCombo = leftComboState[0];
+  var setLeftCombo = leftComboState[1];
+  var rightComboState = useState(0);
+  var rightCombo = rightComboState[0];
+  var setRightCombo = rightComboState[1];
+  var leftOnFireState = useState(false);
+  var leftOnFire = leftOnFireState[0];
+  var setLeftOnFire = leftOnFireState[1];
+  var rightOnFireState = useState(false);
+  var rightOnFire = rightOnFireState[0];
+  var setRightOnFire = rightOnFireState[1];
+  var showChatState = useState(false);
+  var showChat = showChatState[0];
+  var setShowChat = showChatState[1];
   var isMobile = useIsMobile();
-  var [pkRound, setPkRound] = useState(1);
-  var [showInviteModal, setShowInviteModal] = useState(false);
-  var [leftSupporters, setLeftSupporters] = useState(new Set());
-  var [rightSupporters, setRightSupporters] = useState(new Set());
+  var pkRoundState = useState(1);
+  var pkRound = pkRoundState[0];
+  var setPkRound = pkRoundState[1];
+  var showInviteModalState = useState(false);
+  var showInviteModal = showInviteModalState[0];
+  var setShowInviteModal = showInviteModalState[1];
+  var leftSupportersState = useState(new Set());
+  var leftSupporters = leftSupportersState[0];
+  var setLeftSupporters = leftSupportersState[1];
+  var rightSupportersState = useState(new Set());
+  var rightSupporters = rightSupportersState[0];
+  var setRightSupporters = rightSupportersState[1];
 
   var timerRef = useRef(null);
   var giftIdRef = useRef(0);
@@ -329,18 +375,20 @@ export default function PKBattlePage() {
   var battleDurationRef = useRef(BATTLE_DURATION);
 
 
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
 
-  var { data: battle } = useQuery({
+  var battleQuery = useQuery({
     queryKey: ['pk-battle', battleId],
-    queryFn: () => base44.entities.LiveAuction.filter({ id: battleId }).then(r => r[0]),
+    queryFn: function() { return base44.entities.LiveAuction.filter({ id: battleId }).then(function(r) { return r[0]; }); },
     enabled: !!battleId,
     refetchInterval: 3000,
   });
+  var battle = battleQuery.data || null;
 
-  useEffect(() => {
+  useEffect(function() {
     if (!battleId) return;
-    var unsub = base44.entities.LiveAuction.subscribe((event) => {
+    var unsub = base44.entities.LiveAuction.subscribe(function(event) {
       if (event.id !== battleId) return;
       if (event.data) {
         setLeftVotes(event.data.current_bid || 0);
@@ -365,21 +413,21 @@ export default function PKBattlePage() {
   }, [(battle && battle.status), (battle && battle.ends_at)]);
 
   var createBattle = useMutation({
-    mutationFn: () => base44.entities.LiveAuction.create({
+    mutationFn: function() { return base44.entities.LiveAuction.create({
       creator_id: (user && user.id),
-      title: `${leftName} vs ${rightName}`,
+      title: leftName + ' vs ' + rightName,
       auction_type: 'experience',
       starting_bid: 0,
       current_bid: 0,
       bid_count: 0,
       ends_at: new Date(Date.now() + duration * 1000).toISOString(),
       status: 'active',
-    }),
-    onSuccess: (b) => {
+    }); },
+    onSuccess: function(b) {
       battleDurationRef.current = duration;
       setSearchParams({ id: b.id });
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var addVote = function(side, pts, combo) {
@@ -445,10 +493,10 @@ export default function PKBattlePage() {
     }
   };
 
-  useEffect(() => {
+  useEffect(function() {
     if (!battleId || !battle || battle.status !== 'active') return;
     var endsAt = battle ? new Date(battle.ends_at).getTime() : Date.now() + duration * 1000;
-    var tick = () => {
+    var tick = function() {
       var remaining = Math.max(0, Math.floor((endsAt - Date.now()) / 1000));
       setTimeLeft(remaining);
       if (remaining === 0) {
@@ -461,59 +509,84 @@ export default function PKBattlePage() {
     };
     tick();
     timerRef.current = setInterval(tick, 1000);
-    return () => clearInterval(timerRef.current);
+    return function() { clearInterval(timerRef.current); };
   }, [battleId, (battle && battle.status)]);
 
-  var copyLink = () => { navigator.clipboard.writeText(window.location.href).then(() => toast.success('Battle link copied!')).catch(() => toast.error('Copy failed.')); };
+  var copyLink = function() { navigator.clipboard.writeText(window.location.href).then(function() { toast.success('Battle link copied!'); }).catch(function() { toast.error('Copy failed.'); }); };
 
   var names = (battle && battle.title && battle.title.split(' vs ')) || [leftName || 'Left', rightName || 'Right'];
-  var [bLeftName, bRightName] = names;
+  var bLeftName = names[0];
+  var bRightName = names[1];
   var bLeftStream = leftStream;
   var bRightStream = rightStream;
 
   var prefCamPK = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
   var prefMicPK = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  var [activeCamId, setActiveCamId] = useState(prefCamPK);
-  var [activeMicId, setActiveMicId] = useState(prefMicPK);
+  var activeCamIdState = useState(prefCamPK);
+  var activeCamId = activeCamIdState[0];
+  var setActiveCamId = activeCamIdState[1];
+  var activeMicIdState = useState(prefMicPK);
+  var activeMicId = activeMicIdState[0];
+  var setActiveMicId = activeMicIdState[1];
   var { localStream: localCamStream, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: activeCamId, audioDeviceId: activeMicId });
-  var handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
-  var handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  var handleCamChange = function(id) { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch(e) {} reacquireMedia({ videoDeviceId: id }); };
+  var handleMicChange = function(id) { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch(e) {} reacquireMedia({ audioDeviceId: id }); };
   var { remoteStreams: battleRemoteStreams, peerUserIds: battlePeerUserIds, announceJoin: announceJoinBattle, leaveRoom: leaveRoomBattle, peersRef: battlePeersRef } = useWebRTCPeers(battleId, localCamStream);
   var announceJoinBattleRef = useRef(announceJoinBattle);
   var leaveRoomBattleRef = useRef(leaveRoomBattle);
-  useEffect(() => { announceJoinBattleRef.current = announceJoinBattle; }, [announceJoinBattle]);
-  useEffect(() => { leaveRoomBattleRef.current = leaveRoomBattle; }, [leaveRoomBattle]);
+  useEffect(function() { announceJoinBattleRef.current = announceJoinBattle; }, [announceJoinBattle]);
+  useEffect(function() { leaveRoomBattleRef.current = leaveRoomBattle; }, [leaveRoomBattle]);
   useEffect(function() { if (!(user && user.id) || !battleId) return; if (announceJoinBattleRef.current) announceJoinBattleRef.current(user.id); }, [(user && user.id), battleId]);
   useEffect(function() { return function() { if (leaveRoomBattleRef.current) leaveRoomBattleRef.current(); }; }, []);
 
-  var [activeBattlePc, setActiveBattlePc] = useState(null);
-  useEffect(() => {
+  var activeBattlePcState = useState(null);
+  var activeBattlePc = activeBattlePcState[0];
+  var setActiveBattlePc = activeBattlePcState[1];
+  useEffect(function() {
     var entries = Array.from(battlePeersRef.current.entries());
-    var connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    var connected = entries.find(function(entry) { var pc = entry[1].pc; return pc.connectionState === 'connected'; });
     setActiveBattlePc(connected ? connected[1].pc : null);
   }, [battleRemoteStreams]);  
   var { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeBattlePc, 5000);
 
-  var [peakViewers, setPeakViewers] = useState(0);
-  useEffect(() => { setPeakViewers(prev => Math.max(prev, battleRemoteStreams.size)); }, [battleRemoteStreams.size]);
+  var peakViewersState = useState(0);
+  var peakViewers = peakViewersState[0];
+  var setPeakViewers = peakViewersState[1];
+  useEffect(function() { setPeakViewers(function(prev) { return Math.max(prev, battleRemoteStreams.size); }); }, [battleRemoteStreams.size]);
   var subCount = useSubscriptionCount((user && user.id));
-  var [activeScene, setActiveScene] = useState('main');
-  var [selectedBitrate, setSelectedBitrate] = useState('auto');
+  var activeSceneState = useState('main');
+  var activeScene = activeSceneState[0];
+  var setActiveScene = activeSceneState[1];
+  var selectedBitrateState = useState('auto');
+  var selectedBitrate = selectedBitrateState[0];
+  var setSelectedBitrate = selectedBitrateState[1];
 
   var { isSpeaking: battleLocalSpeaking } = useAutoSpeakGate({ stream: localCamStream, enabled: !!localCamStream });
   var { extractClipBlobUrl } = useVODRecording({ streamId: battleId || '', creatorId: (user && user.id) || '', title: (battle && battle.title) || 'PK Battle', stream: localCamStream });
-  var [pkChatMessages, setPkChatMessages] = useState([]);
-  var [pkHypeLevel, setPkHypeLevel] = useState(0);
-  var [showPKCamSettings, setShowPKCamSettings] = useState(false);
+  var pkChatMessagesState = useState([]);
+  var pkChatMessages = pkChatMessagesState[0];
+  var setPkChatMessages = pkChatMessagesState[1];
+  var pkHypeLevelState = useState(0);
+  var pkHypeLevel = pkHypeLevelState[0];
+  var setPkHypeLevel = pkHypeLevelState[1];
+  var showPKCamSettingsState = useState(false);
+  var showPKCamSettings = showPKCamSettingsState[0];
+  var setShowPKCamSettings = showPKCamSettingsState[1];
   var isHostBattle = !!((user && user.id) && (battle && battle.creator_id) === (user && user.id));
   useHighlightDetector({ partyId: battleId, roomId: battleId, isHost: isHostBattle, user, messages: pkChatMessages, hypeLevel: pkHypeLevel, elapsedSeconds: 0, getClipBlobUrl: extractClipBlobUrl });
   useVoiceAgentRuntime({ chatMessage: pkChatMessages[pkChatMessages.length - 1] || null });
 
-  var [leftCaptureStream, setLeftCaptureStream] = useState(null);
-  var [rightCaptureStream, setRightCaptureStream] = useState(null);
-  useEffect(() => () => {
-    (leftCaptureStream && leftCaptureStream.getTracks)().forEach(t => t.stop());
-    (rightCaptureStream && rightCaptureStream.getTracks)().forEach(t => t.stop());
+  var leftCaptureStreamState = useState(null);
+  var leftCaptureStream = leftCaptureStreamState[0];
+  var setLeftCaptureStream = leftCaptureStreamState[1];
+  var rightCaptureStreamState = useState(null);
+  var rightCaptureStream = rightCaptureStreamState[0];
+  var setRightCaptureStream = rightCaptureStreamState[1];
+  useEffect(function() {
+    return function() {
+      if (leftCaptureStream && leftCaptureStream.getTracks) { leftCaptureStream.getTracks().forEach(function(t) { t.stop(); }); }
+      if (rightCaptureStream && rightCaptureStream.getTracks) { rightCaptureStream.getTracks().forEach(function(t) { t.stop(); }); }
+    };
   }, []);  
 
   if (!battleId) {
@@ -602,24 +675,24 @@ export default function PKBattlePage() {
     { stream: leftCaptureStream, label: bLeftName },
     { stream: rightCaptureStream, label: bRightName },
     { stream: localCamStream, label: 'You', speaking: battleLocalSpeaking },
-    ...Array.from(battleRemoteStreams.entries()).map(([peerId, stream]) => ({
-      stream,
-      label: (battlePeerUserIds && battlePeerUserIds.get)(peerId) || 'Viewer',
-    })),
-  ];
+  ].concat(Array.from(battleRemoteStreams.entries()).map(function(entry) {
+    var peerId = entry[0];
+    var stream = entry[1];
+    return { stream: stream, label: (battlePeerUserIds && battlePeerUserIds.get(peerId)) || 'Viewer' };
+  }));
   var battleOverlay = {
-    title: (battle && battle.title) || `${bLeftName} vs ${bRightName}`,
-    battleData: { leftScore: leftVotes, rightScore: rightVotes, timeLeft, leftName: bLeftName, rightName: bRightName },
+    title: (battle && battle.title) || (bLeftName + ' vs ' + bRightName),
+    battleData: { leftScore: leftVotes, rightScore: rightVotes, timeLeft: timeLeft, leftName: bLeftName, rightName: bRightName },
   };
 
-  var handleBattleScreenCapture = async () => {
+  var handleBattleScreenCapture = async function() {
     var stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
     var videoTrack = stream.getVideoTracks()[0];
     if (!leftCaptureStream) {
-      if (videoTrack) videoTrack.onended = () => setLeftCaptureStream(null);
+      if (videoTrack) videoTrack.onended = function() { setLeftCaptureStream(null); };
       setLeftCaptureStream(stream);
     } else {
-      if (videoTrack) videoTrack.onended = () => setRightCaptureStream(null);
+      if (videoTrack) videoTrack.onended = function() { setRightCaptureStream(null); };
       setRightCaptureStream(stream);
     }
     return stream;

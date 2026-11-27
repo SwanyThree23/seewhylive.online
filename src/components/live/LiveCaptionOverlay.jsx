@@ -1,19 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDeepgramTranscription } from '../../hooks/useDeepgramTranscription';
+import { pushCaptionLine, clearCaptionBuffer } from '../../hooks/useCaptionBuffer';
 import { Type, X } from 'lucide-react';
 
 // LiveCaptionOverlay — floating real-time caption bar for host streams
 // stream: MediaStream from useLocalMedia
 // enabled: user toggle
 // position: 'bottom' (default) | 'top'
-export default function LiveCaptionOverlay({ stream, position = 'bottom' }) {
+// speakerName: label for captions pushed into the AI buffer (default: 'Host')
+export default function LiveCaptionOverlay({ stream, position = 'bottom', speakerName = 'Host' }) {
   const [captionsOn, setCaptionsOn] = useState(() => { try { return localStorage.getItem('captions_on') === 'true'; } catch { return false; } });
   const [showHistory, setShowHistory] = useState(false);
+  const lastPushedLenRef = useRef(0);
 
   const { transcript, interimTranscript, isConnected, hasKey, clearTranscript } = useDeepgramTranscription({
     stream,
     enabled: captionsOn,
   });
+
+  // Push new transcript segments into the shared caption buffer so AuraPanel can read them.
+  useEffect(function() {
+    if (!captionsOn || !transcript) return;
+    var newPart = transcript.slice(lastPushedLenRef.current).trim();
+    if (newPart.length >= 8) {
+      pushCaptionLine(speakerName, newPart);
+      lastPushedLenRef.current = transcript.length;
+    }
+  }, [transcript, captionsOn, speakerName]);
+
+  // Reset buffer pointer when transcript is cleared.
+  useEffect(function() {
+    if (!transcript) {
+      lastPushedLenRef.current = 0;
+    }
+  }, [transcript]);
 
   if (!hasKey) return null;
 

@@ -33,7 +33,7 @@ var T       = { fontFamily: "Barlow Condensed, sans-serif" };
 
 function initials(name) {
   if (!name) return "?";
-  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+  return name.split(" ").map(function(w) { return w[0]; }).join("").toUpperCase().slice(0, 2);
 }
 
 function fmtTime(ts) {
@@ -49,54 +49,57 @@ function fmtTime(ts) {
 
 export default function Messages() {
   var roomId = new URLSearchParams(window.location.search).get('room_id');
-  var [user, setUser] = useState(null);
+  var userState = useState(null); var user = userState[0]; var setUser = userState[1];
   var goalMetrics = useStreamGoalMetrics((user && user.id) || null, roomId);
 
-  var [selectedThread, setSelectedThread] = useState(null);
-  var [input, setInput] = useState("");
-  var [showCompose, setShowCompose] = useState(false);
-  var [composeName, setComposeName] = useState("");
-  var [composeMsg, setComposeMsg] = useState("");
-  var [hoveredMsg, setHoveredMsg] = useState(null);
-  var [reactionPickerMsg, setReactionPickerMsg] = useState(null);
-  var [msgReactions, setMsgReactions] = useState(new Map());
+  var selectedThreadState = useState(null); var selectedThread = selectedThreadState[0]; var setSelectedThread = selectedThreadState[1];
+  var inputState = useState(""); var input = inputState[0]; var setInput = inputState[1];
+  var showComposeState = useState(false); var showCompose = showComposeState[0]; var setShowCompose = showComposeState[1];
+  var composeNameState = useState(""); var composeName = composeNameState[0]; var setComposeName = composeNameState[1];
+  var composeMsgState = useState(""); var composeMsg = composeMsgState[0]; var setComposeMsg = composeMsgState[1];
+  var hoveredMsgState = useState(null); var hoveredMsg = hoveredMsgState[0]; var setHoveredMsg = hoveredMsgState[1];
+  var reactionPickerMsgState = useState(null); var reactionPickerMsg = reactionPickerMsgState[0]; var setReactionPickerMsg = reactionPickerMsgState[1];
+  var msgReactionsState = useState(new Map()); var msgReactions = msgReactionsState[0]; var setMsgReactions = msgReactionsState[1];
   var msgRef = useRef(null);
   var qc = useQueryClient();
 
-  useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => {});
+  useEffect(function() {
+    base44.auth.me().then(setUser).catch(function() {});
   }, []);
 
-  var { data: userCommunity } = useQuery({
+  var userCommunityQuery = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
+  var userCommunity = userCommunityQuery.data || null;
   var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  var { data: allMessages = [] } = useQuery({
+  var allMessagesQuery = useQuery({
     queryKey: ["all-dms", (user && user.id)],
-    queryFn: () => base44.entities.DirectMessage.list("-created_date", 200),
+    queryFn: function() { return base44.entities.DirectMessage.list("-created_date", 200); },
     enabled: !!(user && user.id),
     refetchInterval: 5000,
   });
+  var allMessages = allMessagesQuery.data || [];
 
-  var { data: onlineRecords = [] } = useQuery({
+  var onlineRecordsQuery = useQuery({
     queryKey: ["presence-online"],
-    queryFn: () => base44.entities.OnlinePresence.filter({ is_online: true }),
+    queryFn: function() { return base44.entities.OnlinePresence.filter({ is_online: true }); },
     enabled: !!(user && user.id),
     refetchInterval: 15000,
   });
+  var onlineRecords = onlineRecordsQuery.data || [];
 
-  var onlineSet = new Set(onlineRecords.map(r => r.user_id));
+  var onlineSet = new Set(onlineRecords.map(function(r) { return r.user_id; }));
 
   // Build threads grouped by conversation partner
-  var myMessages = allMessages.filter(m =>
-    m.sender_id === (user && user.id) || m.recipient_id === (user && user.id)
-  );
+  var myMessages = allMessages.filter(function(m) {
+    return m.sender_id === (user && user.id) || m.recipient_id === (user && user.id);
+  });
 
   var threadMap = {};
-  myMessages.forEach(m => {
+  myMessages.forEach(function(m) {
     var partnerId = m.sender_id === (user && user.id) ? m.recipient_id : m.sender_id;
     var partnerName = m.sender_id === (user && user.id) ? m.recipient_name : m.sender_name;
     if (!threadMap[partnerId]) {
@@ -108,7 +111,7 @@ export default function Messages() {
     }
   });
 
-  var threads = Object.values(threadMap).sort((a, b) => {
+  var threads = Object.values(threadMap).sort(function(a, b) {
     var aLast = (a.messages[a.messages.length - 1] && a.messages[a.messages.length - 1].created_date) || 0;
     var bLast = (b.messages[b.messages.length - 1] && b.messages[b.messages.length - 1].created_date) || 0;
     return new Date(bLast) - new Date(aLast);
@@ -116,32 +119,32 @@ export default function Messages() {
 
   var currentThread = selectedThread ? (threadMap[selectedThread] || null) : null;
   var threadMessages = currentThread
-    ? currentThread.messages.sort((a, b) => new Date(a.created_date) - new Date(b.created_date))
+    ? currentThread.messages.sort(function(a, b) { return new Date(a.created_date) - new Date(b.created_date); })
     : [];
 
   var sendMutation = useMutation({
-    mutationFn: (content) => base44.entities.DirectMessage.create({
+    mutationFn: function(content) { return base44.entities.DirectMessage.create({
       sender_id: (user && user.id), sender_name: (user && user.full_name) || "Me",
       recipient_id: selectedThread, recipient_name: (currentThread && currentThread.partnerName) || "User",
       content, is_whisper: false,
-    }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["all-dms", (user && user.id)] }); setInput(""); },
-    onError: () => toast.error('Action failed.'),
+    }); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ["all-dms", (user && user.id)] }); setInput(""); },
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var markReadMutation = useMutation({
-    mutationFn: (msgId) => base44.entities.DirectMessage.update(msgId, { read_at: new Date().toISOString(), is_read: true }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["all-dms", (user && user.id)] }),
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(msgId) { return base44.entities.DirectMessage.update(msgId, { read_at: new Date().toISOString(), is_read: true }); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ["all-dms", (user && user.id)] }); },
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var composeMutation = useMutation({
-    mutationFn: () => base44.entities.DirectMessage.create({
+    mutationFn: function() { return base44.entities.DirectMessage.create({
       sender_id: (user && user.id), sender_name: (user && user.full_name) || "Me",
       recipient_id: composeName.trim(), recipient_name: composeName.trim(),
       content: composeMsg.trim(), is_whisper: false,
-    }),
-    onSuccess: () => {
+    }); },
+    onSuccess: function() {
       qc.invalidateQueries({ queryKey: ["all-dms", (user && user.id)] });
       setShowCompose(false);
       setComposeName("");
@@ -150,15 +153,15 @@ export default function Messages() {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
-          title: `Sent a direct message to ${composeName.trim()}`,
-        }).catch(() => {});
+          title: 'Sent a direct message to ' + composeName.trim(),
+        }).catch(function() {});
       }
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   function handleReaction(msgId, emoji) {
-    setMsgReactions(prev => {
+    setMsgReactions(function(prev) {
       var next = new Map(prev);
       next.set(msgId, emoji);
       return next;
@@ -166,16 +169,16 @@ export default function Messages() {
     setReactionPickerMsg(null);
   }
 
-  useEffect(() => {
+  useEffect(function() {
     if (msgRef.current) msgRef.current.scrollTop = msgRef.current.scrollHeight;
     if (currentThread) {
       currentThread.messages
-        .filter(m => m.recipient_id === (user && user.id) && !m.read_at)
-        .forEach(m => markReadMutation.mutate(m.id));
+        .filter(function(m) { return m.recipient_id === (user && user.id) && !m.read_at; })
+        .forEach(function(m) { markReadMutation.mutate(m.id); });
     }
   }, [threadMessages.length, selectedThread]);
 
-  var totalUnread = threads.reduce((sum, t) => sum + t.unread, 0);
+  var totalUnread = threads.reduce(function(sum, t) { return sum + t.unread; }, 0);
 
   return (
     <div className="flex flex-col" style={{ minHeight: "100vh", background: "#03030A" }}>
@@ -190,7 +193,7 @@ export default function Messages() {
         <div className="flex items-center gap-2.5">
           {selectedThread ? (
             <button
-              onClick={() => setSelectedThread(null)}
+              onClick={function() { setSelectedThread(null); }}
               className="flex items-center justify-center w-8 h-8 rounded-xl transition-all hover:brightness-125"
               style={{ background: "rgba(255,184,0,0.08)", border: "1px solid rgba(255,184,0,0.2)", color: GOLD }}>
               <ChevronLeft className="w-4 h-4" />
@@ -203,13 +206,13 @@ export default function Messages() {
           </h1>
           {!selectedThread && totalUnread > 0 && (
             <span className="flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-black"
-              style={{ background: PINK, color: "#fff", ...T }}>
+              style={{ background: PINK, color: "#fff", fontFamily: "Barlow Condensed, sans-serif" }}>
               {totalUnread}
             </span>
           )}
         </div>
         <button
-          onClick={() => setShowCompose(true)}
+          onClick={function() { setShowCompose(true); }}
           className="flex items-center justify-center w-8 h-8 rounded-xl transition-all hover:brightness-125"
           style={{ background: "rgba(255,184,0,0.08)", border: "1px solid rgba(255,184,0,0.2)", color: GOLD }}>
           <PenSquare className="w-4 h-4" />
@@ -233,38 +236,38 @@ export default function Messages() {
           {threads.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 px-6">
               <div style={{ fontSize: 48, marginBottom: 16, lineHeight: 1 }}>💬</div>
-              <p className="font-black text-sm uppercase mb-2" style={{ color: "rgba(255,255,255,0.35)", ...T }}>
+              <p className="font-black text-sm uppercase mb-2" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "Barlow Condensed, sans-serif" }}>
                 No messages yet
               </p>
               <button
-                onClick={() => setShowCompose(true)}
+                onClick={function() { setShowCompose(true); }}
                 className="px-4 py-2 rounded-xl font-black uppercase text-[10px] mt-1"
-                style={{ background: "rgba(255,184,0,0.12)", border: `1px solid ${GOLD}40`, color: GOLD, ...T }}>
+                style={{ background: "rgba(255,184,0,0.12)", border: '1px solid ' + GOLD + '40', color: GOLD, fontFamily: "Barlow Condensed, sans-serif" }}>
                 Start a conversation
               </button>
             </div>
           ) : (
-            threads.map((t, idx) => {
+            threads.map(function(t, idx) {
               var last = t.messages[t.messages.length - 1];
               var isSelected = selectedThread === t.partnerId;
               return (
                 <div key={t.partnerId}>
                   <div
-                    onClick={() => setSelectedThread(t.partnerId)}
+                    onClick={function() { setSelectedThread(t.partnerId); }}
                     className="flex items-center gap-3 px-4 py-3 cursor-pointer transition-all"
                     style={{
                       background: isSelected
                         ? "rgba(255,184,0,0.08)"
                         : "transparent",
                     }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "rgba(255,184,0,0.05)"; }}
-                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}>
+                    onMouseEnter={function(e) { if (!isSelected) e.currentTarget.style.background = "rgba(255,184,0,0.05)"; }}
+                    onMouseLeave={function(e) { if (!isSelected) e.currentTarget.style.background = "transparent"; }}>
 
                     {/* Octagonal avatar with optional online dot */}
                     <div style={{ position: "relative", flexShrink: 0, width: 44, height: 44 }}>
                       <div style={{
                         width: 44, height: 44, clipPath: OCT,
-                        background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
+                        background: 'linear-gradient(135deg, ' + CRIMSON + ', ' + GOLD + ')',
                         display: "flex", alignItems: "center", justifyContent: "center",
                       }}>
                         <span className="font-black text-sm text-white" style={T}>
@@ -287,7 +290,7 @@ export default function Messages() {
                         <span className="font-black text-[13px] text-white truncate" style={T}>
                           {t.partnerName}
                         </span>
-                        <span className="text-[11px] ml-2 shrink-0" style={{ color: "rgba(255,255,255,0.25)", ...T }}>
+                        <span className="text-[11px] ml-2 shrink-0" style={{ color: "rgba(255,255,255,0.25)", fontFamily: "Barlow Condensed, sans-serif" }}>
                           {fmtTime((last && last.created_date))}
                         </span>
                       </div>
@@ -299,7 +302,7 @@ export default function Messages() {
                             color: t.unread > 0 ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.35)",
                             fontWeight: t.unread > 0 ? 700 : 400,
                             fontStyle: (last && last.is_whisper) ? "italic" : "normal",
-                            ...T,
+                            fontFamily: "Barlow Condensed, sans-serif",
                           }}>
                           {(last && last.content) || ""}
                         </span>
@@ -309,7 +312,7 @@ export default function Messages() {
                     {/* Unread badge */}
                     {t.unread > 0 && (
                       <div className="flex items-center justify-center shrink-0 w-5 h-5 rounded-full text-[11px] font-black text-white"
-                        style={{ background: PINK, ...T }}>
+                        style={{ background: PINK, fontFamily: "Barlow Condensed, sans-serif" }}>
                         {t.unread}
                       </div>
                     )}
@@ -335,7 +338,7 @@ export default function Messages() {
               }}>
               <div style={{
                 width: 32, height: 32, clipPath: OCT,
-                background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
+                background: 'linear-gradient(135deg, ' + CRIMSON + ', ' + GOLD + ')',
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 <span className="font-black text-xs text-white" style={T}>
@@ -348,7 +351,7 @@ export default function Messages() {
             {/* Messages scroll area */}
             <div ref={msgRef} className="flex-1 overflow-y-auto px-4 py-3"
               style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {threadMessages.map(m => {
+              {threadMessages.map(function(m) {
                 var isMe = m.sender_id === (user && user.id);
                 var isWhisper = m.is_whisper;
                 var isGiftNotif = m.type === "gift_notification";
@@ -358,8 +361,8 @@ export default function Messages() {
                 return (
                   <div key={m.id}
                     style={{ display: "flex", flexDirection: "column", alignItems: isMe ? "flex-end" : "flex-start", position: "relative" }}
-                    onMouseEnter={() => setHoveredMsg(m.id)}
-                    onMouseLeave={() => { setHoveredMsg(null); if (reactionPickerMsg === m.id) setReactionPickerMsg(null); }}>
+                    onMouseEnter={function() { setHoveredMsg(m.id); }}
+                    onMouseLeave={function() { setHoveredMsg(null); if (reactionPickerMsg === m.id) setReactionPickerMsg(null); }}>
                     {showPicker && (
                       <div style={{
                         position: "absolute", bottom: "calc(100% + 4px)",
@@ -371,22 +374,22 @@ export default function Messages() {
                         padding: "4px 8px",
                         display: "flex", gap: 6,
                       }}>
-                        {["❤️","😂","🔥","👏","💯"].map(emoji => (
+                        {["❤️","😂","🔥","👏","💯"].map(function(emoji) { return (
                           <button key={emoji}
-                            onClick={() => handleReaction(m.id, emoji)}
+                            onClick={function() { handleReaction(m.id, emoji); }}
                             style={{ fontSize: 16, background: "none", border: "none", cursor: "pointer", padding: "2px" }}>
                             {emoji}
                           </button>
-                        ))}
+                        ); })}
                       </div>
                     )}
                     {isGiftNotif ? (
                       <div className="px-3 py-2 rounded-2xl text-[12px]"
                         style={{
                           background: "rgba(255,184,0,0.1)",
-                          border: `1px solid rgba(255,184,0,0.3)`,
+                          border: '1px solid rgba(255,184,0,0.3)',
                           color: GOLD,
-                          ...T,
+                          fontFamily: "Barlow Condensed, sans-serif",
                         }}>
                         🎁 Gift notification: {m.content}
                       </div>
@@ -395,11 +398,11 @@ export default function Messages() {
                         <div className="px-3 py-2 rounded-2xl text-[13px] max-w-[75%]"
                           style={{
                             background: isMe ? "rgba(255,184,0,0.12)" : "rgba(255,255,255,0.06)",
-                            border: `1px solid ${isMe ? "rgba(255,184,0,0.25)" : "rgba(255,255,255,0.08)"}`,
+                            border: '1px solid ' + (isMe ? "rgba(255,184,0,0.25)" : "rgba(255,255,255,0.08)"),
                             color: isWhisper ? GOLD : (isMe ? "#fff" : "rgba(255,255,255,0.9)"),
                             fontStyle: isWhisper ? "italic" : "normal",
                             position: "relative",
-                            ...T,
+                            fontFamily: "Barlow Condensed, sans-serif",
                           }}>
                           {isWhisper && <span style={{ fontSize: 11, marginRight: 4 }}>🤫</span>}
                           {m.content}
@@ -414,7 +417,7 @@ export default function Messages() {
                         </div>
                         {isHovered && !showPicker && (
                           <button
-                            onClick={() => setReactionPickerMsg(m.id)}
+                            onClick={function() { setReactionPickerMsg(m.id); }}
                             style={{
                               width: 20, height: 20, borderRadius: "50%",
                               background: "rgba(255,255,255,0.1)",
@@ -430,7 +433,7 @@ export default function Messages() {
                       </div>
                     )}
                     <div className="flex gap-1.5 mt-0.5 items-center" style={{ marginTop: reaction ? 8 : 2 }}>
-                      <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.2)", ...T }}>
+                      <span className="text-[11px]" style={{ color: "rgba(255,255,255,0.2)", fontFamily: "Barlow Condensed, sans-serif" }}>
                         {fmtTime(m.created_date)}
                       </span>
                       {isMe && (
@@ -455,19 +458,19 @@ export default function Messages() {
                 style={{
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,184,0,0.15)",
-                  ...T,
+                  fontFamily: "Barlow Condensed, sans-serif",
                 }}
                 placeholder="Type a message…"
                 value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && input.trim()) sendMutation.mutate(input.trim()); }}
+                onChange={function(e) { setInput(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === "Enter" && input.trim()) sendMutation.mutate(input.trim()); }}
                 maxLength={1000}
               />
               <button
-                onClick={() => input.trim() && sendMutation.mutate(input.trim())}
+                onClick={function() { if (input.trim()) sendMutation.mutate(input.trim()); }}
                 className="flex items-center justify-center w-10 h-10 rounded-2xl transition-all hover:brightness-110 shrink-0"
                 style={{
-                  background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
+                  background: 'linear-gradient(135deg, ' + CRIMSON + ', ' + GOLD + ')',
                   border: "none",
                   cursor: "pointer",
                 }}>
@@ -481,7 +484,7 @@ export default function Messages() {
       {/* ── Compose modal ── */}
       {showCompose && (
         <div
-          onClick={(e) => { if (e.target === e.currentTarget) setShowCompose(false); }}
+          onClick={function(e) { if (e.target === e.currentTarget) setShowCompose(false); }}
           style={{
             position: "fixed", inset: 0, zIndex: 50,
             background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)",
@@ -496,7 +499,7 @@ export default function Messages() {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <span className="font-black text-base text-white" style={T}>New Message</span>
               <button
-                onClick={() => setShowCompose(false)}
+                onClick={function() { setShowCompose(false); }}
                 style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 8, width: 28, height: 28, cursor: "pointer", color: "rgba(255,255,255,0.5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <X style={{ width: 14, height: 14 }} />
               </button>
@@ -504,30 +507,30 @@ export default function Messages() {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <input
                 value={composeName}
-                onChange={e => setComposeName(e.target.value)}
+                onChange={function(e) { setComposeName(e.target.value); }}
                 placeholder="Recipient name or ID…"
                 className="text-sm text-white outline-none placeholder:text-white/25 px-4 py-2.5 rounded-2xl"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,184,0,0.15)", ...T }}
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,184,0,0.15)", fontFamily: "Barlow Condensed, sans-serif" }}
                 maxLength={100}
               />
               <textarea
                 value={composeMsg}
-                onChange={e => setComposeMsg(e.target.value)}
+                onChange={function(e) { setComposeMsg(e.target.value); }}
                 placeholder="Write a message…"
                 rows={3}
                 className="text-sm text-white outline-none resize-none placeholder:text-white/25 px-4 py-2.5 rounded-2xl"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,184,0,0.15)", ...T }}
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,184,0,0.15)", fontFamily: "Barlow Condensed, sans-serif" }}
                 maxLength={1000}
               />
               <button
-                onClick={() => { if (composeName.trim() && composeMsg.trim()) composeMutation.mutate(); }}
+                onClick={function() { if (composeName.trim() && composeMsg.trim()) composeMutation.mutate(); }}
                 disabled={composeMutation.isPending || !composeName.trim() || !composeMsg.trim()}
                 className="font-black uppercase text-[11px] py-2.5 rounded-2xl transition-all"
                 style={{
-                  background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})`,
+                  background: 'linear-gradient(135deg, ' + CRIMSON + ', ' + GOLD + ')',
                   color: "#fff", border: "none", cursor: "pointer",
                   opacity: (!composeName.trim() || !composeMsg.trim()) ? 0.5 : 1,
-                  ...T,
+                  fontFamily: "Barlow Condensed, sans-serif",
                 }}>
                 {composeMutation.isPending ? "Sending…" : "Send Message"}
               </button>

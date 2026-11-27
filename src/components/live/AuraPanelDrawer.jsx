@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { getRecentContext } from '../../hooks/useCaptionBuffer';
 
 const C = { burg:'#FF1564', gold:'#FFB800', volt:'#FFB800', obs:'#0D0D0D', gray:'#666', white:'#F5F0E8' };
 
@@ -64,7 +65,11 @@ export default function AuraPanelDrawer({ roomId, hostId, onClose }) {
 
   const hypeRoom = async () => {
     try {
-      const res = await base44.integrations.Core.InvokeLLM({ prompt:`You are Aura, a ${aura?.persona_style||'hype'} live stream AI co-host. Generate ONE short hype line (max 15 words) to energize the room right now!` });
+      const captionCtx = getRecentContext();
+      const contextClause = captionCtx
+        ? ` The host has been saying:\n${captionCtx}\nReact specifically to what was just said.`
+        : ' Energize the room right now!';
+      const res = await base44.integrations.Core.InvokeLLM({ prompt:`You are Aura, a ${aura?.persona_style||'hype'} live stream AI co-host. Generate ONE short line (max 15 words) reacting to the stream.${contextClause}` });
       upd({ last_message: res, last_message_at: new Date().toISOString(), hype_moments:(aura?.hype_moments||0)+1, interventions_count:(aura?.interventions_count||0)+1 });
     } catch { toast.error('Aura is unavailable right now.'); }
   };

@@ -36,7 +36,9 @@ var TABS = [
   { id: "judges",    icon: "⚖️",  label: "Judges" },
 ];
 
-var Badge = ({ type, children }) => {
+function Badge(props) {
+  var type = props.type;
+  var children = props.children;
   var styles = {
     live:     "bg-[#6DBF7E]/20 text-green-300 border border-green-500/40",
     pending:  "bg-yellow-500/20 text-yellow-300 border border-yellow-500/40",
@@ -46,19 +48,23 @@ var Badge = ({ type, children }) => {
     ruby:     "bg-red-900/30 text-red-200 border border-red-800/50",
   };
   return (
-    <span className={`text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold ${styles[type] || styles.info}`}>
+    <span className={'text-[10px] font-mono px-2 py-0.5 rounded uppercase tracking-wider font-bold ' + (styles[type] || styles.info)}>
       {children}
     </span>
   );
-};
+}
 
-var Code = ({ children, copy = true }) => {
-  var [copied, setCopied] = useState(false);
-  var handleCopy = () => {
-    navigator.clipboard.writeText(children).then(() => {
+function Code(props) {
+  var children = props.children;
+  var copy = props.copy !== undefined ? props.copy : true;
+  var copiedState = useState(false);
+  var copied = copiedState[0];
+  var setCopied = copiedState[1];
+  var handleCopy = function() {
+    navigator.clipboard.writeText(children).then(function() {
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    }).catch(() => {});
+      setTimeout(function() { setCopied(false); }, 1500);
+    }).catch(function() {});
   };
   return (
     <div className="group relative flex items-center gap-2 bg-black/40 border border-white/10 rounded px-3 py-2 font-mono text-xs text-[#6DBF7E] my-1">
@@ -70,39 +76,53 @@ var Code = ({ children, copy = true }) => {
       )}
     </div>
   );
-};
+}
 
-var Section = ({ title, children }) => (
-  <div className="mb-6">
-    <div className="flex items-center gap-2 mb-3">
-      <div className="h-px flex-1 bg-white/10" />
-      <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-white/40">{title}</span>
-      <div className="h-px flex-1 bg-white/10" />
+function Section(props) {
+  var title = props.title;
+  var children = props.children;
+  return (
+    <div className="mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="h-px flex-1 bg-white/10" />
+        <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-white/40">{title}</span>
+        <div className="h-px flex-1 bg-white/10" />
+      </div>
+      {children}
     </div>
-    {children}
-  </div>
-);
+  );
+}
 
-var Row = ({ label, value, badge, pending }) => (
-  <div className="flex items-start justify-between gap-4 py-2 border-b border-white/5">
-    <span className="text-white/50 text-xs font-mono shrink-0 w-44">{label}</span>
-    <div className="flex items-center gap-2 flex-1 flex-wrap justify-end">
-      {pending ? (
-        <Badge type="pending">⚠ pending</Badge>
-      ) : (
-        <span className="text-white/90 text-xs font-mono text-right break-all">{value}</span>
-      )}
-      {badge && <Badge type={badge.type}>{badge.label}</Badge>}
+function Row(props) {
+  var label = props.label;
+  var value = props.value;
+  var badge = props.badge;
+  var pending = props.pending;
+  return (
+    <div className="flex items-start justify-between gap-4 py-2 border-b border-white/5">
+      <span className="text-white/50 text-xs font-mono shrink-0 w-44">{label}</span>
+      <div className="flex items-center gap-2 flex-1 flex-wrap justify-end">
+        {pending ? (
+          <Badge type="pending">⚠ pending</Badge>
+        ) : (
+          <span className="text-white/90 text-xs font-mono text-right break-all">{value}</span>
+        )}
+        {badge && <Badge type={badge.type}>{badge.label}</Badge>}
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
-var CheckItem = ({ done, children }) => (
-  <div className={`flex items-start gap-3 py-1.5 text-sm ${done ? "text-white/40 line-through" : "text-white/80"}`}>
-    <span className={`mt-0.5 text-xs shrink-0 ${done ? "text-[#6DBF7E]" : "text-white/30"}`}>{done ? "✓" : "○"}</span>
-    {children}
-  </div>
-);
+function CheckItem(props) {
+  var done = props.done;
+  var children = props.children;
+  return (
+    <div className={'flex items-start gap-3 py-1.5 text-sm ' + (done ? 'text-white/40 line-through' : 'text-white/80')}>
+      <span className={'mt-0.5 text-xs shrink-0 ' + (done ? 'text-[#6DBF7E]' : 'text-white/30')}>{done ? '✓' : '○'}</span>
+      {children}
+    </div>
+  );
+}
 
 // ── TAB CONTENT ──────────────────────────────────────────────────────────────
 
@@ -150,13 +170,13 @@ function RTMPTab() {
           { name: "Kick.com",      url: "rtmp://fa723fc1b171.global-contribute.live-video.net/app/{key}", badge: "live" },
           { name: "LinkedIn Live", url: "rtmp://4.rtmp.linkedin.com/live/{key}",                        badge: "live" },
           { name: "TikTok Live",   url: "rtmp://push.tiktokv.com/live/{key}",                           badge: "live" },
-        ].map((p) => (
+        ].map(function(p) { return (
           <div key={p.name} className="flex items-center gap-3 py-2 border-b border-white/5">
             <Badge type={p.badge}>{p.badge}</Badge>
             <span className="text-white/70 text-xs w-32 shrink-0">{p.name}</span>
             <span className="text-[#6DBF7E]/70 text-xs font-mono break-all">{p.url}</span>
           </div>
-        ))}
+        ); })}
         <div className="mt-3 bg-[#D4AF37]/8 border border-[#D4AF37]/20 rounded p-3 text-xs text-[#C9A84C]">
           ⚠ YouTube Data API v3 key required for auto-stream-title injection — <Badge type="pending">pending</Badge>
         </div>
@@ -180,8 +200,8 @@ function WebRTCTab() {
 
       <Section title="WHIP / WHEP Endpoints">
         <div className="text-xs text-white/50 mb-2">Browser-native ingest/egress</div>
-        <Code>POST https://seewhylive.online/whip/{`{streamKey}`}</Code>
-        <Code>GET  https://seewhylive.online/whep/{`{streamKey}`}</Code>
+        <Code>{'POST https://seewhylive.online/whip/{streamKey}'}</Code>
+        <Code>{'GET  https://seewhylive.online/whep/{streamKey}'}</Code>
       </Section>
 
       <Section title="LiveKit Credentials (VPS .env)">
@@ -201,14 +221,14 @@ function WebRTCTab() {
           { role: "Guest",       perms: "publish video/audio when granted, chat" },
           { role: "Viewer",      perms: "subscribe only, chat (post-paywall)" },
           { role: "Guardian AI", perms: "read-only socket observer, moderation emit" },
-        ].map((s) => (
+        ].map(function(s) { return (
           <div key={s.role} className="py-2 border-b border-white/5">
             <div className="flex items-center gap-2 mb-0.5">
               <span className="text-[#D4AF37] text-xs font-mono font-bold">{s.role}</span>
             </div>
             <p className="text-white/50 text-xs">{s.perms}</p>
           </div>
-        ))}
+        ); })}
       </Section>
 
       <Section title="7-Step User Connection Flow">
@@ -220,12 +240,12 @@ function WebRTCTab() {
           "MediaSoup SFU negotiates ICE/DTLS",
           "Viewer hits Golden Paywall at 120s (PREVIEW_SECS)",
           "Post-payment: full room subscription granted via socket event",
-        ].map((step, i) => (
+        ].map(function(step, i) { return (
           <div key={i} className="flex gap-3 py-2 border-b border-white/5">
             <span className="text-[#800020] font-mono text-xs font-bold shrink-0 w-5">{i + 1}</span>
             <span className="text-white/70 text-xs">{step}</span>
           </div>
-        ))}
+        ); })}
       </Section>
     </div>
   );
@@ -248,12 +268,12 @@ function WebhooksTab() {
           "account.updated (Connect)",
           "transfer.created",
           "charge.refunded",
-        ].map((ev) => (
+        ].map(function(ev) { return (
           <div key={ev} className="flex items-center gap-3 py-1.5 border-b border-white/5">
             <Badge type="live">wired</Badge>
             <span className="text-[#6DBF7E] text-xs font-mono">{ev}</span>
           </div>
-        ))}
+        ); })}
         <div className="mt-3 bg-black/30 rounded p-3 text-xs text-white/50 font-mono">
           CREATOR_SHARE = 0.90 · PLATFORM_FEE = 0.10<br />
           Math.floor() enforced · 4-layer audit
@@ -271,12 +291,12 @@ function WebhooksTab() {
             { chain: "subscription.created → welcome email sequence",                 status: "pending" },
             { chain: "stream.ended → VOD processing + clip generation",               status: "pending" },
             { chain: "tip.received → overlay trigger + leaderboard update",           status: "live" },
-          ].map((w) => (
+          ].map(function(w) { return (
             <div key={w.chain} className="flex items-start gap-2 py-1.5 border-b border-white/5">
               <Badge type={w.status}>{w.status}</Badge>
               <span className="text-white/60 text-xs">{w.chain}</span>
             </div>
-          ))}
+          ); })}
         </div>
       </Section>
 
@@ -292,7 +312,7 @@ function WebhooksTab() {
           { event: "judge:score",      dir: "client→server", desc: "Judge submits round score via scorecard" },
           { event: "judge:ruling",     dir: "server→client", desc: "Official ruling broadcast to all viewers" },
           { event: "svs:match_update", dir: "server→client", desc: "Live bracket + standing update" },
-        ].map((e) => (
+        ].map(function(e) { return (
           <div key={e.event} className="py-2 border-b border-white/5">
             <div className="flex items-center gap-2">
               <span className="text-[#D4AF37] font-mono text-xs">{e.event}</span>
@@ -300,14 +320,16 @@ function WebhooksTab() {
             </div>
             <p className="text-white/40 text-xs mt-0.5">{e.desc}</p>
           </div>
-        ))}
+        ); })}
       </Section>
     </div>
   );
 }
 
 function ConnectTab() {
-  var [creatorDone, setCreatorDone] = useState(Array(9).fill(false));
+  var creatorDoneState = useState(Array(9).fill(false));
+  var creatorDone = creatorDoneState[0];
+  var setCreatorDone = creatorDoneState[1];
   var creatorSteps = [
     "Confirm Supabase auth is live (test login at seewhylive.online)",
     "Verify OBS stream key: sw_{your_username}live",
@@ -324,11 +346,11 @@ function ConnectTab() {
     <div>
       <Section title="Creator Go-Live Checklist">
         <div className="text-xs text-white/40 mb-3">Tap to mark complete</div>
-        {creatorSteps.map((step, i) => (
-          <div key={i} onClick={() => setCreatorDone((d) => d.map((v, j) => (j === i ? !v : v)))} className="cursor-pointer">
+        {creatorSteps.map(function(step, i) { return (
+          <div key={i} onClick={function() { setCreatorDone(function(d) { return d.map(function(v, j) { return j === i ? !v : v; }); }); }} className="cursor-pointer">
             <CheckItem done={creatorDone[i]}>{step}</CheckItem>
           </div>
-        ))}
+        ); })}
         <div className="mt-2 text-xs text-[#D4AF37] font-mono">{creatorDone.filter(Boolean).length} / 9 complete</div>
       </Section>
 
@@ -339,13 +361,13 @@ function ConnectTab() {
           { tier: "Gold",        price: "$15/mo",     perks: "4K stream, co-watch access, AURA chat priority" },
           { tier: "Tip",         price: "Any amount", perks: "Overlay alert, leaderboard" },
           { tier: "Watch Party", price: "Per event",  perks: "Sync playback, group chat room" },
-        ].map((t) => (
+        ].map(function(t) { return (
           <div key={t.tier} className="flex items-center gap-4 py-2 border-b border-white/5">
             <span className="text-[#D4AF37] font-mono text-xs font-bold w-16">{t.tier}</span>
             <span className="text-white font-mono text-xs w-20">{t.price}</span>
             <span className="text-white/50 text-xs">{t.perks}</span>
           </div>
-        ))}
+        ); })}
       </Section>
 
       <Section title="Auth Endpoints">
@@ -417,7 +439,7 @@ function NginxTab() {
           { name: "seewhylive-backend",  script: "index.js",                        port: 3000,          status: "live" },
           { name: "mediamtx",            script: "mediamtx binary",                 port: "1935/8888/9997", status: "live" },
           { name: "seewhylive-frontend", script: "vite preview (or nginx serve)",   port: 5173,          status: "live" },
-        ].map((p) => (
+        ].map(function(p) { return (
           <div key={p.name} className="py-2 border-b border-white/5">
             <div className="flex items-center gap-2 mb-1">
               <Badge type={p.status}>{p.status}</Badge>
@@ -428,7 +450,7 @@ function NginxTab() {
               <span>port: {p.port}</span>
             </div>
           </div>
-        ))}
+        ); })}
         <div className="mt-2 space-y-1">
           <Code>pm2 status</Code>
           <Code>pm2 restart all</Code>
@@ -471,19 +493,19 @@ function SupabaseTab() {
           { table: "watch_parties",    desc: "Sync sessions",                 cols: ["id", "stream_id", "host_id", "max_members (20)", "sync_offset_ms", "status", "created_at"] },
           { table: "svs_matches",      desc: "SVS tournament matches",        cols: ["id", "tournament_id", "home_state", "away_state", "round", "status", "home_score", "away_score", "judge_id", "started_at"] },
           { table: "judge_scorecards", desc: "Per-round judge submissions",   cols: ["id", "match_id", "judge_id", "round", "home_points", "away_points", "notes", "submitted_at", "verified"] },
-        ].map((t) => (
+        ].map(function(t) { return (
           <div key={t.table} className="mb-4 bg-black/30 rounded p-3 border border-white/10">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[#D4AF37] font-mono text-xs font-bold">{t.table}</span>
               <span className="text-white/30 text-xs">{t.desc}</span>
             </div>
             <div className="flex flex-wrap gap-1">
-              {t.cols.map((c) => (
+              {t.cols.map(function(c) { return (
                 <span key={c} className="text-[#6DBF7E]/70 text-[10px] font-mono bg-[#6DBF7E]/8 px-1.5 py-0.5 rounded">{c}</span>
-              ))}
+              ); })}
             </div>
           </div>
-        ))}
+        ); })}
       </Section>
 
       <Section title="Database Triggers">
@@ -493,12 +515,12 @@ function SupabaseTab() {
           { trigger: "on_stream_end",           action: "Calculate final revenue, trigger VOD processing webhook" },
           { trigger: "on_guardian_ban",         action: "Soft-delete user messages, update guardian_events" },
           { trigger: "on_judge_score_submit",   action: "Recalculate match running score, emit svs:match_update socket" },
-        ].map((t) => (
+        ].map(function(t) { return (
           <div key={t.trigger} className="py-2 border-b border-white/5">
             <span className="text-[#800020] font-mono text-xs font-bold">{t.trigger}</span>
             <p className="text-white/50 text-xs mt-0.5">{t.action}</p>
           </div>
-        ))}
+        ); })}
       </Section>
 
       <Section title="RLS Policies">
@@ -539,9 +561,9 @@ function EnvTab() {
   ];
 
   var statusCounts = {
-    live:     envVars.filter((v) => v.status === "live").length,
-    pending:  envVars.filter((v) => v.status === "pending").length,
-    critical: envVars.filter((v) => v.status === "critical").length,
+    live:     envVars.filter(function(v) { return v.status === "live"; }).length,
+    pending:  envVars.filter(function(v) { return v.status === "pending"; }).length,
+    critical: envVars.filter(function(v) { return v.status === "critical"; }).length,
   };
 
   return (
@@ -563,9 +585,9 @@ function EnvTab() {
 
       <Section title="All Environment Variables">
         <div className="text-xs text-white/30 mb-3">Files: /var/www/seewhylive/.env · ecosystem.config.js (env block)</div>
-        {envVars.map((v) => (
+        {envVars.map(function(v) { return (
           <div key={v.key} className="flex items-start justify-between gap-3 py-2 border-b border-white/5">
-            <span className={`font-mono text-xs shrink-0 ${v.status === "pending" ? "text-[#D4AF37]/80" : v.status === "critical" ? "text-red-300" : "text-[#6DBF7E]"}`}>
+            <span className={'font-mono text-xs shrink-0 ' + (v.status === "pending" ? "text-[#D4AF37]/80" : v.status === "critical" ? "text-red-300" : "text-[#6DBF7E]")}>
               {v.key}
             </span>
             <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -575,7 +597,7 @@ function EnvTab() {
               </Badge>
             </div>
           </div>
-        ))}
+        ); })}
       </Section>
 
       <Section title="Injection Pattern">
@@ -592,8 +614,12 @@ function EnvTab() {
 }
 
 function StatusTab() {
-  var [results, setResults] = useState({});
-  var [checking, setChecking] = useState({});
+  var resultsState = useState({});
+  var results = resultsState[0];
+  var setResults = resultsState[1];
+  var checkingState = useState({});
+  var checking = checkingState[0];
+  var setChecking = checkingState[1];
 
   var checks = [
     { id: "frontend",      label: "Frontend (seewhylive.online)",     url: "https://seewhylive.online",                                          method: "fetch" },
@@ -603,22 +629,22 @@ function StatusTab() {
     { id: "auth",          label: "Supabase Auth Ping",               url: "https://rxlgywvfclyjdfyvfvyc.supabase.co/auth/v1/health",            method: "fetch" },
   ];
 
-  var runCheck = async (check) => {
-    setChecking((c) => ({ ...c, [check.id]: true }));
+  var runCheck = async function(check) {
+    setChecking(function(c) { return Object.assign({}, c, { [check.id]: true }); });
     var start = Date.now();
     try {
       await fetch(check.url, { method: check.method === "head" ? "HEAD" : "GET", mode: "no-cors", signal: AbortSignal.timeout(5000) });
       var ms = Date.now() - start;
-      setResults((r) => ({ ...r, [check.id]: { ok: true, ms } }));
+      setResults(function(r) { return Object.assign({}, r, { [check.id]: { ok: true, ms: ms } }); });
     } catch (e) {
       var ms = Date.now() - start;
-      setResults((r) => ({ ...r, [check.id]: { ok: false, ms, error: e.message } }));
+      setResults(function(r) { return Object.assign({}, r, { [check.id]: { ok: false, ms: ms, error: e.message } }); });
     } finally {
-      setChecking((c) => ({ ...c, [check.id]: false }));
+      setChecking(function(c) { return Object.assign({}, c, { [check.id]: false }); });
     }
   };
 
-  var runAll = () => checks.forEach(runCheck);
+  var runAll = function() { checks.forEach(runCheck); };
 
   return (
     <div>
@@ -629,7 +655,7 @@ function StatusTab() {
         <button onClick={runAll} className="mb-4 w-full py-2 bg-[#800020] hover:bg-[#a00028] text-white text-sm font-mono uppercase tracking-wider rounded transition-colors">
           ▶ Check All Endpoints
         </button>
-        {checks.map((check) => {
+        {checks.map(function(check) {
           var r = results[check.id];
           var isChecking = checking[check.id];
           return (
@@ -649,7 +675,7 @@ function StatusTab() {
                   </div>
                 )}
                 {!r && !isChecking && (
-                  <button onClick={() => runCheck(check)} className="text-white/30 hover:text-white text-xs transition-colors">check →</button>
+                  <button onClick={function() { runCheck(check); }} className="text-white/30 hover:text-white text-xs transition-colors">check →</button>
                 )}
               </div>
             </div>
@@ -673,9 +699,9 @@ function StatusTab() {
           { item: "YouTube Data API v3 key set",            done: false },
           { item: "Attorney review of legal docs",          done: false },
           { item: "Git repo mirrored to GitHub",            done: true },
-        ].map((item, i) => (
+        ].map(function(item, i) { return (
           <CheckItem key={i} done={item.done}>{item.item}</CheckItem>
-        ))}
+        ); })}
       </Section>
 
       <Section title="Git / Repo">
@@ -692,7 +718,9 @@ function StatusTab() {
 // ── JUDGES TAB ───────────────────────────────────────────────────────────────
 
 function JudgesTab() {
-  var [judgeCheckDone, setJudgeCheckDone] = useState(Array(8).fill(false));
+  var judgeCheckDoneState = useState(Array(8).fill(false));
+  var judgeCheckDone = judgeCheckDoneState[0];
+  var setJudgeCheckDone = judgeCheckDoneState[1];
 
   var judgePreMatchSteps = [
     "Confirm judge credentials in Supabase (role = 'judge', tournament_id assigned)",

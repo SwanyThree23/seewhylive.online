@@ -9,7 +9,7 @@ import MilestoneAlerts from '../components/creator/MilestoneAlerts';
 
 function Toggle({ checked, onChange }) {
   return (
-    <div onClick={() => onChange(!checked)} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+    <div onClick={function() { onChange(!checked); }} style={{ width: 40, height: 22, borderRadius: 99, background: checked ? '#800020' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
       <div style={{ position: 'absolute', top: 3, left: checked ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
     </div>
   );
@@ -55,56 +55,73 @@ export default function LoyaltyProgram() {
   var qc = useQueryClient();
   var urlParams = new URLSearchParams(window.location.search);
   var creatorId = urlParams.get('creator');
-  var [activeTab, setActiveTab] = useState(null);
-  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+  var activeTabState = useState(null);
+  var activeTab = activeTabState[0];
+  var setActiveTab = activeTabState[1];
 
-  var [showRewardForm, setShowRewardForm] = useState(false);
-  var [showTierEditor, setShowTierEditor] = useState(false);
-  var [editingTier, setEditingTier] = useState(null);
-  var [rewardForm, setRewardForm] = useState({ name: '', description: '', points_required: 100, reward_type: 'badge', reward_value: '', is_active: true });
-  var [earnConfig] = useState({ watch: 1, message: 2, tip: 10, subscribe: 100, reaction: 1 });
+  var showRewardFormState = useState(false);
+  var showRewardForm = showRewardFormState[0];
+  var setShowRewardForm = showRewardFormState[1];
+  var showTierEditorState = useState(false);
+  var showTierEditor = showTierEditorState[0];
+  var setShowTierEditor = showTierEditorState[1];
+  var editingTierState = useState(null);
+  var editingTier = editingTierState[0];
+  var setEditingTier = editingTierState[1];
+  var rewardFormState = useState({ name: '', description: '', points_required: 100, reward_type: 'badge', reward_value: '', is_active: true });
+  var rewardForm = rewardFormState[0];
+  var setRewardForm = rewardFormState[1];
+  var earnConfigState = useState({ watch: 1, message: 2, tip: 10, subscribe: 100, reaction: 1 });
+  var earnConfig = earnConfigState[0];
 
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  var { data: activeRoom } = useQuery({
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
+  var activeRoomQuery = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = activeRoomQuery.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
-  var { data: userCommunity } = useQuery({
+  var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
+  var userCommunityQuery = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
+  var userCommunity = userCommunityQuery.data || null;
   var userCommunityId = (userCommunity && userCommunity.id) || null;
   var roomId = activeRoomId;
   var activeChallengeId = null;
   var isOwnProgram = !creatorId || creatorId === (user && user.id);
 
-  React.useEffect(() => {
+  React.useEffect(function() {
     setActiveTab(isOwnProgram ? 'creator' : 'viewer');
   }, [isOwnProgram]);
 
-  var { data: rewards = [] } = useQuery({
+  var rewardsQuery = useQuery({
     queryKey: ['loyalty-rewards', creatorId || (user && user.id)],
-    queryFn: () => base44.entities.LoyaltyReward.filter({ creator_id: creatorId || (user && user.id) }, 'points_required'),
+    queryFn: function() { return base44.entities.LoyaltyReward.filter({ creator_id: creatorId || (user && user.id) }, 'points_required'); },
     enabled: !!(user || creatorId),
   });
-  var { data: myPoints } = useQuery({
+  var rewards = rewardsQuery.data || [];
+  var myPointsQuery = useQuery({
     queryKey: ['my-viewer-points', (user && user.id), creatorId],
-    queryFn: () => base44.entities.ViewerPoints.filter({ user_id: (user && user.id), room_id: creatorId }).then(r => r[0]),
+    queryFn: function() { return base44.entities.ViewerPoints.filter({ user_id: (user && user.id), room_id: creatorId }).then(function(r) { return r[0]; }); },
     enabled: !!user && !!creatorId,
   });
-  var { data: leaderboard = [] } = useQuery({
+  var myPoints = myPointsQuery.data || null;
+  var leaderboardQuery = useQuery({
     queryKey: ['points-leaderboard', creatorId || (user && user.id)],
-    queryFn: () => base44.entities.ViewerPoints.filter({ room_id: creatorId || (user && user.id) }, '-points', 50),
+    queryFn: function() { return base44.entities.ViewerPoints.filter({ room_id: creatorId || (user && user.id) }, '-points', 50); },
     enabled: !!(user || creatorId),
   });
+  var leaderboard = leaderboardQuery.data || [];
 
   var createRewardMutation = useMutation({
-    mutationFn: (data) => base44.entities.LoyaltyReward.create(data),
-    onSuccess: (reward) => {
+    mutationFn: function(data) { return base44.entities.LoyaltyReward.create(data); },
+    onSuccess: function(reward) {
       qc.invalidateQueries({ queryKey: ['loyalty-rewards'] });
       setShowRewardForm(false);
       toast.success('Reward created!');
@@ -112,31 +129,31 @@ export default function LoyaltyProgram() {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
-          title: `Created loyalty reward: ${(reward && reward.name) || 'Reward'}`,
-        }).catch(() => {});
+          title: 'Created loyalty reward: ' + ((reward && reward.name) || 'Reward'),
+        }).catch(function() {});
       }
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
   var toggleRewardMutation = useMutation({
-    mutationFn: ({ id, is_active }) => base44.entities.LoyaltyReward.update(id, { is_active }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }),
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(params) { return base44.entities.LoyaltyReward.update(params.id, { is_active: params.is_active }); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }); },
+    onError: function() { toast.error('Action failed.'); },
   });
   var deleteRewardMutation = useMutation({
-    mutationFn: (id) => base44.entities.LoyaltyReward.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }),
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(id) { return base44.entities.LoyaltyReward.delete(id); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['loyalty-rewards'] }); },
+    onError: function() { toast.error('Action failed.'); },
   });
 
-  var totalDistributed = leaderboard.reduce((s, l) => s + (l.points || 0), 0);
+  var totalDistributed = leaderboard.reduce(function(s, l) { return s + (l.points || 0); }, 0);
   var userPoints = (myPoints && myPoints.points) || 0;
-  var sortedRewards = [...rewards].sort((a, b) => a.points_required - b.points_required);
-  var nextReward = sortedRewards.find(r => r.points_required > userPoints);
+  var sortedRewards = rewards.concat([]).sort(function(a, b) { return a.points_required - b.points_required; });
+  var nextReward = sortedRewards.find(function(r) { return r.points_required > userPoints; });
   var progressToNext = nextReward ? (userPoints / nextReward.points_required) * 100 : 100;
 
-  var exportData = () => {
-    var rows = leaderboard.map((l, i) => `${i + 1},${l.user_id},${l.points},${l.watch_minutes},${l.messages_sent_count}`);
+  var exportData = function() {
+    var rows = leaderboard.map(function(l, i) { return (i + 1) + ',' + l.user_id + ',' + l.points + ',' + l.watch_minutes + ',' + l.messages_sent_count; });
     var csv = 'Rank,UserID,Points,WatchMinutes,Messages\n' + rows.join('\n');
     var blob = new Blob([csv], { type: 'text/csv' });
     var url = URL.createObjectURL(blob);
@@ -168,12 +185,12 @@ export default function LoyaltyProgram() {
           <div className="flex gap-2">
             <button onClick={exportData}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-              style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
               <Download className="w-3 h-3" /> Export
             </button>
-            <button onClick={() => setShowRewardForm(true)}
+            <button onClick={function() { setShowRewardForm(true); }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-black uppercase text-xs"
-              style={{ ...T, background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: '#000', cursor: 'pointer' }}>
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')', border: 'none', color: '#000', cursor: 'pointer' }}>
               <Plus className="w-4 h-4" /> Add Reward
             </button>
           </div>
@@ -183,13 +200,13 @@ export default function LoyaltyProgram() {
       <div className="max-w-5xl mx-auto px-4 md:px-6 pt-4 space-y-4">
         {/* Tab bar */}
         <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => setActiveTab(t.id)}
+          {TABS.map(function(tabItem) { return (
+            <button key={tabItem.id} onClick={function() { setActiveTab(tabItem.id); }}
               className="px-4 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all"
-              style={{ ...T, color: tab === t.id ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: tab === t.id ? GOLD : 'transparent', background: 'transparent' }}>
-              {t.label}
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', color: tab === tabItem.id ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: tab === tabItem.id ? GOLD : 'transparent', background: 'transparent' }}>
+              {tabItem.label}
             </button>
-          ))}
+          ); })}
         </div>
 
         {/* Creator View */}
@@ -199,17 +216,17 @@ export default function LoyaltyProgram() {
               {[
                 { label: 'Total Points Distributed', value: totalDistributed.toLocaleString(), color: GOLD, icon: Star },
                 { label: 'Active Viewers', value: leaderboard.length, color: '#4A8A7A', icon: Users },
-                { label: 'Active Rewards', value: rewards.filter(r => r.is_active).length, color: '#6DBF7E', icon: Gift },
-              ].map(stat => (
+                { label: 'Active Rewards', value: rewards.filter(function(r) { return r.is_active; }).length, color: '#6DBF7E', icon: Gift },
+              ].map(function(stat) { return (
                 <div key={stat.label} className="rounded-2xl p-4"
                   style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
-                  <p className="text-[10px] font-black uppercase mb-1" style={{ ...T, color: 'rgba(255,255,255,0.35)' }}>{stat.label}</p>
+                  <p className="text-[10px] font-black uppercase mb-1" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.35)' }}>{stat.label}</p>
                   <p className="text-2xl font-black" style={{ fontFamily: 'Orbitron, monospace', color: stat.color }}>{stat.value}</p>
                 </div>
-              ))}
+              ); })}
             </div>
             <div className="rounded-2xl p-5" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
-              <p className="font-black text-sm mb-3" style={{ ...T, color: GOLD }}>Points Earn Rate</p>
+              <p className="font-black text-sm mb-3" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: GOLD }}>Points Earn Rate</p>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 {[
                   { label: 'Watch (per min)', value: earnConfig.watch, icon: '⏱' },
@@ -217,14 +234,14 @@ export default function LoyaltyProgram() {
                   { label: 'Per $1 tipped', value: earnConfig.tip, icon: '💰' },
                   { label: 'Subscribe bonus', value: earnConfig.subscribe, icon: '⭐' },
                   { label: 'Reaction', value: earnConfig.reaction, icon: '❤️' },
-                ].map(e => (
-                  <div key={e.label} className="rounded-xl p-3 text-center"
+                ].map(function(eItem) { return (
+                  <div key={eItem.label} className="rounded-xl p-3 text-center"
                     style={{ background: 'rgba(255,255,255,0.04)' }}>
-                    <span className="text-xl">{e.icon}</span>
-                    <p className="text-lg font-black mt-1" style={{ fontFamily: 'Orbitron, monospace', color: '#D4AF37' }}>+{e.value}</p>
-                    <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{e.label}</p>
+                    <span className="text-xl">{eItem.icon}</span>
+                    <p className="text-lg font-black mt-1" style={{ fontFamily: 'Orbitron, monospace', color: '#D4AF37' }}>+{eItem.value}</p>
+                    <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.35)' }}>{eItem.label}</p>
                   </div>
-                ))}
+                ); })}
               </div>
             </div>
           </div>
@@ -235,7 +252,7 @@ export default function LoyaltyProgram() {
           <div className="rounded-2xl p-6" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
             <div className="flex items-center gap-4 mb-4">
               <div className="w-16 h-16 rounded-full flex items-center justify-center"
-                style={{ background: `linear-gradient(135deg, ${GOLD}, ${CRIMSON})` }}>
+                style={{ background: 'linear-gradient(135deg, ' + GOLD + ', ' + CRIMSON + ')' }}>
                 <Star className="w-8 h-8 text-white" />
               </div>
               <div>
@@ -243,7 +260,7 @@ export default function LoyaltyProgram() {
                   {userPoints.toLocaleString()} pts
                 </p>
                 <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                  {nextReward ? `${(nextReward.points_required - userPoints).toLocaleString()} pts to ${nextReward.name}` : 'All rewards unlocked! 🎉'}
+                  {nextReward ? ((nextReward.points_required - userPoints).toLocaleString() + ' pts to ' + nextReward.name) : 'All rewards unlocked! 🎉'}
                 </p>
               </div>
             </div>
@@ -254,8 +271,8 @@ export default function LoyaltyProgram() {
                   <span className="font-black" style={{ color: '#D4AF37' }}>{Math.round(progressToNext)}%</span>
                 </div>
                 <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${progressToNext}%` }} transition={{ duration: 1, ease: 'easeOut' }}
-                    className="h-full rounded-full" style={{ background: `linear-gradient(90deg, ${GOLD}, #D4AF37)` }} />
+                  <motion.div initial={{ width: 0 }} animate={{ width: progressToNext + '%' }} transition={{ duration: 1, ease: 'easeOut' }}
+                    className="h-full rounded-full" style={{ background: 'linear-gradient(90deg, ' + GOLD + ', #D4AF37)' }} />
                 </div>
               </div>
             )}
@@ -267,41 +284,41 @@ export default function LoyaltyProgram() {
           sortedRewards.length === 0 ? (
             <div className="text-center py-16 rounded-2xl" style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
               <Gift className="w-12 h-12 mx-auto opacity-20 mb-3" style={{ color: GOLD }} />
-              <p className="font-black uppercase text-xs" style={{ ...T, color: 'rgba(255,255,255,0.3)' }}>No rewards configured yet</p>
+              <p className="font-black uppercase text-xs" style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.3)' }}>No rewards configured yet</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {sortedRewards.map((r, i) => {
+              {sortedRewards.map(function(r, i) {
                 var canClaim = !isOwnProgram && userPoints >= r.points_required;
                 return (
                   <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
                     <div className="rounded-2xl p-4 flex items-center gap-4 transition-all"
-                      style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${canClaim ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.06)'}` }}>
+                      style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid ' + (canClaim ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.06)') }}>
                       <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0"
-                        style={{ background: `${TIER_COLORS[i % 5]}20`, border: `1px solid ${TIER_COLORS[i % 5]}40` }}>
-                        {(REWARD_TYPES.find(rt => rt.id === r.reward_type) && REWARD_TYPES.find(rt => rt.id === r.reward_type).icon) || '🎁'}
+                        style={{ background: TIER_COLORS[i % 5] + '20', border: '1px solid ' + TIER_COLORS[i % 5] + '40' }}>
+                        {(REWARD_TYPES.find(function(rt) { return rt.id === r.reward_type; }) && REWARD_TYPES.find(function(rt) { return rt.id === r.reward_type; }).icon) || '🎁'}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-black text-sm text-white" style={T}>{r.name}</p>
                           {!r.is_active && (
                             <span className="text-[11px] font-black px-2 py-0.5 rounded-full uppercase"
-                              style={{ ...T, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)' }}>
+                              style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.3)' }}>
                               Inactive
                             </span>
                           )}
                         </div>
                         <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{r.description}</p>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs font-black" style={{ color: TIER_COLORS[i % 5], ...T }}>{r.points_required.toLocaleString()} pts</span>
+                          <span className="text-xs font-black" style={{ color: TIER_COLORS[i % 5], fontFamily: 'Barlow Condensed, sans-serif' }}>{r.points_required.toLocaleString()} pts</span>
                           <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.25)' }}>{r.claimed_count || 0} claimed</span>
                         </div>
                       </div>
                       <div className="shrink-0">
                         {isOwnProgram ? (
                           <div className="flex gap-1.5 items-center">
-                            <Toggle checked={r.is_active} onChange={v => toggleRewardMutation.mutate({ id: r.id, is_active: v })} />
-                            <button onClick={() => deleteRewardMutation.mutate(r.id)}
+                            <Toggle checked={r.is_active} onChange={function(v) { toggleRewardMutation.mutate({ id: r.id, is_active: v }); }} />
+                            <button onClick={function() { deleteRewardMutation.mutate(r.id); }}
                               className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
                               style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer' }}>
                               <Trash2 className="w-3 h-3" />
@@ -309,7 +326,7 @@ export default function LoyaltyProgram() {
                           </div>
                         ) : canClaim ? (
                           <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[10px]"
-                            style={{ ...T, background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: '#000', cursor: 'pointer' }}>
+                            style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')', border: 'none', color: '#000', cursor: 'pointer' }}>
                             <Gift className="w-3 h-3" /> Redeem
                           </button>
                         ) : (
@@ -332,11 +349,11 @@ export default function LoyaltyProgram() {
               <p className="font-black text-sm text-white" style={T}>Top Viewers</p>
             </div>
             <div className="p-4 space-y-2">
-              {leaderboard.slice(0, 50).map((l, i) => (
+              {leaderboard.slice(0, 50).map(function(l, i) { return (
                 <div key={l.id} className="flex items-center gap-3 p-3 rounded-xl"
-                  style={{ background: i < 3 ? `rgba(212,175,55,0.05)` : 'rgba(255,255,255,0.02)', border: `1px solid ${i < 3 ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)'}` }}>
+                  style={{ background: i < 3 ? 'rgba(212,175,55,0.05)' : 'rgba(255,255,255,0.02)', border: '1px solid ' + (i < 3 ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)') }}>
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0"
-                    style={{ background: i < 3 ? `${TIER_COLORS[2 - i]}20` : 'rgba(255,255,255,0.05)', color: i < 3 ? TIER_COLORS[2 - i] : 'rgba(255,255,255,0.4)' }}>
+                    style={{ background: i < 3 ? (TIER_COLORS[2 - i] + '20') : 'rgba(255,255,255,0.05)', color: i < 3 ? TIER_COLORS[2 - i] : 'rgba(255,255,255,0.4)' }}>
                     {i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -345,7 +362,7 @@ export default function LoyaltyProgram() {
                   </div>
                   <p className="font-black text-sm" style={{ fontFamily: 'Orbitron, monospace', color: '#D4AF37' }}>{(l.points || 0).toLocaleString()} pts</p>
                 </div>
-              ))}
+              ); })}
               {leaderboard.length === 0 && <p className="text-center py-8" style={{ color: 'rgba(255,255,255,0.25)' }}>No viewers yet</p>}
             </div>
           </div>
@@ -358,37 +375,37 @@ export default function LoyaltyProgram() {
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.7)' }}
-              onClick={() => setShowRewardForm(false)} />
+              onClick={function() { setShowRewardForm(false); }} />
             <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md rounded-2xl overflow-hidden z-50"
               style={{ background: 'rgba(8,11,24,0.98)', border: '1px solid rgba(212,175,55,0.25)' }}>
               <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
                 <p className="font-black text-sm text-white" style={T}>Create Reward</p>
-                <button onClick={() => setShowRewardForm(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
+                <button onClick={function() { setShowRewardForm(false); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer' }}>
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="p-5 space-y-3">
-                <input value={rewardForm.name} onChange={e => setRewardForm(f => ({ ...f, name: e.target.value }))}
+                <input value={rewardForm.name} onChange={function(e) { setRewardForm(function(f) { return Object.assign({}, f, { name: e.target.value }); }); }}
                   placeholder="Reward name" style={inp} />
-                <input value={rewardForm.description} onChange={e => setRewardForm(f => ({ ...f, description: e.target.value }))}
+                <input value={rewardForm.description} onChange={function(e) { setRewardForm(function(f) { return Object.assign({}, f, { description: e.target.value }); }); }}
                   placeholder="Description" style={inp} />
                 <input type="number" value={rewardForm.points_required}
-                  onChange={e => setRewardForm(f => ({ ...f, points_required: Number(e.target.value) }))}
+                  onChange={function(e) { setRewardForm(function(f) { return Object.assign({}, f, { points_required: Number(e.target.value) }); }); }}
                   placeholder="Points required" style={inp} />
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {REWARD_TYPES.map(rt => (
-                    <button key={rt.id} onClick={() => setRewardForm(f => ({ ...f, reward_type: rt.id }))}
-                      style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: `1px solid ${rewardForm.reward_type === rt.id ? '#D4AF37' : 'rgba(255,255,255,0.1)'}`, background: rewardForm.reward_type === rt.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: rewardForm.reward_type === rt.id ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
+                  {REWARD_TYPES.map(function(rt) { return (
+                    <button key={rt.id} onClick={function() { setRewardForm(function(f) { return Object.assign({}, f, { reward_type: rt.id }); }); }}
+                      style={{ padding: '6px 12px', borderRadius: 99, fontSize: 11, border: '1px solid ' + (rewardForm.reward_type === rt.id ? '#D4AF37' : 'rgba(255,255,255,0.1)'), background: rewardForm.reward_type === rt.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)', color: rewardForm.reward_type === rt.id ? '#D4AF37' : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif', fontWeight: 700 }}>
                       {rt.label}
                     </button>
-                  ))}
+                  ); })}
                 </div>
-                <input value={rewardForm.reward_value} onChange={e => setRewardForm(f => ({ ...f, reward_value: e.target.value }))}
+                <input value={rewardForm.reward_value} onChange={function(e) { setRewardForm(function(f) { return Object.assign({}, f, { reward_value: e.target.value }); }); }}
                   placeholder="Reward value (badge name, code, etc.)" style={inp} />
-                <button onClick={() => createRewardMutation.mutate({ ...rewardForm, creator_id: (user && user.id) })}
+                <button onClick={function() { createRewardMutation.mutate(Object.assign({}, rewardForm, { creator_id: (user && user.id) })); }}
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-black uppercase text-sm mt-2"
-                  style={{ ...T, background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: '#000', cursor: 'pointer' }}>
+                  style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')', border: 'none', color: '#000', cursor: 'pointer' }}>
                   <Check className="w-4 h-4" /> Create Reward
                 </button>
               </div>
@@ -402,7 +419,7 @@ export default function LoyaltyProgram() {
       {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       {(user && user.id) && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={(user && user.id)} isSubscribed={false} />}
       {(user && user.id) && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={(user && user.id)} isHighlighted={false} />}
-      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
+      <TierEditor open={showTierEditor} onClose={function() { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
       <RewardShopEditor creatorId={(user && user.id)} />
       <SwanyBotWidget />
       <CollaborationMatcher />

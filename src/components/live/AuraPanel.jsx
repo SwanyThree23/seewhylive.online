@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Volume2, VolumeX, RefreshCw, Copy, CheckCheck } from 'lucide-react';
+import { getRecentContext } from '../../hooks/useCaptionBuffer';
 
 const MODES = [
   { id: 'SASSY', label: 'Sassy', emoji: '💅', color: '#FF2040', desc: 'Sharp & witty' },
@@ -69,6 +70,8 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
   };
 
   const buildPrompt = (trigger, ctx) => {
+    const captionCtx = getRecentContext();
+    const captionClause = captionCtx ? `\n\nRecent conversation (last 20 seconds):\n${captionCtx}\n\nReact to what was just said.` : '';
     switch (trigger) {
       case 'stream_start': return `Stream "${ctx.title}" just went live with ${ctx.viewers} viewers. Give an opening line!`;
       case 'tip': return `${ctx.name} just tipped $${ctx.amount}${ctx.note ? ` saying "${ctx.note}"` : ''}. React!`;
@@ -76,7 +79,7 @@ export default function AuraPanel({ roomId, isHost, streamTitle, viewerCount, is
       case 'gift': return `${ctx.name} sent a ${ctx.gift}! React to the gift!`;
       case 'stream_end': return `Stream ending. Peak viewers: ${ctx.peak}. Total earned: $${ctx.earnings}. Give a closing line!`;
       case 'milestone': return `The stream just hit ${ctx.viewers} viewers! React!`;
-      default: return ctx.custom || 'Say something engaging to the audience.';
+      default: return (ctx.custom || 'Say something engaging to the audience.') + captionClause;
     }
   };
 

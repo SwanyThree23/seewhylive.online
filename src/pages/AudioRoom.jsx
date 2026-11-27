@@ -230,7 +230,7 @@ function SpeakerTile({ member, size = 80 }) {
         {/* OCT inner fill */}
         <div className="absolute inset-[3px] overflow-hidden flex items-center justify-center font-black text-lg text-white" style={{
           clipPath: OCT,
-          background: `linear-gradient(135deg, ${color}88, ${BG2})`,
+          background: 'linear-gradient(135deg, ' + color + '88, ' + BG2 + ')',
         }}>
           {member.user_avatar
             ? <img src={member.user_avatar} alt={member.user_name} className="w-full h-full object-cover" />
@@ -245,7 +245,7 @@ function SpeakerTile({ member, size = 80 }) {
         )}
         {isMuted && (
           <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
-            style={{ background: '#EF4444', border: `2px solid ${BG}` }}>
+            style={{ background: '#EF4444', border: '2px solid ' + BG }}>
             <MicOff className="w-2.5 h-2.5 text-white" />
           </div>
         )}
@@ -265,7 +265,7 @@ function AudienceTile({ member }) {
       <div className="relative" style={{ width: size, height: size }}>
         <div className="absolute inset-0" style={{ clipPath: OCT, background: 'rgba(255,255,255,0.12)' }} />
         <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center font-bold text-sm text-white"
-          style={{ clipPath: OCT, background: `linear-gradient(135deg, ${color}66, ${BG2})` }}>
+          style={{ clipPath: OCT, background: 'linear-gradient(135deg, ' + color + '66, ' + BG2 + ')' }}>
           {member.user_avatar
             ? <img src={member.user_avatar} alt={member.user_name} className="w-full h-full object-cover" />
             : (member.user_name || '?').charAt(0).toUpperCase()
@@ -280,15 +280,20 @@ function AudienceTile({ member }) {
 }
 
 export default function AudioRoom() {
-  var [searchParams, setSearchParams] = useSearchParams();
+  var searchParamsState = useSearchParams();
+  var searchParams = searchParamsState[0];
+  var setSearchParams = searchParamsState[1];
   var roomId = searchParams.get('id');
 
-  var [activeMicId, setActiveMicId] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
-  var handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  var activeMicIdState = useState(function() { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
+  var activeMicId = activeMicIdState[0];
+  var setActiveMicId = activeMicIdState[1];
+  var handleMicChange = function(id) { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
   var { localStream, audioEnabled, toggleAudio, applyAudioConstraints, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: false, audioDeviceId: activeMicId });
   var { cameras: cameraDevices, speakers: speakerDevices } = useCameraDevices();
   var { remoteStreams, peerUserIds, peersRef, announceJoin } = useWebRTCPeers(roomId, localStream);
-  var { isSpeaking: localIsSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  var autoSpeakResult = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  var localIsSpeaking = autoSpeakResult.isSpeaking;
   var remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
   var [busViewerCount, setBusViewerCount] = useState(0);
   var [tipTotal, setTipTotal] = useState(0);
@@ -299,45 +304,57 @@ export default function AudioRoom() {
   var [activeScene, setActiveScene] = useState('main');
   var [selectedBitrate, setSelectedBitrate] = useState(3000);
   var [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
-  var handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
+  var handleBitrateChange = function(b) { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
 
-  var [activePc, setActivePc] = useState(null);
-  useEffect(() => {
+  var activePcState = useState(null);
+  var activePc = activePcState[0];
+  var setActivePc = activePcState[1];
+  useEffect(function() {
     var entries = Array.from(peersRef.current.entries());
-    var connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    var connected = entries.find(function(pair) { return pair[1].pc.connectionState === 'connected'; });
     setActivePc(connected ? connected[1].pc : null);
-  }, [remoteStreams]);  
+  }, [remoteStreams]);
 
   var { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
 
-  var { data: user }  = useQuery({ queryKey: ['currentUser'],   queryFn: () => base44.auth.me() });
-  var speakingIds = localIsSpeaking && (user && user.id) ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
+  var speakingIds = (function() {
+    if (!localIsSpeaking || !(user && user.id)) return remoteSpeakingIds;
+    var o = Object.assign({}, remoteSpeakingIds);
+    o[user.id] = true;
+    return o;
+  }());
 
-  var { data: party } = useQuery({
+  var partyQuery = useQuery({
     queryKey: ['audio-room', roomId],
-    queryFn:  () => base44.entities.WatchParty.filter({ id: roomId }).then(r => r[0]),
+    queryFn:  function() { return base44.entities.WatchParty.filter({ id: roomId }).then(function(r) { return r[0]; }); },
     enabled:  !!roomId,
     refetchInterval: 10000,
   });
-  var { data: members = [] } = useQuery({
+  var party = partyQuery.data || null;
+  var membersQuery = useQuery({
     queryKey: ['audio-room-members', roomId],
-    queryFn:  () => base44.entities.WatchPartyMember.filter({ party_id: roomId, is_active: true }),
+    queryFn:  function() { return base44.entities.WatchPartyMember.filter({ party_id: roomId, is_active: true }); },
     enabled:  !!roomId,
     refetchInterval: 10000,
   });
-  var { data: loves = [] } = useQuery({
+  var members = membersQuery.data || [];
+  var lovesQuery = useQuery({
     queryKey: ['audio-room-loves', roomId],
-    queryFn:  () => base44.entities.Reaction.filter({ room_id: roomId, emoji: '❤️', target_type: 'room' }),
+    queryFn:  function() { return base44.entities.Reaction.filter({ room_id: roomId, emoji: '❤️', target_type: 'room' }); },
     enabled:  !!roomId,
     refetchInterval: 5000,
   });
+  var loves = lovesQuery.data || [];
 
-  var { data: activePoll } = useQuery({
+  var activePollQuery = useQuery({
     queryKey: ['active-poll', roomId],
-    queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(function(r) { return r[0] || null; }); },
     enabled: !!roomId,
     refetchInterval: 5000,
   });
+  var activePoll = activePollQuery.data || null;
 
   var [showActivitySidebar, setShowActivitySidebar] = useState(false);
   var [showShareModal, setShowShareModal] = useState(false);
@@ -359,9 +376,9 @@ export default function AudioRoom() {
   var [showModerationAppeal, setShowModerationAppeal] = useState(false);
   var [isSharing, setIsSharing] = useState(false);
   var screenStreamRef = useRef(null);
-  var _applyShareStream = (stream) => { screenStreamRef.current = stream; var vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
-  var handleStartShare = (stream) => { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(() => {}); };
-  var handleStopShare = () => { if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); } screenStreamRef.current = null; setIsSharing(false); };
+  var _applyShareStream = function(stream) { screenStreamRef.current = stream; var vt = stream.getVideoTracks()[0]; if (vt) vt.onended = function() { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  var handleStartShare = function(stream) { if (stream) { _applyShareStream(stream); return; } navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(_applyShareStream).catch(function() {}); };
+  var handleStopShare = function() { if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); } screenStreamRef.current = null; setIsSharing(false); };
   var [chatOpen,      setChatOpen]      = useState(false);
   var [settingsOpen,  setSettingsOpen]  = useState(false);
   var [handRaised,    setHandRaised]    = useState(false);
@@ -381,24 +398,24 @@ export default function AudioRoom() {
 
   // Elapsed-seconds counter (starts on mount)
   var [elapsed, setElapsed] = useState(0);
-  useEffect(() => {
-    var iv = setInterval(() => setElapsed(s => s + 1), 1000);
-    return () => clearInterval(iv);
+  useEffect(function() {
+    var iv = setInterval(function() { setElapsed(function(s) { return s + 1; }); }, 1000);
+    return function() { clearInterval(iv); };
   }, []);
 
-  useEffect(() => { setLoveCount(loves.length); }, [loves.length]);
+  useEffect(function() { setLoveCount(loves.length); }, [loves.length]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (!roomId || !(user && user.id)) return;
     announceJoin(user.id);
     return leaveRoom;
   }, [roomId, (user && user.id)]);
 
   var speakers = members.length > 0
-    ? members.filter(m => m.role === 'host' || m.role === 'cohost' || m.role === 'speaker')
+    ? members.filter(function(m) { return m.role === 'host' || m.role === 'cohost' || m.role === 'speaker'; })
     : [];
   var audience = members.length > 0
-    ? members.filter(m => m.role !== 'host' && m.role !== 'cohost' && m.role !== 'speaker')
+    ? members.filter(function(m) { return m.role !== 'host' && m.role !== 'cohost' && m.role !== 'speaker'; })
     : [];
 
   var speakerList = speakers.length > 0 ? speakers : members.slice(0, 6);
@@ -406,12 +423,13 @@ export default function AudioRoom() {
 
   var isHost  = (user && user.id) && (party && party.host_id) && user.id === party.host_id;
   var ytId    = getYouTubeId((party && party.video_url) || '');
-  var hostMember = members.find(m => m.user_id === (party && party.host_id));
-  var myMember   = members.find(m => m.user_id === (user && user.id));
+  var hostMember = members.find(function(m) { return m.user_id === (party && party.host_id); });
+  var myMember   = members.find(function(m) { return m.user_id === (user && user.id); });
   var hostName   = (hostMember && hostMember.user_name) || (party && party.host_name) || 'Host';
   var memberCount = members.length;
-  useEffect(() => { setPeakViewers(p => Math.max(p, Math.max(busViewerCount, memberCount))); }, [busViewerCount, memberCount]);
-  var { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: (user && user.id) || '', title: (party && party.title) || 'Live Audio', stream: localStream });
+  useEffect(function() { setPeakViewers(function(p) { return Math.max(p, Math.max(busViewerCount, memberCount)); }); }, [busViewerCount, memberCount]);
+  var vodRecording = useVODRecording({ streamId: roomId || '', creatorId: (user && user.id) || '', title: (party && party.title) || 'Live Audio', stream: localStream });
+  var extractClipBlobUrl = vodRecording.extractClipBlobUrl;
   useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
   var subCount = useSubscriptionCount((party && party.host_id) || (user && user.id));
