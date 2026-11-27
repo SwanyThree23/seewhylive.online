@@ -442,8 +442,8 @@ export default function AudioRoom() {
   }
 
   // Keyboard shortcuts: M = mic toggle, Space = push-to-talk (hold)
-  useEffect(() => {
-    var onDown = (e) => {
+  useEffect(function() {
+    var onDown = function(e) {
       var tag = document.activeElement && document.activeElement.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement && document.activeElement.isContentEditable)) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
@@ -459,7 +459,7 @@ export default function AudioRoom() {
         }
       }
     };
-    var onUp = (e) => {
+    var onUp = function(e) {
       if (e.key === ' ') {
         e.preventDefault();
         // Release PTT: re-mute only if we were the ones who enabled it
@@ -471,23 +471,23 @@ export default function AudioRoom() {
     };
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
-    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
-     
+    return function() { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
+
   }, [audioEnabled, pttActive]);
 
   // Apply audio output device to all media elements when speaker pref changes
-  useEffect(() => {
+  useEffect(function() {
     if (!prefSpeaker) return;
-    document.querySelectorAll('video, audio').forEach(el => {
+    document.querySelectorAll('video, audio').forEach(function(el) {
       if (typeof el.setSinkId === 'function') {
-        el.setSinkId(prefSpeaker).catch(() => {});
+        el.setSinkId(prefSpeaker).catch(function() {});
       }
     });
     try { localStorage.setItem('swl_pref_speaker', prefSpeaker); } catch {}
   }, [prefSpeaker]);
 
   // Apply live audio processing constraints (NS / EC / AGC)
-  useEffect(() => {
+  useEffect(function() {
     applyAudioConstraints({
       noiseSuppression: noiseSupp,
       echoCancellation: echoCan,
@@ -512,9 +512,9 @@ export default function AudioRoom() {
     if (roomId && (user && user.id)) {
       base44.entities.WatchPartyMember
         .filter({ party_id: roomId, user_id: user.id, is_active: true })
-        .then(ms => ms.forEach(m =>
-          base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(() => {})
-        )).catch(() => {});
+        .then(function(ms) { ms.forEach(function(m) {
+          base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(function() {});
+        }); }).catch(function() {});
     }
     window.history.back();
   }
@@ -549,14 +549,14 @@ export default function AudioRoom() {
           <div className="rounded-2xl p-5 space-y-4" style={{ background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.15)' }}>
             <input
               value={createTitle}
-              onChange={e => setCreateTitle(e.target.value)}
+              onChange={function(e) { setCreateTitle(e.target.value); }}
               placeholder="Room title…"
               className="w-full h-11 px-4 rounded-xl text-white placeholder:text-white/25 outline-none text-sm"
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', fontFamily: 'Barlow Condensed, sans-serif' }}
             />
             <input
               value={createVideoUrl}
-              onChange={e => setCreateVideoUrl(e.target.value)}
+              onChange={function(e) { setCreateVideoUrl(e.target.value); }}
               placeholder="YouTube URL (optional)…"
               className="w-full h-11 px-4 rounded-xl text-white placeholder:text-white/25 outline-none text-sm"
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', fontFamily: 'Barlow Condensed, sans-serif' }}
@@ -594,7 +594,7 @@ export default function AudioRoom() {
 
       <div className="shrink-0 flex items-center px-4 gap-3 h-12"
         style={{ background: 'rgba(255,255,255,0.97)', borderBottom: '1px solid rgba(0,0,0,0.08)' }}>
-        <button onClick={() => window.history.back()} className="flex items-center gap-1">
+        <button onClick={function() { window.history.back(); }} className="flex items-center gap-1">
           <ChevronLeft className="w-5 h-5" style={{ color: '#111' }} />
           <span className="text-sm font-black" style={{ color: '#111' }}>All Rooms</span>
         </button>
@@ -606,8 +606,8 @@ export default function AudioRoom() {
         {/* Connection quality */}
         <div className="flex items-end gap-0.5 px-1.5 py-1 rounded-lg"
           style={{ background: 'rgba(0,0,0,0.06)' }}
-          title={`Network: ${netLabel}${netRtt ? ` · ${netRtt}ms` : ''}`}>
-          {[0,1,2,3].map(i => (
+          title={'Network: ' + netLabel + (netRtt ? ' · ' + netRtt + 'ms' : '')}>
+          {[0,1,2,3].map(function(i) { return (
             <div key={i} className="w-1 rounded-sm"
               style={{
                 height: 4 + i * 3,
@@ -615,7 +615,7 @@ export default function AudioRoom() {
                   ? (netBars >= 3 ? '#4A9B5E' : netBars >= 2 ? '#D4AF37' : '#C0392B')
                   : 'rgba(0,0,0,0.15)',
               }} />
-          ))}
+          ); })}
         </div>
         <button onClick={sendLove} className="flex items-center gap-1">
           <Heart className="w-4 h-4 text-[#C0392B]" fill="#C0392B" />
@@ -632,7 +632,7 @@ export default function AudioRoom() {
           <div className="bg-black" style={{ aspectRatio: '16/9', width: '100%', position: 'relative' }}>
             {ytId ? (
               <img
-                src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`}
+                src={'https://img.youtube.com/vi/' + ytId + '/mqdefault.jpg'}
                 alt="video"
                 className="w-full h-full object-cover"
               />
@@ -670,11 +670,10 @@ export default function AudioRoom() {
           roomId={roomId}
           user={user}
           party={party}
-          members={members.map(m => ({
-            ...m,
+          members={members.map(function(m) { return Object.assign({}, m, {
             display_name: m.user_name,
             speaking: m.user_id === (user && user.id) ? localIsSpeaking : m.speaking,
-          }))}
+          }); })}
           localStream={localStream}
           remoteStreams={remoteStreams}
           peerUserIds={peerUserIds}
@@ -686,10 +685,10 @@ export default function AudioRoom() {
           <MultiGuestPanel
             participants={members}
             spotlightId={spotlightId}
-            onSpotlight={(id) => setSpotlightId(prev => prev === id ? null : id)}
+            onSpotlight={function(id) { setSpotlightId(function(prev) { return prev === id ? null : id; }); }}
             roomId={roomId}
             isHost={isHost}
-            speakingIds={new Set(Object.keys(speakingIds).filter(k => speakingIds[k]))}
+            speakingIds={new Set(Object.keys(speakingIds).filter(function(k) { return speakingIds[k]; }))}
           />
         )}
       </div>
@@ -709,14 +708,14 @@ export default function AudioRoom() {
         <div className="flex items-center gap-2">
 
           <button
-            onClick={() => setChatOpen(v => !v)}
+            onClick={function() { setChatOpen(function(v) { return !v; }); }}
             className="flex flex-col items-center gap-0.5"
           >
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center"
               style={{
-                background: chatOpen ? `${GOLD}20` : 'rgba(255,255,255,0.07)',
-                border: chatOpen ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.12)',
+                background: chatOpen ? GOLD + '20' : 'rgba(255,255,255,0.07)',
+                border: chatOpen ? '1px solid ' + GOLD + '55' : '1px solid rgba(255,255,255,0.12)',
               }}
             >
               <MessageCircle className="w-4 h-4 text-white" />
@@ -734,11 +733,11 @@ export default function AudioRoom() {
           </button>
 
           <button
-            onClick={() => {
+            onClick={function() {
               if (navigator.share) {
-                navigator.share({ title: (party && party.title) || 'Audio Room', url: window.location.href }).catch(() => {});
+                navigator.share({ title: (party && party.title) || 'Audio Room', url: window.location.href }).catch(function() {});
               } else {
-                navigator.clipboard.writeText(window.location.href).then(() => toast.success('Link copied!')).catch(() => toast.error('Copy failed.'));
+                navigator.clipboard.writeText(window.location.href).then(function() { toast.success('Link copied!'); }).catch(function() { toast.error('Copy failed.'); });
               }
             }}
             className="w-10 h-10 rounded-full flex items-center justify-center"
@@ -748,11 +747,11 @@ export default function AudioRoom() {
           </button>
 
           <button
-            onClick={() => setHandRaised(h => !h)}
+            onClick={function() { setHandRaised(function(h) { return !h; }); }}
             className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
             style={{
-              background: handRaised ? `${GOLD}20` : 'rgba(255,255,255,0.07)',
-              border: handRaised ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.12)',
+              background: handRaised ? GOLD + '20' : 'rgba(255,255,255,0.07)',
+              border: handRaised ? '1px solid ' + GOLD + '55' : '1px solid rgba(255,255,255,0.12)',
             }}
           >
             <Hand className="w-4 h-4" style={{ color: handRaised ? GOLD : 'rgba(255,255,255,0.6)' }} />

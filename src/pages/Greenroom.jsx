@@ -533,11 +533,11 @@ export default function GreenroomPage() {
     <div className="min-h-screen" style={{ background: '#080B18' }}>
       {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={(room && room.host_id) || (user && user.id)} onClose={function() { setShowSwanPanel(false); }} />}
       <NetworkQualityBanner quality={['offline','poor','fair','good','excellent'][deviceState.networkQuality] || 'good'} />
-      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={(room && room.host_id) || (user && user.id)} onOpenPanel={() => setShowSwanPanel(true)} />}
+      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={(room && room.host_id) || (user && user.id)} onOpenPanel={function() { setShowSwanPanel(true); }} />}
       {/* ── FANBASE-STYLE HEADER ── */}
       <div className="sticky top-0 z-30" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-2 px-3 h-12">
-          <Link to={roomId ? `/Room?id=${roomId}` : '/Discover'}>
+          <Link to={roomId ? ('/Room?id=' + roomId) : '/Discover'}>
             <button className="w-8 h-8 flex items-center justify-center rounded-xl shrink-0 transition-all active:scale-95"
               style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
               <X className="w-4 h-4" />

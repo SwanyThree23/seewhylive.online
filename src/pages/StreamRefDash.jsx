@@ -784,7 +784,7 @@ function JudgesTab() {
             ],
             icon: "⏱️",
           },
-        ].map((r) => (
+        ].map(function(r) { return (
           <div key={r.role} className="mb-4 bg-black/30 rounded-lg p-4 border border-white/10">
             <div className="flex items-center gap-3 mb-3">
               <span className="text-xl">{r.icon}</span>
@@ -792,15 +792,15 @@ function JudgesTab() {
               <Badge type={r.badge}>{r.badge === "gold" ? "HEAD" : "STAFF"}</Badge>
             </div>
             <ul className="space-y-1.5">
-              {r.perms.map((p) => (
+              {r.perms.map(function(p) { return (
                 <li key={p} className="flex items-start gap-2 text-xs text-white/60">
                   <span className="text-[#800020] shrink-0 mt-0.5">›</span>
                   {p}
                 </li>
-              ))}
+              ); })}
             </ul>
           </div>
-        ))}
+        ); })}
       </Section>
 
       {/* Scoring System */}
@@ -816,12 +816,12 @@ function JudgesTab() {
             { rule: "Tiebreaker (equal match points)",     points: "Pip count differential decides" },
             { rule: "Forfeit",                             points: "Opponent wins 3-0 by default" },
             { rule: "Time violation (3rd offense)",        points: "−1 Match Point for violating team" },
-          ].map((s) => (
+          ].map(function(s) { return (
             <div key={s.rule} className="flex items-start justify-between gap-4 py-2 border-b border-white/5">
               <span className="text-white/60 text-xs">{s.rule}</span>
               <span className="text-[#D4AF37] text-xs font-mono font-bold shrink-0 text-right">{s.points}</span>
             </div>
-          ))}
+          ); })}
         </div>
 
         <Row label="Rounds per Match" value="Best of 5 (first to 3)" badge={{ type: "info", label: "SVS format" }} />
@@ -861,7 +861,7 @@ function JudgesTab() {
           { event: "timer:warning",        dir: "server→client", desc: "60s and 30s warnings emit to overlay and chat" },
           { event: "dispute:open",         dir: "client→server", desc: "Opens dispute thread, notifies platform admin" },
           { event: "dispute:resolved",     dir: "server→client", desc: "Admin resolves — broadcasts ruling to room" },
-        ].map((e) => (
+        ].map(function(e) { return (
           <div key={e.event} className="py-2 border-b border-white/5">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[#D4AF37] font-mono text-xs">{e.event}</span>
@@ -869,7 +869,7 @@ function JudgesTab() {
             </div>
             <p className="text-white/40 text-xs mt-0.5">{e.desc}</p>
           </div>
-        ))}
+        ); })}
       </Section>
 
       {/* Overlay Controls */}
@@ -885,7 +885,7 @@ function JudgesTab() {
             { control: "Foul Call",         trigger: "judge:flag → guardian_events insert",            style: "Yellow ⚠ icon + \"ILLEGAL PLAY\" ticker" },
             { control: "Match Winner Card", trigger: "Final round lock + match:end event",             style: "Full celebration overlay with winning state" },
             { control: "Dispute Notice",    trigger: "dispute:open socket",                            style: "⚖️ UNDER REVIEW banner, pauses timer" },
-          ].map((o) => (
+          ].map(function(o) { return (
             <div key={o.control} className="py-2.5 border-b border-white/5">
               <div className="flex items-center gap-2 mb-0.5">
                 <span className="text-[#D4AF37] font-mono text-xs font-bold">{o.control}</span>
@@ -893,7 +893,7 @@ function JudgesTab() {
               <div className="text-white/40 text-xs">Trigger: {o.trigger}</div>
               <div className="text-[#6DBF7E]/60 text-xs mt-0.5">Display: {o.style}</div>
             </div>
-          ))}
+          ); })}
         </div>
       </Section>
 
@@ -907,7 +907,7 @@ function JudgesTab() {
           { step: 5, actor: "Head Judge",     action: "Resolves dispute:open socket — play resumes or score adjusted" },
           { step: 6, actor: "Platform Admin", action: "Can escalate to appeal within 5 minutes if captain contests" },
           { step: 7, actor: "System",         action: "All actions logged to guardian_events + match audit log (immutable)" },
-        ].map((s) => (
+        ].map(function(s) { return (
           <div key={s.step} className="flex gap-3 py-2 border-b border-white/5">
             <span className="text-[#800020] font-mono text-xs font-bold shrink-0 w-5">{s.step}</span>
             <div>
@@ -915,17 +915,17 @@ function JudgesTab() {
               <span className="text-white/60 text-xs ml-2">{s.action}</span>
             </div>
           </div>
-        ))}
+        ); })}
       </Section>
 
       {/* Pre-match checklist */}
       <Section title="Judge Pre-Match Checklist">
         <div className="text-xs text-white/40 mb-3">Tap to mark complete</div>
-        {judgePreMatchSteps.map((step, i) => (
-          <div key={i} onClick={() => setJudgeCheckDone((d) => d.map((v, j) => (j === i ? !v : v)))} className="cursor-pointer">
+        {judgePreMatchSteps.map(function(step, i) { return (
+          <div key={i} onClick={function() { setJudgeCheckDone(function(d) { return d.map(function(v, j) { return j === i ? !v : v; }); }); }} className="cursor-pointer">
             <CheckItem done={judgeCheckDone[i]}>{step}</CheckItem>
           </div>
-        ))}
+        ); })}
         <div className="mt-2 text-xs text-[#D4AF37] font-mono">{judgeCheckDone.filter(Boolean).length} / 8 complete</div>
       </Section>
 
@@ -953,14 +953,14 @@ function JudgesTab() {
           { prompt: "Congratulate [State] on winning Round 3 in a 30-second hype announcement.",     use: "Round win hype" },
           { prompt: "Explain the tiebreaker pip-count rule to viewers who are confused.",             use: "Viewer education" },
           { prompt: "Generate a professional match summary for Round 1 through 3 of this SVS game.", use: "Score recap" },
-        ].map((j) => (
+        ].map(function(j) { return (
           <div key={j.use} className="py-2.5 border-b border-white/5">
             <div className="flex items-center gap-2 mb-1">
               <Badge type="gold">{j.use}</Badge>
             </div>
             <p className="text-white/55 text-xs italic">"{j.prompt}"</p>
           </div>
-        ))}
+        ); })}
         <div className="mt-3 text-xs text-white/30">Access Joyce AI → <span className="text-[#D4AF37]">seewhylive.online/JoyceAI</span></div>
       </Section>
     </div>
@@ -982,16 +982,20 @@ var TAB_CONTENT = {
 };
 
 export default function StreamRefDash() {
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
-  var { data: activeRoom } = useQuery({
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
+  var activeRoomQuery = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = activeRoomQuery.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
-  var [activeTab, setActiveTab] = useState("rtmp");
+  var activeTabState = useState("rtmp");
+  var activeTab = activeTabState[0];
+  var setActiveTab = activeTabState[1];
   var ActiveContent = TAB_CONTENT[activeTab];
 
   return (
@@ -1034,20 +1038,20 @@ export default function StreamRefDash() {
       <div className="border-b border-white/10 bg-[#0a0608] sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex overflow-x-auto gap-0" style={{ scrollbarWidth: 'none' }}>
-            {TABS.map((tab) => (
+            {TABS.map(function(tab) { return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-4 py-3 text-xs font-mono whitespace-nowrap border-b-2 transition-all ${
+                onClick={function() { setActiveTab(tab.id); }}
+                className={'flex items-center gap-1.5 px-4 py-3 text-xs font-mono whitespace-nowrap border-b-2 transition-all ' + (
                   activeTab === tab.id
-                    ? "border-[#800020] text-white"
-                    : "border-transparent text-white/30 hover:text-white/60"
-                }`}
+                    ? 'border-[#800020] text-white'
+                    : 'border-transparent text-white/30 hover:text-white/60'
+                )}
               >
                 <span>{tab.icon}</span>
                 <span className="uppercase tracking-wider">{tab.label}</span>
               </button>
-            ))}
+            ); })}
           </div>
         </div>
       </div>
@@ -1061,8 +1065,8 @@ export default function StreamRefDash() {
         <StreamHealthDashboard isLive={!!activeRoomId} />
         <ZEGOConfigPanel roomId={activeRoomId} />
         <OBSBridge roomId={activeRoomId} isHost={true} />
-        <SwanDirectorPanel roomId={activeRoomId} hostId={(user && user.id)} onClose={() => {}} />
-        <ZEGOLiveRoom roomId={activeRoomId} userId={(user && user.id)} userName={(user && user.full_name) || ""} isHost={true} onStreamHealth={() => {}} />
+        <SwanDirectorPanel roomId={activeRoomId} hostId={(user && user.id)} onClose={function() {}} />
+        <ZEGOLiveRoom roomId={activeRoomId} userId={(user && user.id)} userName={(user && user.full_name) || ""} isHost={true} onStreamHealth={function() {}} />
         <ChatModeration />
         <StreamMetadata room={activeRoom || null} isHost={true} />
       </div>
