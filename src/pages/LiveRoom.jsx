@@ -225,7 +225,7 @@ var DEMO_CHAT = [];
 // ── Octagonal stage tile (speaker) ───────────────────────────────────────────
 function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
   var videoRef = useRef(null);
-  useEffect(() => { if (videoRef.current && stream) videoRef.current.srcObject = stream; }, [stream]);
+  useEffect(function() { if (videoRef.current && stream) videoRef.current.srcObject = stream; }, [stream]);
 
   var isHost   = p.role === 'host';
   var isCohost = p.role === 'co-host';
@@ -252,7 +252,7 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
 
         {/* Dark content shell */}
         <div className="absolute inset-[2.5px] overflow-hidden flex items-center justify-center"
-          style={{ clipPath: OCT, background: `linear-gradient(145deg, ${CRIMSON}99, ${BG2})` }}>
+          style={{ clipPath: OCT, background: 'linear-gradient(145deg, ' + CRIMSON + '99, ' + BG2 + ')' }}>
 
           {stream ? (
             <video ref={videoRef} autoPlay playsInline muted={isLocal}
@@ -267,12 +267,14 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
           {/* Speaking waveform bars */}
           {p.speaking && !p.muted && (
             <div className="absolute bottom-2 left-0 right-0 flex justify-center items-end gap-[2px]">
-              {[3,6,4,7,3,5,4].map((h, i) => (
-                <motion.div key={i} className="w-[2px] rounded-full"
-                  style={{ background: GOLD, height: h }}
-                  animate={{ height: [h, h * 2.8, h] }}
-                  transition={{ duration: 0.38, repeat: Infinity, delay: i * 0.07 }} />
-              ))}
+              {[3,6,4,7,3,5,4].map(function(h, i) {
+                return (
+                  <motion.div key={i} className="w-[2px] rounded-full"
+                    style={{ background: GOLD, height: h }}
+                    animate={{ height: [h, h * 2.8, h] }}
+                    transition={{ duration: 0.38, repeat: Infinity, delay: i * 0.07 }} />
+                );
+              })}
             </div>
           )}
         </div>
@@ -280,7 +282,7 @@ function StageTile({ p, size = 96, stream, isLocal = false, onClick }) {
         {/* Muted badge */}
         {p.muted && (
           <div className="absolute -bottom-0.5 -right-0.5 w-[18px] h-[18px] rounded-full flex items-center justify-center"
-            style={{ background: '#C0392B', border: `2px solid ${BG}` }}>
+            style={{ background: '#C0392B', border: '2px solid ' + BG }}>
             <MicOff className="w-2 h-2 text-white" />
           </div>
         )}
@@ -315,7 +317,7 @@ function AudienceTile({ p }) {
         <div className="absolute inset-0"
           style={{ clipPath: OCT, background: 'rgba(255,255,255,0.07)' }} />
         <div className="absolute inset-[2px] overflow-hidden flex items-center justify-center"
-          style={{ clipPath: OCT, background: `linear-gradient(135deg, #1A0F0A, ${BG2})` }}>
+          style={{ clipPath: OCT, background: 'linear-gradient(135deg, #1A0F0A, ' + BG2 + ')' }}>
           <span className="text-xs font-black" style={{ color }}>
             {p.name.charAt(0).toUpperCase()}
           </span>
@@ -332,7 +334,7 @@ function AudienceTile({ p }) {
 function ChatPanel({ messages, onClose, onSend, chatEnabled = true }) {
   var [text, setText] = useState('');
   var bottomRef = useRef(null);
-  useEffect(() => { if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+  useEffect(function() { if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   function submit() {
     if (!text.trim()) return;
@@ -345,7 +347,7 @@ function ChatPanel({ messages, onClose, onSend, chatEnabled = true }) {
       initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
       transition={{ type: 'spring', damping: 28, stiffness: 300 }}
       className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl overflow-hidden"
-      style={{ height: '62vh', background: BG3, borderTop: `1px solid rgba(212,175,55,0.18)` }}
+      style={{ height: '62vh', background: BG3, borderTop: '1px solid rgba(212,175,55,0.18)' }}
     >
       {/* Drag handle */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-white/15" />
@@ -356,31 +358,33 @@ function ChatPanel({ messages, onClose, onSend, chatEnabled = true }) {
         <span className="text-sm font-black uppercase tracking-wide text-white"
           style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Room Chat</span>
         <span className="text-[11px] px-2 py-0.5 rounded-full font-bold uppercase"
-          style={{ background: `${GOLD}22`, color: GOLD, border: `1px solid ${GOLD}44` }}>LIVE</span>
+          style={{ background: GOLD + '22', color: GOLD, border: '1px solid ' + GOLD + '44' }}>LIVE</span>
         <button onClick={onClose}><X className="w-4 h-4 text-white/40" /></button>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3">
-        {messages.map(m => (
-          <div key={m.id} className="flex gap-2.5">
-            <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black"
-              style={{ background: avatarColor(m.user) + '44', color: avatarColor(m.user) }}>
-              {m.user.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="text-[10px] font-bold"
-                  style={{ color: m.host ? GOLD : 'rgba(255,255,255,0.55)' }}>{m.user}</span>
-                {m.host && (
-                  <span className="text-[7px] px-1 py-0.5 rounded font-bold uppercase"
-                    style={{ background: `${GOLD}22`, color: GOLD }}>HOST</span>
-                )}
+        {messages.map(function(m) {
+          return (
+            <div key={m.id} className="flex gap-2.5">
+              <div className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-black"
+                style={{ background: avatarColor(m.user) + '44', color: avatarColor(m.user) }}>
+                {m.user.charAt(0).toUpperCase()}
               </div>
-              <p className="text-[12px] text-white/80 leading-snug">{m.text}</p>
+              <div>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[10px] font-bold"
+                    style={{ color: m.host ? GOLD : 'rgba(255,255,255,0.55)' }}>{m.user}</span>
+                  {m.host && (
+                    <span className="text-[7px] px-1 py-0.5 rounded font-bold uppercase"
+                      style={{ background: GOLD + '22', color: GOLD }}>HOST</span>
+                  )}
+                </div>
+                <p className="text-[12px] text-white/80 leading-snug">{m.text}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
         <div ref={bottomRef} />
       </div>
 
@@ -391,15 +395,15 @@ function ChatPanel({ messages, onClose, onSend, chatEnabled = true }) {
           <>
             <input
               value={text}
-              onChange={e => setText(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && submit()}
+              onChange={function(e) { return setText(e.target.value); }}
+              onKeyDown={function(e) { return e.key === 'Enter' && submit(); }}
               placeholder="Say something…"
               className="flex-1 h-9 px-3 rounded-xl text-sm text-white placeholder:text-white/25 outline-none"
               style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
             />
             <button onClick={submit}
               className="w-9 h-9 rounded-xl flex items-center justify-center"
-              style={{ background: `linear-gradient(135deg, ${CRIMSON}, #A0003A)`, border: `1px solid ${GOLD}44` }}>
+              style={{ background: 'linear-gradient(135deg, ' + CRIMSON + ', #A0003A)', border: '1px solid ' + GOLD + '44' }}>
               <Send className="w-3.5 h-3.5" style={{ color: GOLD }} />
             </button>
           </>
@@ -422,8 +426,8 @@ export default function LiveRoom() {
   var [entryPassed, setEntryPassed] = useState(false);
 
   // Device preferences (mic switching supported live)
-  var [activeMicId, setActiveMicId] = useState(() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
-  var handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  var [activeMicId, setActiveMicId] = useState(function() { try { return localStorage.getItem('swl_pref_mic') || null; } catch (e) { return null; } });
+  var handleMicChange = function(id) { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch (e) {} reacquireMedia({ audioDeviceId: id }); };
 
   // Real camera + peer mesh (falls back gracefully when no roomId)
   var { localStream, audioEnabled, toggleAudio, applyAudioConstraints, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({
@@ -435,24 +439,24 @@ export default function LiveRoom() {
   var { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(roomId, localStream);
   var announceJoinRef = useRef(announceJoin);
   var leaveRoomRef = useRef(leaveRoom);
-  useEffect(() => { announceJoinRef.current = announceJoin; }, [announceJoin]);
-  useEffect(() => { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
+  useEffect(function() { announceJoinRef.current = announceJoin; }, [announceJoin]);
+  useEffect(function() { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
 
   // Fetch real room data — must precede any hook or expression that reads user/party
-  var { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user }    = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
   var { data: members = [] } = useQuery({
     queryKey: ['room-members', roomId],
-    queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: roomId, is_active: true }),
+    queryFn: function() { return base44.entities.WatchPartyMember.filter({ party_id: roomId, is_active: true }); },
     enabled: !!roomId,
     refetchInterval: 10000,
   });
   var { data: party } = useQuery({
     queryKey: ['room', roomId],
-    queryFn: () => base44.entities.WatchParty.filter({ id: roomId }).then(r => r[0]),
+    queryFn: function() { return base44.entities.WatchParty.filter({ id: roomId }).then(function(r) { return r[0]; }); },
     enabled: !!roomId,
   });
 
-  useEffect(() => {
+  useEffect(function() {
     if (!(user && user.id) || !roomId) return;
     if (announceJoinRef.current) announceJoinRef.current(user.id);
   }, [(user && user.id), roomId]);
@@ -460,17 +464,24 @@ export default function LiveRoom() {
 
   var { isSpeaking: localSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: true });
   var remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
-  var speakingIds = localSpeaking && (user && user.id) ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
+  var speakingIds;
+  if (localSpeaking && (user && user.id)) {
+    var _sidExtra = {};
+    _sidExtra[user.id] = true;
+    speakingIds = Object.assign({}, remoteSpeakingIds, _sidExtra);
+  } else {
+    speakingIds = remoteSpeakingIds;
+  }
   var { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: (user && user.id) || '', title: '', stream: localStream });
   var subCount = useSubscriptionCount((party && party.host_id) || (user && user.id));
 
   // Derive the first active RTCPeerConnection for connection quality monitoring
   var [activePc, setActivePc] = useState(null);
-  useEffect(() => {
+  useEffect(function() {
     var entries = Array.from(peersRef.current.entries());
-    var connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    var connected = entries.find(function(e) { return e[1].pc.connectionState === 'connected'; });
     setActivePc(connected ? connected[1].pc : null);
-  }, [remoteStreams]);  
+  }, [remoteStreams]);
 
   var { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
 
@@ -482,26 +493,26 @@ export default function LiveRoom() {
 
   // Moderation toasts for audience (show when someone gets muted/banned)
   var { toasts: modToasts, push: pushModToast } = useModerationToasts();
-  useEffect(() => {
+  useEffect(function() {
     if (!roomId) return;
-    var unsub = base44.entities.ChatModeration.subscribe((event) => {
+    var unsub = base44.entities.ChatModeration.subscribe(function(event) {
       if (event.type !== 'create') return;
       var d = event.data;
       if ((d && d.room_id) !== roomId || !(d && d.auto_detected)) return;
-      pushModToast({ type: d.action_type === 'ban' ? 'ban' : 'mute', target: d.target_user_name || 'User' });
+      pushModToast({ type: d.action_type === 'ban' ? 'ban' : 'mute', target: (d && d.target_user_name) || 'User' });
     });
     return unsub;
   }, [roomId]);
 
   var { data: activeSubs = [] } = useQuery({
     queryKey: ['user-subscriptions', (user && user.id), (party && party.host_id)],
-    queryFn: () => base44.entities.Subscription.filter({ user_id: user.id, creator_id: party.host_id, status: 'active' }),
+    queryFn: function() { return base44.entities.Subscription.filter({ user_id: user.id, creator_id: party.host_id, status: 'active' }); },
     enabled: !!(user && user.id) && !!(party && party.host_id) && isExclusiveStream && !isHost,
   });
 
   var { data: activePoll } = useQuery({
     queryKey: ['active-poll', roomId],
-    queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(function(r) { return r[0] || null; }); },
     enabled: !!roomId,
     refetchInterval: 5000,
   });
@@ -511,18 +522,20 @@ export default function LiveRoom() {
 
   // Build stage from real members or demo data
   var stage = roomId && members.length > 0
-    ? members.slice(0, 20).map((m) => ({
-        id:       m.id,
-        userId:   m.user_id,
-        name:     m.user_name || 'Guest',
-        role:     m.user_id === (party && party.host_id) ? 'host' : m.role || 'speaker',
-        speaking: false,
-        muted:    m.is_audio_enabled === false,
-      }))
+    ? members.slice(0, 20).map(function(m) {
+        return {
+          id:       m.id,
+          userId:   m.user_id,
+          name:     m.user_name || 'Guest',
+          role:     m.user_id === (party && party.host_id) ? 'host' : m.role || 'speaker',
+          speaking: false,
+          muted:    m.is_audio_enabled === false,
+        };
+      })
     : DEMO_STAGE;
 
   var audience = roomId && members.length > 6
-    ? members.slice(6).map(m => ({ id: m.id, name: m.user_name || 'Viewer' }))
+    ? members.slice(6).map(function(m) { return { id: m.id, name: m.user_name || 'Viewer' }; })
     : DEMO_AUDIENCE;
 
   var roomTitle  = (party && party.title) || (roomId ? 'Live Room' : 'Demo Room');
@@ -532,10 +545,10 @@ export default function LiveRoom() {
   var [tipTotal, setTipTotal] = useState(0);
   var [peakViewers, setPeakViewers] = useState(0);
   var liveCount  = Math.max(busViewerCount, members.length || 0) || 20;
-  React.useEffect(() => { setPeakViewers(p => Math.max(p, liveCount)); }, [liveCount]);
+  React.useEffect(function() { setPeakViewers(function(p) { return Math.max(p, liveCount); }); }, [liveCount]);
   var isLive     = !roomId || members.length > 0 || ((remoteStreams && remoteStreams.size) || 0) > 0;
 
-  var [prefSpeaker, setPrefSpeaker]   = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  var [prefSpeaker, setPrefSpeaker]   = useState(function() { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch (e) { return ''; } });
   var [noiseSupp,   setNoiseSupp]     = useState(true);
   var [echoCan,     setEchoCan]       = useState(true);
   var [autoGain,    setAutoGain]      = useState(true);
@@ -563,15 +576,15 @@ export default function LiveRoom() {
 
   // Elapsed-seconds counter (starts on mount)
   var [elapsed, setElapsed] = useState(0);
-  useEffect(() => {
-    var iv = setInterval(() => setElapsed(s => s + 1), 1000);
-    return () => clearInterval(iv);
+  useEffect(function() {
+    var iv = setInterval(function() { setElapsed(function(s) { return s + 1; }); }, 1000);
+    return function() { clearInterval(iv); };
   }, []);
 
   // Highlight auto-clip detector
   var [chatMessages, setChatMessages] = useState([]);
   var [hypeLevel, setHypeLevel] = useState(0);
-  useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
+  useHighlightDetector({ partyId: roomId, roomId: roomId, isHost: isHost, user: user, messages: chatMessages, hypeLevel: hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
 
   // Screen share
@@ -579,15 +592,15 @@ export default function LiveRoom() {
   var [activeScene, setActiveScene] = useState('main');
   var [selectedBitrate, setSelectedBitrate] = useState('auto');
   var screenStreamRef = useRef(null);
-  var handleStartShare = async () => {
+  var handleStartShare = async function() {
     try {
       var stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
       screenStreamRef.current = stream;
-      stream.getVideoTracks()[0].onended = () => { screenStreamRef.current = null; setIsSharing(false); };
+      stream.getVideoTracks()[0].onended = function() { screenStreamRef.current = null; setIsSharing(false); };
       setIsSharing(true);
-    } catch {}
+    } catch (e) {}
   };
-  var handleStopShare = () => {
+  var handleStopShare = function() {
     if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); }
     screenStreamRef.current = null;
     setIsSharing(false);
@@ -613,41 +626,47 @@ export default function LiveRoom() {
   var [pendingRequests, setPendingRequests] = useState([]);
 
   // Sync stage when real data arrives
-  useEffect(() => { if (stage.length) setStageData(stage); }, [members]);
+  useEffect(function() { if (stage.length) setStageData(stage); }, [members]);
 
   // Patch local user's speaking field with live VAD data
-  useEffect(() => {
+  useEffect(function() {
     if (!(user && user.id)) return;
-    setStageData(prev => prev.map(s =>
-      s.userId === user.id ? { ...s, speaking: localSpeaking } : s
-    ));
+    setStageData(function(prev) {
+      return prev.map(function(s) {
+        return s.userId === user.id ? Object.assign({}, s, { speaking: localSpeaking }) : s;
+      });
+    });
   }, [localSpeaking, (user && user.id)]);
 
   // Simulate rotating speaker in demo mode
-  useEffect(() => {
+  useEffect(function() {
     if (roomId) return;
     var idx = 0;
-    var t = setInterval(() => {
+    var t = setInterval(function() {
       idx = (idx + 1) % DEMO_STAGE.length;
-      setStageData(prev => prev.map((s, i) => ({ ...s, speaking: i === idx && !s.muted })));
+      setStageData(function(prev) {
+        return prev.map(function(s, i) {
+          return Object.assign({}, s, { speaking: i === idx && !s.muted });
+        });
+      });
     }, 4500);
-    return () => clearInterval(t);
+    return function() { clearInterval(t); };
   }, [roomId]);
 
-  var myMember = members.find(m => m.user_id === (user && user.id));
+  var myMember = members.find(function(m) { return m.user_id === (user && user.id); });
   var [pttActive, setPttActive] = useState(false);
   var pttWasEnabledRef = useRef(false);
 
   function handleToggleAudio() {
     toggleAudio();
     if ((myMember && myMember.id)) {
-      base44.entities.WatchPartyMember.update(myMember.id, { is_audio_enabled: !audioEnabled }).catch(() => {});
+      base44.entities.WatchPartyMember.update(myMember.id, { is_audio_enabled: !audioEnabled }).catch(function() {});
     }
   }
 
   // Keyboard shortcuts: M = mic toggle, Space = push-to-talk
-  useEffect(() => {
-    var onDown = (e) => {
+  useEffect(function() {
+    var onDown = function(e) {
       var tag = document.activeElement && document.activeElement.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement && document.activeElement.isContentEditable)) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
@@ -662,7 +681,7 @@ export default function LiveRoom() {
         }
       }
     };
-    var onUp = (e) => {
+    var onUp = function(e) {
       if (e.key === ' ') {
         e.preventDefault();
         if (pttActive && !pttWasEnabledRef.current) toggleAudio();
@@ -671,27 +690,27 @@ export default function LiveRoom() {
     };
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
-    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
-   
+    return function() { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
+
   }, [audioEnabled, pttActive]);
 
   // Route audio output to selected speaker device
-  useEffect(() => {
+  useEffect(function() {
     if (!prefSpeaker) return;
-    document.querySelectorAll('video, audio').forEach(el => {
+    document.querySelectorAll('video, audio').forEach(function(el) {
       if (typeof el.setSinkId === 'function') {
-        el.setSinkId(prefSpeaker).catch(() => {});
+        el.setSinkId(prefSpeaker).catch(function() {});
       }
     });
-    try { localStorage.setItem('swl_pref_speaker', prefSpeaker); } catch {}
+    try { localStorage.setItem('swl_pref_speaker', prefSpeaker); } catch (e) {}
   }, [prefSpeaker]);
 
   // Apply mic processing constraints live
-  useEffect(() => {
+  useEffect(function() {
     applyAudioConstraints({ noiseSuppression: noiseSupp, echoCancellation: echoCan, autoGainControl: autoGain });
   }, [noiseSupp, echoCan, autoGain, applyAudioConstraints]);
 
-  var activeSpeaker = stageData.find(s => s.speaking);
+  var activeSpeaker = stageData.find(function(s) { return s.speaking; });
   var stageCols = stageData.length <= 4 ? 2 : stageData.length <= 9 ? 3 : 4;
   var tileSize = stageCols === 2 ? 120 : stageCols === 3 ? 88 : 72;
 
@@ -703,53 +722,53 @@ export default function LiveRoom() {
   }
 
   // Real-time member roster sync
-  useEffect(() => {
+  useEffect(function() {
     if (!roomId) return;
-    var unsub = base44.entities.WatchPartyMember.subscribe((event) => {
+    var unsub = base44.entities.WatchPartyMember.subscribe(function(event) {
       if ((event.data && event.data.party_id) !== roomId) return;
       // queryClient not available here — data refetches on interval
     });
     return unsub;
   }, [roomId]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (!roomId || !(user && user.id)) return;
-    var iv = setInterval(async () => {
+    var iv = setInterval(async function() {
       try {
         var tips = await base44.entities.Tip.filter({ room_id: roomId, type: 'gift' });
         var newest = tips
-          .filter(t => t.user_id !== user.id)
-          .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
+          .filter(function(t) { return t.user_id !== user.id; })
+          .sort(function(a, b) { return new Date(b.created_date) - new Date(a.created_date); })[0];
         if (newest) {
           var ts = new Date(newest.created_date).getTime();
           if (ts > lastGiftTsRef.current) {
             lastGiftTsRef.current = ts;
             var { GIFTS } = await import('../components/live/GiftShop');
-            var gift = GIFTS.find(g => g.id === newest.gift_id) || {
+            var gift = GIFTS.find(function(g) { return g.id === newest.gift_id; }) || {
               emoji: newest.gift_emoji || '🎁',
               name:  newest.gift_name  || 'Gift',
               color: '#D4AF37',
               price: newest.amount || 0,
             };
-            setGiftEvent({ id: ts, gift, senderName: newest.sender_name || 'Guest' });
+            setGiftEvent({ id: ts, gift: gift, senderName: (newest.sender_name) || 'Guest' });
           }
         }
-      } catch {}
+      } catch (e) {}
     }, 4000);
-    return () => clearInterval(iv);
+    return function() { clearInterval(iv); };
   }, [roomId, (user && user.id)]);
 
   // Panel service: join and listen for seat requests when host
-  useEffect(() => {
+  useEffect(function() {
     if (!roomId || !(user && user.id)) return;
     panelService.joinPanel(roomId, user.id);
-    var offReq = panelService.onJoinRequest(req => {
-      setPendingRequests(prev => [...prev.filter(r => r.id !== req.id), req]);
+    var offReq = panelService.onJoinRequest(function(req) {
+      setPendingRequests(function(prev) { return prev.filter(function(r) { return r.id !== req.id; }).concat([req]); });
     });
-    var offRes = panelService.onRequestResolved(({ id }) => {
-      setPendingRequests(prev => prev.filter(r => r.id !== id));
+    var offRes = panelService.onRequestResolved(function(resolved) {
+      setPendingRequests(function(prev) { return prev.filter(function(r) { return r.id !== resolved.id; }); });
     });
-    return () => {
+    return function() {
       offReq();
       offRes();
       panelService.leavePanel(roomId, user.id);
@@ -758,17 +777,17 @@ export default function LiveRoom() {
 
   function approveRequest(req) {
     panelService.resolveJoinRequest(roomId, req.id, true, (user && user.id));
-    setPendingRequests(prev => prev.filter(r => r.id !== req.id));
+    setPendingRequests(function(prev) { return prev.filter(function(r) { return r.id !== req.id; }); });
   }
 
   function denyRequest(req) {
     panelService.resolveJoinRequest(roomId, req.id, false, (user && user.id));
-    setPendingRequests(prev => prev.filter(r => r.id !== req.id));
+    setPendingRequests(function(prev) { return prev.filter(function(r) { return r.id !== req.id; }); });
   }
 
   function openChat()  { setChatOpen(true); setUnread(0); }
-  function sendChat(t) { setChatMsgs(p => [...p, { id: Date.now(), user: (user && user.full_name) || 'You', text: t, host: false }]); }
-  function handleLike() { setLiked(l => !l); setLikeCount(c => liked ? c - 1 : c + 1); }
+  function sendChat(t) { setChatMsgs(function(p) { return p.concat([{ id: Date.now(), user: (user && user.full_name) || 'You', text: t, host: false }]); }); }
+  function handleLike() { setLiked(function(l) { return !l; }); setLikeCount(function(c) { return liked ? c - 1 : c + 1; }); }
 
   // ── Entry gate ────────────────────────────────────────────────────────────
   var viewerRole = isHost ? 'host' : 'viewer';
@@ -777,9 +796,9 @@ export default function LiveRoom() {
       <RoomEntryGate
         role={viewerRole}
         user={user}
-        onPass={() => setEntryPassed(true)}
-        onRoleDowngrade={() => setEntryPassed(true)}
-        onExit={() => window.history.back()}
+        onPass={function() { return setEntryPassed(true); }}
+        onRoleDowngrade={function() { return setEntryPassed(true); }}
+        onExit={function() { return window.history.back(); }}
       />
     );
   }
@@ -793,7 +812,7 @@ export default function LiveRoom() {
         style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <button className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
           style={{ background: 'rgba(255,255,255,0.07)' }}
-          onClick={() => history.back()}>
+          onClick={function() { return history.back(); }}>
           <ChevronLeft className="w-4 h-4 text-white" />
         </button>
         <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
@@ -804,21 +823,23 @@ export default function LiveRoom() {
         {/* Connection quality badge */}
         <div className="flex items-center gap-0.5 px-1.5 py-1 rounded-lg shrink-0"
           style={{ background: 'rgba(0,0,0,0.35)' }}
-          title={`Network: ${netLabel}${netRtt ? ` · ${netRtt}ms` : ''}`}>
-          {[0,1,2,3].map(i => (
-            <div key={i} className="w-1 rounded-sm"
-              style={{
-                height: 4 + i * 3,
-                background: i < netBars
-                  ? (netBars >= 3 ? '#6DBF7E' : netBars >= 2 ? '#D4AF37' : '#C0392B')
-                  : 'rgba(255,255,255,0.15)',
-              }} />
-          ))}
+          title={'Network: ' + netLabel + (netRtt ? ' · ' + netRtt + 'ms' : '')}>
+          {[0,1,2,3].map(function(i) {
+            return (
+              <div key={i} className="w-1 rounded-sm"
+                style={{
+                  height: 4 + i * 3,
+                  background: i < netBars
+                    ? (netBars >= 3 ? '#6DBF7E' : netBars >= 2 ? '#D4AF37' : '#C0392B')
+                    : 'rgba(255,255,255,0.15)',
+                }} />
+            );
+          })}
         </div>
         <button className="w-7 h-7 flex items-center justify-center">
           <MoreHorizontal className="w-4 h-4 text-white/40" />
         </button>
-        <button className="w-7 h-7 flex items-center justify-center" onClick={() => setShareOpen(true)}>
+        <button className="w-7 h-7 flex items-center justify-center" onClick={function() { return setShareOpen(true); }}>
           <Share2 className="w-4 h-4 text-white/40" />
         </button>
         <button className="w-7 h-7 rounded-full flex items-center justify-center"
@@ -835,7 +856,7 @@ export default function LiveRoom() {
           {/* Host */}
           <div className="flex items-center gap-1.5">
             <div className="w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black"
-              style={{ background: avatarColor(hostName) + '55', color: avatarColor(hostName), border: `1.5px solid ${avatarColor(hostName)}` }}>
+              style={{ background: avatarColor(hostName) + '55', color: avatarColor(hostName), border: '1.5px solid ' + avatarColor(hostName) }}>
               {hostName.charAt(0)}
             </div>
             <span className="text-xs font-semibold text-white/60">{hostName}</span>
@@ -866,7 +887,7 @@ export default function LiveRoom() {
         <div className="px-4 pb-3 flex items-center gap-2">
           {isLive ? (
             <div className="flex items-center gap-1 px-2 py-0.5 rounded-full"
-              style={{ background: `${PINK}1A`, border: `1px solid ${PINK}44` }}>
+              style={{ background: PINK + '1A', border: '1px solid ' + PINK + '44' }}>
               <motion.div className="w-1.5 h-1.5 rounded-full" style={{ background: PINK }}
                 animate={{ opacity: [1, 0.35, 1] }} transition={{ duration: 0.9, repeat: Infinity }} />
               <span className="text-[11px] font-black uppercase tracking-wider" style={{ color: PINK }}>Live</span>
@@ -899,7 +920,7 @@ export default function LiveRoom() {
             </span>
           </div>
           <button
-            onClick={() => setSpotlit(null)}
+            onClick={function() { return setSpotlit(null); }}
             className="w-7 h-7 rounded-lg flex items-center justify-center"
             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
             <LayoutGrid className="w-3.5 h-3.5 text-white/40" />
@@ -912,21 +933,25 @@ export default function LiveRoom() {
             /* Spotlight mode */
             <div className="space-y-4">
               <div className="flex justify-center py-3">
-                <StageTile p={spotlit} size={170} onClick={() => setSpotlit(null)} />
+                <StageTile p={spotlit} size={170} onClick={function() { return setSpotlit(null); }} />
               </div>
               <div className="flex gap-3 overflow-x-auto pb-1 px-1">
-                {stageData.filter(s => s.id !== spotlit.id).map(p => (
-                  <div key={p.id} className="shrink-0">
-                    <StageTile p={p} size={72} onClick={() => setSpotlit(p)} />
-                  </div>
-                ))}
+                {stageData.filter(function(s) { return s.id !== spotlit.id; }).map(function(p) {
+                  return (
+                    <div key={p.id} className="shrink-0">
+                      <StageTile p={p} size={72} onClick={function() { return setSpotlit(p); }} />
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : (
-            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${stageCols}, 1fr)` }}>
+            <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(' + stageCols + ', 1fr)' }}>
               <AnimatePresence>
-                {stageData.map(p => {
-                  var { stream, isLocal } = resolveStream(p.id, p.userId);
+                {stageData.map(function(p) {
+                  var _resolved = resolveStream(p.id, p.userId);
+                  var stream = _resolved.stream;
+                  var isLocal = _resolved.isLocal;
                   return (
                     <motion.div key={p.id} layout
                       initial={{ opacity: 0, scale: 0.8 }}
@@ -934,7 +959,7 @@ export default function LiveRoom() {
                       exit={{ opacity: 0, scale: 0.8 }}
                       className="flex justify-center">
                       <StageTile p={p} size={tileSize} stream={stream} isLocal={isLocal}
-                        onClick={() => setSpotlit(p)} />
+                        onClick={function() { return setSpotlit(p); }} />
                     </motion.div>
                   );
                 })}
@@ -951,10 +976,10 @@ export default function LiveRoom() {
                 <span className="text-[13px] font-black text-white uppercase tracking-wide"
                   style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Panel Seat Approval</span>
                 <button
-                  onClick={() => setApprovalMode(m => !m)}
+                  onClick={function() { return setApprovalMode(function(m) { return !m; }); }}
                   className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-black uppercase transition-all"
                   style={{
-                    background: approvalMode ? `linear-gradient(90deg, ${CRIMSON}, ${GOLD})` : 'rgba(255,255,255,0.07)',
+                    background: approvalMode ? 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')' : 'rgba(255,255,255,0.07)',
                     border: approvalMode ? 'none' : '1px solid rgba(255,255,255,0.12)',
                     color: approvalMode ? '#000' : 'rgba(255,255,255,0.5)',
                     fontFamily: 'Barlow Condensed, sans-serif',
@@ -971,29 +996,31 @@ export default function LiveRoom() {
                   <p className="text-[10px] uppercase font-bold" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em' }}>
                     Pending Requests ({pendingRequests.length})
                   </p>
-                  {pendingRequests.map(req => (
-                    <div key={req.id} className="flex items-center gap-2 p-2 rounded-xl"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black shrink-0"
-                        style={{ background: avatarColor(req.displayName || 'G') + '55', color: avatarColor(req.displayName || 'G') }}>
-                        {(req.displayName || 'G').charAt(0).toUpperCase()}
+                  {pendingRequests.map(function(req) {
+                    return (
+                      <div key={req.id} className="flex items-center gap-2 p-2 rounded-xl"
+                        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black shrink-0"
+                          style={{ background: avatarColor(req.displayName || 'G') + '55', color: avatarColor(req.displayName || 'G') }}>
+                          {(req.displayName || 'G').charAt(0).toUpperCase()}
+                        </div>
+                        <span className="flex-1 text-xs font-semibold text-white truncate"
+                          style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
+                          {req.displayName || 'Guest'}
+                        </span>
+                        <button onClick={function() { return approveRequest(req); }}
+                          className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
+                          style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
+                          Approve
+                        </button>
+                        <button onClick={function() { return denyRequest(req); }}
+                          className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
+                          style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
+                          Deny
+                        </button>
                       </div>
-                      <span className="flex-1 text-xs font-semibold text-white truncate"
-                        style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
-                        {req.displayName || 'Guest'}
-                      </span>
-                      <button onClick={() => approveRequest(req)}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
-                        style={{ background: 'rgba(109,191,126,0.15)', border: '1px solid rgba(109,191,126,0.3)', color: '#6DBF7E', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
-                        Approve
-                      </button>
-                      <button onClick={() => denyRequest(req)}
-                        className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
-                        style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif', userSelect: 'none' }}>
-                        Deny
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
               {approvalMode && pendingRequests.length === 0 && (
@@ -1018,11 +1045,13 @@ export default function LiveRoom() {
             </div>
           </div>
           <div className="grid grid-cols-5 gap-x-2 gap-y-3">
-            {audience.map(p => (
-              <div key={p.id} className="flex justify-center">
-                <AudienceTile p={p} />
-              </div>
-            ))}
+            {audience.map(function(p) {
+              return (
+                <div key={p.id} className="flex justify-center">
+                  <AudienceTile p={p} />
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -1030,30 +1059,32 @@ export default function LiveRoom() {
         <div className="px-3 pb-3">
           <div className="flex gap-3 overflow-x-auto pb-1">
             {[
-              { label: 'Auction',      icon: '🏆', bg: 'rgba(212,175,55,0.08)'  },
-              { label: 'Destinations', icon: '📍', bg: 'rgba(0,200,200,0.06)'   },
-              { label: 'AI Trip',      icon: '🤖', bg: 'rgba(212,175,55,0.08)'  },
-              { label: 'Pay',          icon: '💸', bg: 'rgba(192,57,43,0.08)', action: () => setPayOpen(true) },
-              { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)'  , action: () => setBattleOpen(true) },
-              { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)' },
-            ].map(s => (
-              <div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
-                onClick={s.action}
-                style={{ userSelect: 'none' }}>
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
-                  style={{ background: s.bg, border: '1px solid rgba(255,255,255,0.07)' }}>
-                  {s.icon}
+              { label: 'Auction',      icon: '🏆', bg: 'rgba(212,175,55,0.08)',  action: null },
+              { label: 'Destinations', icon: '📍', bg: 'rgba(0,200,200,0.06)',   action: null },
+              { label: 'AI Trip',      icon: '🤖', bg: 'rgba(212,175,55,0.08)',  action: null },
+              { label: 'Pay',          icon: '💸', bg: 'rgba(192,57,43,0.08)',   action: function() { return setPayOpen(true); } },
+              { label: 'Battle',       icon: '⚔️', bg: 'rgba(212,175,55,0.08)', action: function() { return setBattleOpen(true); } },
+              { label: 'QR Code',      icon: '📱', bg: 'rgba(255,255,255,0.04)', action: null },
+            ].map(function(s) {
+              return (
+                <div key={s.label} className="flex flex-col items-center gap-1 shrink-0 cursor-pointer"
+                  onClick={s.action}
+                  style={{ userSelect: 'none' }}>
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl"
+                    style={{ background: s.bg, border: '1px solid rgba(255,255,255,0.07)' }}>
+                    {s.icon}
+                  </div>
+                  <span className="text-[11px] text-white/30">{s.label}</span>
                 </div>
-                <span className="text-[11px] text-white/30">{s.label}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* ── Fixed bottom toolbar ──────────────────────────────────────────────── */}
       <div className="fixed bottom-0 inset-x-0 flex items-center justify-between px-4 py-3 shrink-0"
-        style={{ background: `linear-gradient(to top, ${BG} 70%, ${BG}00)`, backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        style={{ background: 'linear-gradient(to top, ' + BG + ' 70%, ' + BG + '00)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
 
         {/* Leave */}
         <button className="text-[13px] font-black uppercase tracking-wide" style={{ color: PINK }}>
@@ -1066,7 +1097,7 @@ export default function LiveRoom() {
           {/* Chat */}
           <button onClick={openChat} className="relative flex flex-col items-center gap-0.5">
             <div className="w-11 h-11 rounded-full flex items-center justify-center"
-              style={{ background: chatOpen ? `${GOLD}15` : 'rgba(255,255,255,0.07)', border: chatOpen ? `1px solid ${GOLD}44` : '1px solid rgba(255,255,255,0.1)' }}>
+              style={{ background: chatOpen ? GOLD + '15' : 'rgba(255,255,255,0.07)', border: chatOpen ? '1px solid ' + GOLD + '44' : '1px solid rgba(255,255,255,0.1)' }}>
               <MessageCircle className="w-4 h-4 text-white" />
             </div>
             {unread > 0 && (
@@ -1079,7 +1110,7 @@ export default function LiveRoom() {
           {/* Heart */}
           <button onClick={handleLike} className="flex flex-col items-center gap-0.5">
             <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: liked ? `${PINK}1A` : 'rgba(255,255,255,0.07)', border: liked ? `1px solid ${PINK}55` : '1px solid rgba(255,255,255,0.1)' }}>
+              style={{ background: liked ? PINK + '1A' : 'rgba(255,255,255,0.07)', border: liked ? '1px solid ' + PINK + '55' : '1px solid rgba(255,255,255,0.1)' }}>
               <Heart className="w-4 h-4 transition-all"
                 style={{ color: liked ? PINK : 'rgba(255,255,255,0.6)', fill: liked ? PINK : 'none' }} />
             </div>
@@ -1087,9 +1118,9 @@ export default function LiveRoom() {
           </button>
 
           {/* Hand raise */}
-          <button onClick={() => setHandRaised(h => !h)} className="flex flex-col items-center gap-0.5">
+          <button onClick={function() { return setHandRaised(function(h) { return !h; }); }} className="flex flex-col items-center gap-0.5">
             <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: handRaised ? `${GOLD}1A` : 'rgba(255,255,255,0.07)', border: handRaised ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}>
+              style={{ background: handRaised ? GOLD + '1A' : 'rgba(255,255,255,0.07)', border: handRaised ? '1px solid ' + GOLD + '55' : '1px solid rgba(255,255,255,0.1)' }}>
               <Hand className="w-4 h-4 transition-all" style={{ color: handRaised ? GOLD : 'rgba(255,255,255,0.6)' }} />
             </div>
             <span className="text-[11px] text-white/35"> </span>
@@ -1097,9 +1128,9 @@ export default function LiveRoom() {
 
           {/* Gift */}
           {party && (party && party.host_id) !== (user && user.id) && (
-            <button onClick={() => setGiftOpen(true)} className="flex flex-col items-center gap-0.5">
+            <button onClick={function() { return setGiftOpen(true); }} className="flex flex-col items-center gap-0.5">
               <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-                style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}44` }}>
+                style={{ background: GOLD + '18', border: '1px solid ' + GOLD + '44' }}>
                 <Gift className="w-4 h-4" style={{ color: GOLD }} />
               </div>
               <span className="text-[11px]" style={{ color: GOLD }}>Gift</span>
@@ -1119,8 +1150,8 @@ export default function LiveRoom() {
             <button onClick={handleToggleAudio} className="flex flex-col items-center gap-0.5">
               <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
                 style={{
-                  background: pttActive ? 'rgba(109,191,126,0.25)' : !audioEnabled ? 'rgba(192,57,43,0.15)' : `${GOLD}1A`,
-                  border: pttActive ? '1px solid rgba(109,191,126,0.6)' : !audioEnabled ? '1px solid rgba(192,57,43,0.4)' : `1px solid ${GOLD}55`,
+                  background: pttActive ? 'rgba(109,191,126,0.25)' : !audioEnabled ? 'rgba(192,57,43,0.15)' : GOLD + '1A',
+                  border: pttActive ? '1px solid rgba(109,191,126,0.6)' : !audioEnabled ? '1px solid rgba(192,57,43,0.4)' : '1px solid ' + GOLD + '55',
                 }}>
                 {!audioEnabled
                   ? <MicOff className="w-4 h-4 text-[#C0392B]" />
@@ -1131,9 +1162,9 @@ export default function LiveRoom() {
           </div>
 
           {/* Audio settings */}
-          <button onClick={() => setAudioSettingsOpen(v => !v)} className="flex flex-col items-center gap-0.5" title="Audio settings">
+          <button onClick={function() { return setAudioSettingsOpen(function(v) { return !v; }); }} className="flex flex-col items-center gap-0.5" title="Audio settings">
             <div className="w-11 h-11 rounded-full flex items-center justify-center transition-all"
-              style={{ background: audioSettingsOpen ? `${GOLD}20` : 'rgba(255,255,255,0.07)', border: audioSettingsOpen ? `1px solid ${GOLD}55` : '1px solid rgba(255,255,255,0.1)' }}>
+              style={{ background: audioSettingsOpen ? GOLD + '20' : 'rgba(255,255,255,0.07)', border: audioSettingsOpen ? '1px solid ' + GOLD + '55' : '1px solid rgba(255,255,255,0.1)' }}>
               <Settings className="w-4 h-4" style={{ color: audioSettingsOpen ? GOLD : 'rgba(255,255,255,0.55)' }} />
             </div>
             <span className="text-[11px] text-white/35"> </span>
@@ -1148,8 +1179,8 @@ export default function LiveRoom() {
             <motion.div className="fixed inset-0 z-40"
               style={{ background: 'rgba(0,0,0,0.55)' }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setChatOpen(false)} />
-            <ChatPanel messages={chatMsgs} onClose={() => setChatOpen(false)} onSend={sendChat} chatEnabled={roomControls.chat_enabled} />
+              onClick={function() { return setChatOpen(false); }} />
+            <ChatPanel messages={chatMsgs} onClose={function() { return setChatOpen(false); }} onSend={sendChat} chatEnabled={roomControls.chat_enabled} />
           </>
         )}
       </AnimatePresence>
@@ -1160,17 +1191,17 @@ export default function LiveRoom() {
           <>
             <motion.div className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.5)' }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setAudioSettingsOpen(false)} />
+              onClick={function() { return setAudioSettingsOpen(false); }} />
             <motion.div
               className="fixed inset-x-0 z-50 rounded-t-2xl overflow-hidden"
-              style={{ bottom: 72, background: BG, borderTop: `1px solid rgba(212,175,55,0.2)` }}
+              style={{ bottom: 72, background: BG, borderTop: '1px solid rgba(212,175,55,0.2)' }}
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
             >
               <div className="flex items-center justify-between px-4 py-3"
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                 <span className="text-sm font-black uppercase text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Audio Settings</span>
-                <button onClick={() => setAudioSettingsOpen(false)} className="text-white/40 text-sm">✕</button>
+                <button onClick={function() { return setAudioSettingsOpen(false); }} className="text-white/40 text-sm">✕</button>
               </div>
               <div className="p-4 space-y-4" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {speakers.length > 1 && (
@@ -1181,8 +1212,8 @@ export default function LiveRoom() {
                     </div>
                     <MobileSelect
                       value={prefSpeaker}
-                      onChange={v => setPrefSpeaker(v)}
-                      options={speakers.map(d => ({ value: d.deviceId, label: d.label || `Speaker ${d.deviceId.slice(0, 6)}` }))}
+                      onChange={function(v) { return setPrefSpeaker(v); }}
+                      options={speakers.map(function(d) { return { value: d.deviceId, label: d.label || ('Speaker ' + d.deviceId.slice(0, 6)) }; })}
                       placeholder="Default speaker"
                     />
                   </div>
@@ -1193,20 +1224,25 @@ export default function LiveRoom() {
                     { label: 'Noise Suppression', value: noiseSupp, set: setNoiseSupp },
                     { label: 'Echo Cancellation', value: echoCan,   set: setEchoCan   },
                     { label: 'Auto Gain',          value: autoGain,  set: setAutoGain  },
-                  ].map(({ label, value, set }) => (
-                    <div key={label} className="flex items-center justify-between">
-                      <span className="text-sm text-white/80">{label}</span>
-                      <button
-                        onClick={() => set(v => !v)}
-                        className="relative w-10 h-5 rounded-full transition-all"
-                        style={{ background: value ? GOLD : 'rgba(255,255,255,0.15)' }}
-                        aria-label={label}
-                      >
-                        <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform"
-                          style={{ left: 2, transform: value ? 'translateX(20px)' : 'translateX(0)' }} />
-                      </button>
-                    </div>
-                  ))}
+                  ].map(function(item) {
+                    var label = item.label;
+                    var value = item.value;
+                    var set = item.set;
+                    return (
+                      <div key={label} className="flex items-center justify-between">
+                        <span className="text-sm text-white/80">{label}</span>
+                        <button
+                          onClick={function() { set(function(v) { return !v; }); }}
+                          className="relative w-10 h-5 rounded-full transition-all"
+                          style={{ background: value ? GOLD : 'rgba(255,255,255,0.15)' }}
+                          aria-label={label}
+                        >
+                          <span className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform"
+                            style={{ left: 2, transform: value ? 'translateX(20px)' : 'translateX(0)' }} />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </motion.div>
@@ -1219,8 +1255,8 @@ export default function LiveRoom() {
         {shareOpen && (
           <ShareModal
             isOpen={shareOpen}
-            onClose={() => setShareOpen(false)}
-            url={`${window.location.origin}/watch?id=${roomId || 'demo'}`}
+            onClose={function() { return setShareOpen(false); }}
+            url={window.location.origin + '/watch?id=' + (roomId || 'demo')}
             title={roomTitle}
           />
         )}
@@ -1231,14 +1267,14 @@ export default function LiveRoom() {
         {payOpen && (
           <DirectPayments
             isOpen={payOpen}
-            onClose={() => setPayOpen(false)}
+            onClose={function() { return setPayOpen(false); }}
             creatorName={hostName}
             creatorId={(party && party.host_id)}
             isHost={isHost}
           />
         )}
           {battleOpen && (
-            <PKBattleModal isOpen={battleOpen} onClose={() => setBattleOpen(false)} roomId={roomId} isHost={isHost} currentUser={user} hostName={hostName} />
+            <PKBattleModal isOpen={battleOpen} onClose={function() { return setBattleOpen(false); }} roomId={roomId} isHost={isHost} currentUser={user} hostName={hostName} />
           )}
       </AnimatePresence>
 
@@ -1259,19 +1295,19 @@ export default function LiveRoom() {
 
       <GiftShop
         isOpen={giftOpen}
-        onClose={() => setGiftOpen(false)}
+        onClose={function() { return setGiftOpen(false); }}
         roomId={roomId || (party && party.id)}
         user={user}
         creatorId={(party && party.host_id)}
         creatorName={hostName}
-        onGiftSent={(gift, sender) => {
+        onGiftSent={function(gift, sender) {
           lastGiftTsRef.current = Date.now();
-          setGiftEvent({ id: Date.now(), gift, senderName: (sender && sender.full_name) || (sender && sender.email) || 'You' });
+          setGiftEvent({ id: Date.now(), gift: gift, senderName: (sender && sender.full_name) || (sender && sender.email) || 'You' });
           setGiftOpen(false);
         }}
       />
 
-      <GiftAnimation event={giftEvent} onDone={() => setGiftEvent(null)} />
+      <GiftAnimation event={giftEvent} onDone={function() { return setGiftEvent(null); }} />
 
       {showExclusiveGate && (
         <div style={{
@@ -1310,7 +1346,7 @@ export default function LiveRoom() {
               </div>
             )}
             <a
-              href={`/CreatorSubscriptions?creator=${(party && party.host_id)}`}
+              href={'/CreatorSubscriptions?creator=' + (party && party.host_id)}
               style={{
                 display: 'block', width: '100%',
                 padding: '12px 0',
@@ -1326,7 +1362,7 @@ export default function LiveRoom() {
               Subscribe to Watch
             </a>
             <button
-              onClick={() => history.back()}
+              onClick={function() { return history.back(); }}
               style={{
                 background: 'transparent',
                 border: '1px solid rgba(255,255,255,0.15)',
@@ -1353,10 +1389,10 @@ export default function LiveRoom() {
       {user && <ZEGOConfigPanel user={user} />}
       {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={(party && party.host_id) || (user && user.id)} />}
       {roomId && <LiveTranscription isLive={true} roomId={roomId} stream={localStream} />}
-      {showViewerControls && roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
+      {showViewerControls && roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={function() { return setShowViewerControls(false); }} />}
       {roomId && (user && user.id) && <VirtualCurrencyTips roomId={roomId} creatorId={(party && party.host_id) || (user && user.id)} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
-      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={(user && user.id)} onOpenPanel={() => setShowSwanPanel(true)} />}
+      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={(user && user.id)} onOpenPanel={function() { return setShowSwanPanel(true); }} />}
       {isHost && roomId && <StreamerGoalsWidget creatorId={(party && party.host_id) || (user && user.id)} roomId={roomId} isCreator={isHost} embedded={true} />}
       {isHost && roomId && <PayPerViewManager roomId={roomId} />}
       {isHost && roomId && <MonetizationDashboard roomId={roomId} />}
@@ -1364,7 +1400,7 @@ export default function LiveRoom() {
       {roomId && <GiftLeaderboard roomId={roomId} />}
       {isHost && <SubscriptionManager creatorId={(party && party.host_id) || (user && user.id)} />}
       {roomId && <TipAlert roomId={roomId} recipientId={(party && party.host_id) || (user && user.id)} />}
-      {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: (party && party.host_id) }} roomId={roomId} />}
+      {!isHost && roomId && <TippingModal isOpen={showTippingModal} onClose={function() { return setShowTippingModal(false); }} recipient={{ id: (party && party.host_id) }} roomId={roomId} />}
       {roomId && <LiveAuctionWidget creatorId={(party && party.host_id) || (user && user.id)} roomId={roomId} isCreator={isHost} currentUser={user} />}
       <MerchWidget roomId={roomId} currentUser={user} hostId={(party && party.host_id) || (user && user.id)} />
       <NotificationBell />
@@ -1376,7 +1412,7 @@ export default function LiveRoom() {
       {roomId && <RewardShop creatorId={(party && party.host_id) || (user && user.id)} roomId={roomId} currentUser={user} />}
       {!isHost && (user && user.id) && <ViewerLoyaltyCard userId={user.id} creatorId={(party && party.host_id) || (user && user.id)} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
-      {isHost && <StreamingPresets onApply={(p) => reacquireMedia({ resolution: p.resolution })} />}
+      {isHost && <StreamingPresets onApply={function(p) { return reacquireMedia({ resolution: p.resolution }); }} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={(user && user.full_name) || ''} streamTitle={(party && party.title) || 'Live Stream'} viewerCount={liveCount} />}
       <LiveTranslationWidget chatMessage={(chatMessages[chatMessages.length - 1] && chatMessages[chatMessages.length - 1].content) || null} onTranslation={function() {}} />
       {isHost && (user && user.id) && <RecordingManager userId={user.id} />}
@@ -1386,7 +1422,7 @@ export default function LiveRoom() {
       {roomId && <InteractivePollWidget roomId={roomId} isHost={isHost} />}
       {isHost && <StreamMetadataEditor initialTitle={(party && party.title) || 'Live Stream'} initialCategory={'entertainment'} />}
       {isHost && <StreamerMonetizationCenter />}
-      {!isHost && showGiftShop && roomId && <AnimatedGiftShop recipientId={(party && party.host_id) || (user && user.id)} roomId={roomId} onClose={() => setShowGiftShop(false)} />}
+      {!isHost && showGiftShop && roomId && <AnimatedGiftShop recipientId={(party && party.host_id) || (user && user.id)} roomId={roomId} onClose={function() { return setShowGiftShop(false); }} />}
       {isHost && (user && user.id) && <VirtualGoodsStore userId={user.id} />}
       {isHost && <SoundAlertsManager creatorId={(party && party.host_id) || (user && user.id)} />}
       <ShareToSocial content={{ title: (party && party.title) || 'Live Room on SeeWhy LIVE', url: window.location.href }} />
@@ -1395,9 +1431,9 @@ export default function LiveRoom() {
       {isHost && roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
       {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
       <StreamHealthDashboard isLive={roomId != null} />
-      {!isHost && roomId && <QuickTip recipientId={(party && party.host_id) || (user && user.id)} recipientName={''} onTipSent={(amount) => setTipTotal(t => t + Math.floor(amount || 0))} />}
-      {isHost && <LowerThirdsBanner onBannerChange={(b) => { if (roomId) base44.entities.WatchParty.update(roomId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
-      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
+      {!isHost && roomId && <QuickTip recipientId={(party && party.host_id) || (user && user.id)} recipientName={''} onTipSent={function(amount) { return setTipTotal(function(t) { return t + Math.floor(amount || 0); }); }} />}
+      {isHost && <LowerThirdsBanner onBannerChange={function(b) { if (roomId) base44.entities.WatchParty.update(roomId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(function() {}); }} />}
+      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={function(s) { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) handleStartShare(); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
       {isHost && roomId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} triggerOpen={raidTick} />}
@@ -1406,42 +1442,42 @@ export default function LiveRoom() {
       {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={(party && party.title) || ''} viewerCount={liveCount} elapsedSeconds={elapsed} />}
       {isHost && <ChatModeration collapsed={true} />}
       <BrandChyron />
-      {!isHost && showWhisperPanel && roomId && (user && user.id) && <WhisperPanel roomId={roomId} currentUser={user} recipientId={(party && party.host_id) || (user && user.id)} recipientName={''} onClose={() => setShowWhisperPanel(false)} />}
+      {!isHost && showWhisperPanel && roomId && (user && user.id) && <WhisperPanel roomId={roomId} currentUser={user} recipientId={(party && party.host_id) || (user && user.id)} recipientName={''} onClose={function() { return setShowWhisperPanel(false); }} />}
       <HostAlertCenter />
       {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={liveCount} />}
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={(party && party.host_id) || (user && user.id)} isHost={isHost} />}
       {roomId && (user && user.id) && <SuperChatBar roomId={roomId} currentUser={user} recipientId={(party && party.host_id) || (user && user.id)} recipientName={''} />}
-      {(user && user.id) && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
+      {(user && user.id) && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={function() {}} />}
       {isHost && <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={false} userName={(user && user.full_name) || ''} isHost={isHost} isSpeaking={localSpeaking} />}
-      {isHost && <OctagonalVideoWindow title={'My Mic'} isMuted={!audioEnabled} isVideoOff={true} onMicToggle={handleToggleAudio} onVideoToggle={() => {}} />}
+      {isHost && <OctagonalVideoWindow title={'My Mic'} isMuted={!audioEnabled} isVideoOff={true} onMicToggle={handleToggleAudio} onVideoToggle={function() {}} />}
       {isHost && roomId && <PipCameraTile localStream={localStream} videoEnabled={false} roomId={roomId} tipTotal={tipTotal} />}
-      {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: cameraDevices }} onCameraChange={(id) => reacquireMedia({ cameraId: id })} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
+      {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={function() { return setShowCamSettings(false); }} stream={localStream} devices={{ cameras: cameraDevices }} onCameraChange={function(id) { return reacquireMedia({ cameraId: id }); }} onResolutionChange={function(res) { return reacquireMedia({ resolution: res }); }} />}
       {isHost && <LiveCaptionOverlay stream={localStream} />}
       {isHost && <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={members} />}
-      {isHost && <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
+      {isHost && <EvmuxWebSource isActive={showEvmux} onClose={function() { return setShowEvmux(false); }} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={isHost} position={'bottom-left'} />}
       {isHost && <StripeConnectButton creatorId={(party && party.host_id) || (user && user.id)} />}
       {!isHost && (user && user.id) && <StripeSubscribeButton creatorId={(party && party.host_id) || (user && user.id)} creatorName={''} currentUserId={user.id} />}
       {<SubscriptionTiers communityId={null} userId={(user && user.id)} />}
       {party && <WatchPartyAnalytics party={party} members={members} pollCount={0} reactionCount={0} />}
-      {roomId && (user && user.id) && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={(user && user.full_name) || ''} onJoined={() => toast.success('Joined stream successfully!')} />}
-      {roomId && <PaymentMethodSelector creatorId={(party && party.host_id) || (user && user.id)} roomId={roomId} onPaymentComplete={() => toast.success('Payment complete!')} />}
+      {roomId && (user && user.id) && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={(user && user.full_name) || ''} onJoined={function() { return toast.success('Joined stream successfully!'); }} />}
+      {roomId && <PaymentMethodSelector creatorId={(party && party.host_id) || (user && user.id)} roomId={roomId} onPaymentComplete={function() { return toast.success('Payment complete!'); }} />}
       {isHost && <CreatorTierManager creatorId={(party && party.host_id) || (user && user.id)} />}
       {(user && user.id) && <TierBadge tier={null} size={'sm'} showName={false} />}
       {(user && user.id) && <LoyaltyBadge userId={user.id} creatorId={(party && party.host_id) || (user && user.id)} />}
       {roomId && isHost && <GuestInviteGenerator roomId={roomId} isHost={isHost} />}
-      {roomId && <GuestGrid participants={members} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={(user && user.id)} speakingIds={speakingIds} />}
-      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
-      <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { if (isHost && roomId) base44.entities.WatchParty.update(roomId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
+      {roomId && <GuestGrid participants={members} isHost={isHost} onInvite={function() { return navigator.clipboard.writeText(window.location.href).then(function() { return toast.success('Invite link copied!'); }).catch(function() {}); }} hostId={(user && user.id)} speakingIds={speakingIds} />}
+      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={function(s) { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
+      <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={function(url) { if (isHost && roomId) base44.entities.WatchParty.update(roomId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(function() {}); }} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
-      {showGlobalSearch && <GlobalSearch onClose={() => setShowGlobalSearch(false)} />}
-      {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={() => toast.success('Content unlocked!')} />}
-      <PaywallGate isHost={isHost} streamTitle={(party && party.title) || ''} onUnlock={() => {}} isUnlocked={true} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={function() { return setShowActivitySidebar(false); }} />
+      {showGlobalSearch && <GlobalSearch onClose={function() { return setShowGlobalSearch(false); }} />}
+      {roomId && <PayPerViewGate roomId={roomId} ppvPrice={4.99} onPurchase={function() { return toast.success('Content unlocked!'); }} />}
+      <PaywallGate isHost={isHost} streamTitle={(party && party.title) || ''} onUnlock={function() {}} isUnlocked={true} />
       {roomId && <SubscriptionGate creatorId={(party && party.host_id) || (user && user.id)} roomId={roomId} />}
-      {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => setShowModerationAppeal(false)} />}
+      {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={function() { return setShowModerationAppeal(false); }} />}
       {isHost && (user && user.id) && <GuestDestinationsPanel participantUserId={user.id} guestName={(user && user.full_name) || ''} />}
-      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => toast.success('Permissions updated')} />}
+      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={function() { return toast.success('Permissions updated'); }} />}
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
       <CameraDeviceSelector compact currentAudioId={activeMicId} onAudioChange={handleMicChange} />
@@ -1450,15 +1486,15 @@ export default function LiveRoom() {
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
       {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={(user && user.id)} activePoll={activePoll} isHost={isHost} />}
-      {party && <PreStreamCountdown room={party} currentUser={user} onGoLive={() => { if (isHost && roomId) base44.entities.WatchParty.update(roomId, { status: 'live' }).catch(() => {}); }} />}
+      {party && <PreStreamCountdown room={party} currentUser={user} onGoLive={function() { if (isHost && roomId) base44.entities.WatchParty.update(roomId, { status: 'live' }).catch(function() {}); }} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={(user && user.full_name) || ''} room={party} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor((msg && msg.tip_amount) || 0))} onMessageReceived={msg => { if (!chatOpen) setUnread(n => n + 1); if ((msg && msg.content)) { setChatMessages(prev => { var next = [...prev, msg]; return next.length > 100 ? next.slice(-100) : next; }); setHypeLevel(prev => Math.min(100, prev + 2)); } }} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={function(msg) { return setTipTotal(function(t) { return t + Math.floor((msg && msg.tip_amount) || 0); }); }} onMessageReceived={function(msg) { if (!chatOpen) setUnread(function(n) { return n + 1; }); if ((msg && msg.content)) { setChatMessages(function(prev) { var next = prev.concat([msg]); return next.length > 100 ? next.slice(-100) : next; }); setHypeLevel(function(prev) { return Math.min(100, prev + 2); }); } }} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={(party && party.host_id) || (user && user.id)} isVisible={true} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
-      {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => toast.success('AI persona configured!')} />}
+      {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={function() { return toast.success('AI persona configured!'); }} />}
       {isHost && <AudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} />}
-      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
+      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={function(s) { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       {isHost && <ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}
@@ -1467,7 +1503,7 @@ export default function LiveRoom() {
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} onGoal={isHost ? () => setGoalTick(t => t + 1) : undefined} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onReact={function(emoji) { return setReactEmoji({ emoji: emoji, ts: Date.now() }); }} onQuickTip={function() { return !isHost && setShowTippingModal(true); }} onWebSource={isHost ? function() { return setShowEvmux(true); } : undefined} onClip={isHost ? function() { return setShowClipCreator(true); } : undefined} onPoll={isHost ? function() { return setPollTick(function(t) { return t + 1; }); } : undefined} onRaid={isHost ? function() { return setRaidTick(function(t) { return t + 1; }); } : undefined} onGoal={isHost ? function() { return setGoalTick(function(t) { return t + 1; }); } : undefined} roomId={roomId} />}
       {(user && user.id) && <PointsNotification userId={user.id} />}
       {roomId && (user && user.id) && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={(party && party.host_id) || (user && user.id)} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
@@ -1487,7 +1523,7 @@ export default function LiveRoom() {
       {isHost && roomId && (user && user.id) && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={(user && user.id)} isHost={isHost} triggerOpen={pollTick} />}
       {!isHost && roomId && (party && party.host_id) && <GiftTray roomId={roomId} currentUser={user} recipientId={party.host_id} />}
-      {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={(b) => { if ((party && party.id)) base44.entities.WatchParty.update(party.id, b).catch(() => {}); }} isHost={isHost} />}
+      {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={function(b) { if ((party && party.id)) base44.entities.WatchParty.update(party.id, b).catch(function() {}); }} isHost={isHost} />}
       <BackgroundCustomizer />
       <GuestCoStreamDashboard roomId={roomId} currentUser={user || null} isHost={true} />
       <TipGoalBar roomId={roomId} goal={100} currentTotal={tipTotal} />
@@ -1496,15 +1532,15 @@ export default function LiveRoom() {
       {/* ── New feature stubs ──────────────────────────────────────────────── */}
       {roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={setChatMessages} />}
       {roomId && <AIModeration roomId={roomId} isHost={isHost} />}
-      {isHost && roomId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => { setShowGreenRoomModal(false); base44.entities.WatchParty.update(roomId, { status: 'live' }).catch(() => {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
-      {isHost && roomId && <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} onApply={() => setShowWebRTCConfig(false)} currentConfig={{}} />}
-      {roomId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={roomId} roomTitle={roomTitle} currentUser={user} />}
+      {isHost && roomId && <GreenRoomModal isOpen={showGreenRoomModal} onClose={function() { return setShowGreenRoomModal(false); }} onReady={function() { setShowGreenRoomModal(false); base44.entities.WatchParty.update(roomId, { status: 'live' }).catch(function() {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
+      {isHost && roomId && <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={function() { return setShowWebRTCConfig(false); }} onApply={function() { return setShowWebRTCConfig(false); }} currentConfig={{}} />}
+      {roomId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={function() { return setShowBreakoutRooms(false); }} roomId={roomId} roomTitle={roomTitle} currentUser={user} />}
       {roomId && <CoStreamHub roomId={roomId} isHost={isHost} isCoHost={false} currentUser={user} compact={true} speakingIds={speakingIds} />}
-      {roomId && (party && party.host_id) && showAuraPanelDrawer && <AuraPanelDrawer roomId={roomId} hostId={party.host_id} onClose={() => setShowAuraPanelDrawer(false)} />}
-      {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={(party && party.host_id) || (user && user.id)} onClose={() => setShowSwanPanel(false)} />}
+      {roomId && (party && party.host_id) && showAuraPanelDrawer && <AuraPanelDrawer roomId={roomId} hostId={party.host_id} onClose={function() { return setShowAuraPanelDrawer(false); }} />}
+      {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={(party && party.host_id) || (user && user.id)} onClose={function() { return setShowSwanPanel(false); }} />}
       {roomId && <AuraPanel roomId={roomId} isHost={isHost} streamTitle={roomTitle} viewerCount={liveCount} isLive={isLive} userTier={'free'} />}
       {isHost && roomId && (user && user.id) && <ClipMarker roomId={roomId} user={user} streamStartTs={elapsed > 0 ? Date.now() - elapsed * 1000 : null} getClipBlobUrl={extractClipBlobUrl} />}
-      {isHost && showClipCreator && roomId && (user && user.id) && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={roomTitle} onClose={() => setShowClipCreator(false)} />}
+      {isHost && showClipCreator && roomId && (user && user.id) && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={roomTitle} onClose={function() { return setShowClipCreator(false); }} />}
       {isHost && <OverlayThemeBuilder creatorId={(user && user.id)} />}
       <LiveGoalWidget memberCount={members.length} tipTotal={tipTotal} subCount={subCount} triggerEdit={goalTick} />
       {roomId && user && <RoomReactionOverlay roomId={roomId} currentUser={user} triggerReact={reactEmoji} />}
@@ -1512,7 +1548,7 @@ export default function LiveRoom() {
       <SuperChatRail roomId={roomId} currentUser={user} />
       {roomId && <GuestQueue roomId={roomId} isHost={isHost} />}
       {roomId && <PKBattle roomId={roomId} isHost={isHost} hostName={hostName} viewerCount={liveCount} />}
-      {roomId && <PKBattleModal isOpen={showPKBattleModal} onClose={() => setShowPKBattleModal(false)} roomId={roomId} isHost={isHost} currentUser={user} hostName={hostName} />}
+      {roomId && <PKBattleModal isOpen={showPKBattleModal} onClose={function() { return setShowPKBattleModal(false); }} roomId={roomId} isHost={isHost} currentUser={user} hostName={hostName} />}
 
       <NetworkQualityBanner quality={netQuality} rtt={netRtt} />
 
