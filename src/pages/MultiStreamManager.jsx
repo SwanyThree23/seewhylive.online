@@ -37,17 +37,52 @@ import RewardShop from '../components/loyalty/RewardShop';
 import HostAlertCenter from '../components/live/HostAlertCenter';
 import ViewerCount from '../components/live/ViewerCount';
 
-function Card({ children, className = '', style = {} }) { return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>; }
-function CardContent({ children, className = '' }) { return <div className={`p-4 ${className}`}>{children}</div>; }
-function CardHeader({ children, className = '' }) { return <div className={`px-4 pt-4 pb-2 ${className}`}>{children}</div>; }
-function CardTitle({ children, className = '' }) { return <p className={`font-black text-sm ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{children}</p>; }
-function Button({ children, onClick, className = '', style = {}, disabled, variant, size, ...rest }) { return <button onClick={onClick} disabled={disabled} {...rest} className={`inline-flex items-center justify-center gap-1.5 rounded-xl font-black uppercase text-xs transition-all ${className}`} style={{ padding: size === 'sm' ? '5px 10px' : size === 'icon' ? '6px' : '8px 14px', background: variant === 'ghost' ? 'transparent' : variant === 'outline' ? 'rgba(255,255,255,0.06)' : 'rgba(212,175,55,0.15)', border: variant === 'ghost' ? 'none' : variant === 'outline' ? '1px solid rgba(255,255,255,0.15)' : 'none', color: '#fff', cursor: disabled ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: disabled ? 0.4 : 1, ...style }}>{children}</button>; }
-function Input({ value, onChange, placeholder, type = 'text', className = '', style = {} }) { return <input type={type} value={value} onChange={onChange} placeholder={placeholder} className={className} style={{ width: '100%', padding: '8px 12px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />; }
-function Badge({ children, className = '', style = {} }) { return <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${className}`} style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)', ...style }}>{children}</span>; }
-function Slider({ value, onValueChange, min = 0, max = 100, step = 1, className = '' }) { return <input type="range" min={min} max={max} step={step} value={Array.isArray(value) ? value[0] : value} onChange={e => onValueChange && onValueChange([Number(e.target.value)])} className={className} style={{ width: '100%', accentColor: '#D4AF37' }} />; }
+function Card({ children, className, style }) {
+  if (className === undefined) { className = ''; }
+  if (style === undefined) { style = {}; }
+  return <div className={'rounded-2xl ' + className} style={Object.assign({}, { background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }, style)}>{children}</div>;
+}
+function CardContent({ children, className }) {
+  if (className === undefined) { className = ''; }
+  return <div className={'p-4 ' + className}>{children}</div>;
+}
+function CardHeader({ children, className }) {
+  if (className === undefined) { className = ''; }
+  return <div className={'px-4 pt-4 pb-2 ' + className}>{children}</div>;
+}
+function CardTitle({ children, className }) {
+  if (className === undefined) { className = ''; }
+  return <p className={'font-black text-sm ' + className} style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{children}</p>;
+}
+function Button({ children, onClick, className, style, disabled, variant, size }) {
+  if (className === undefined) { className = ''; }
+  if (style === undefined) { style = {}; }
+  return <button onClick={onClick} disabled={disabled} className={'inline-flex items-center justify-center gap-1.5 rounded-xl font-black uppercase text-xs transition-all ' + className} style={Object.assign({}, { padding: size === 'sm' ? '5px 10px' : size === 'icon' ? '6px' : '8px 14px', background: variant === 'ghost' ? 'transparent' : variant === 'outline' ? 'rgba(255,255,255,0.06)' : 'rgba(212,175,55,0.15)', border: variant === 'ghost' ? 'none' : variant === 'outline' ? '1px solid rgba(255,255,255,0.15)' : 'none', color: '#fff', cursor: disabled ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: disabled ? 0.4 : 1 }, style)}>{children}</button>;
+}
+function Input({ value, onChange, placeholder, type, className, style }) {
+  if (type === undefined) { type = 'text'; }
+  if (className === undefined) { className = ''; }
+  if (style === undefined) { style = {}; }
+  return <input type={type} value={value} onChange={onChange} placeholder={placeholder} className={className} style={Object.assign({}, { width: '100%', padding: '8px 12px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }, style)} />;
+}
+function Badge({ children, className, style }) {
+  if (className === undefined) { className = ''; }
+  if (style === undefined) { style = {}; }
+  return <span className={'inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ' + className} style={Object.assign({}, { fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.4)' }, style)}>{children}</span>;
+}
+function Slider({ value, onValueChange, min, max, step, className }) {
+  if (min === undefined) { min = 0; }
+  if (max === undefined) { max = 100; }
+  if (step === undefined) { step = 1; }
+  if (className === undefined) { className = ''; }
+  return <input type="range" min={min} max={max} step={step} value={Array.isArray(value) ? value[0] : value} onChange={function(e) { if (onValueChange) { onValueChange([Number(e.target.value)]); } }} className={className} style={{ width: '100%', accentColor: '#D4AF37' }} />;
+}
 function Tabs({ children, defaultValue }) { return <div data-defaulttab={defaultValue}>{children}</div>; }
-function TabsList({ children, className = '' }) { return <div className={`flex gap-1 ${className}`}>{children}</div>; }
-function TabsTrigger({ children, value, className = '' }) { return null; }
+function TabsList({ children, className }) {
+  if (className === undefined) { className = ''; }
+  return <div className={'flex gap-1 ' + className}>{children}</div>;
+}
+function TabsTrigger({ children, value, className }) { return null; }
 function TabsContent({ children, value }) { return <div>{children}</div>; }
 
 var PLATFORMS = [
@@ -73,8 +108,8 @@ function StatusDot({ status }) {
   var labels = { live: 'LIVE', connecting: '...', error: 'ERR', offline: 'OFF' };
   return (
     <div className="flex items-center gap-1.5">
-      <div className={`w-2 h-2 rounded-full ${styles[status] || styles.offline}`} />
-      <span className={`text-[10px] font-semibold ${status === 'live' ? 'text-[#6DBF7E]' : status === 'error' ? 'text-[#C0392B]' : 'text-white/30'}`}>
+      <div className={'w-2 h-2 rounded-full ' + (styles[status] || styles.offline)} />
+      <span className={'text-[10px] font-semibold ' + (status === 'live' ? 'text-[#6DBF7E]' : status === 'error' ? 'text-[#C0392B]' : 'text-white/30')}>
         {labels[status] || 'OFF'}
       </span>
     </div>
@@ -92,10 +127,10 @@ export default function MultiStreamManager() {
   var [selectedPlatform, setSelectedPlatform] = useState('twitch');
   var [showAddForm, setShowAddForm] = useState(false);
 
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
   var { data: activeRoom } = useQuery({
     queryKey: ['multistreammanager-active-room', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
@@ -103,13 +138,13 @@ export default function MultiStreamManager() {
 
   var { data: destinations = [], isLoading } = useQuery({
     queryKey: ['rtmp-destinations', (user && user.id)],
-    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: (user && user.id) }),
+    queryFn: function() { return base44.entities.RTMPDestination.filter({ creator_id: (user && user.id) }); },
     enabled: !!user,
   });
 
   var createMutation = useMutation({
-    mutationFn: (data) => base44.entities.RTMPDestination.create(data),
-    onSuccess: (dest) => {
+    mutationFn: function(data) { return base44.entities.RTMPDestination.create(data); },
+    onSuccess: function(dest) {
       qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
       setShowAddForm(false);
       setNewLabel('');
@@ -118,63 +153,63 @@ export default function MultiStreamManager() {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
-          title: `Added multi-stream destination: ${(dest && dest.label) || selectedPlatform}`,
-        }).catch(() => {});
+          title: 'Added multi-stream destination: ' + ((dest && dest.label) || selectedPlatform),
+        }).catch(function() {});
       }
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.RTMPDestination.update(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }),
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function({ id, data }) { return base44.entities.RTMPDestination.update(id, data); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }); },
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }); toast.success('Destination removed'); },
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(id) { return base44.entities.RTMPDestination.delete(id); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['rtmp-destinations'] }); toast.success('Destination removed'); },
+    onError: function() { toast.error('Action failed.'); },
   });
 
-  var testConnection = async (dest) => {
+  var testConnection = async function(dest) {
     setTestingId(dest.id);
     updateMutation.mutate({ id: dest.id, data: { status: 'online' } });
     toast.success('Destination saved — go live to verify RTMP');
     setTestingId(null);
   };
 
-  var toggleEnabled = (dest) => {
+  var toggleEnabled = function(dest) {
     updateMutation.mutate({ id: dest.id, data: { is_enabled: !dest.is_enabled } });
   };
 
-  var enabledCount = destinations.filter(d => d.is_enabled).length;
-  var totalBitrate = destinations.filter(d => d.is_enabled).reduce((s, d) => s + (d.bitrate_kbps || 3000), 0);
+  var enabledCount = destinations.filter(function(d) { return d.is_enabled; }).length;
+  var totalBitrate = destinations.filter(function(d) { return d.is_enabled; }).reduce(function(s, d) { return s + (d.bitrate_kbps || 3000); }, 0);
   var recommendedMax = 25000;
-  var anyLive = destinations.some(d => d.status === 'live');
+  var anyLive = destinations.some(function(d) { return d.status === 'live'; });
 
   // MediaMTX fanout: mark all enabled destinations as 'connecting' then 'live'
-  var goLiveFanout = async () => {
-    var enabled = destinations.filter(d => d.is_enabled && d.stream_key_encrypted);
+  var goLiveFanout = async function() {
+    var enabled = destinations.filter(function(d) { return d.is_enabled && d.stream_key_encrypted; });
     if (enabled.length === 0) {
       toast.error('Add stream keys to at least one enabled destination first');
       return;
     }
-    toast.loading(`Initiating fanout to ${enabled.length} platform(s)…`, { id: 'fanout' });
+    toast.loading('Initiating fanout to ' + enabled.length + ' platform(s)…', { id: 'fanout' });
     try {
       // MediaMTX RTMP push is triggered server-side; set destinations live immediately
-      await Promise.all(enabled.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'live', last_used: new Date().toISOString() } })));
-      toast.success(`Live on ${enabled.length} platform(s)! MediaMTX fanout active.`, { id: 'fanout' });
+      await Promise.all(enabled.map(function(d) { return updateMutation.mutateAsync({ id: d.id, data: { status: 'live', last_used: new Date().toISOString() } }); }));
+      toast.success('Live on ' + enabled.length + ' platform(s)! MediaMTX fanout active.', { id: 'fanout' });
       qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
     } catch {
       toast.error('Failed to start fanout. Please try again.', { id: 'fanout' });
     }
   };
 
-  var stopAllFanout = async () => {
-    var live = destinations.filter(d => d.status === 'live' || d.status === 'connecting');
+  var stopAllFanout = async function() {
+    var live = destinations.filter(function(d) { return d.status === 'live' || d.status === 'connecting'; });
     try {
-      await Promise.all(live.map(d => updateMutation.mutateAsync({ id: d.id, data: { status: 'offline' } })));
+      await Promise.all(live.map(function(d) { return updateMutation.mutateAsync({ id: d.id, data: { status: 'offline' } }); }));
       toast.success('All streams stopped');
       qc.invalidateQueries({ queryKey: ['rtmp-destinations'] });
     } catch {
@@ -182,9 +217,9 @@ export default function MultiStreamManager() {
     }
   };
 
-  var addDestination = () => {
+  var addDestination = function() {
     if (!newLabel.trim()) return;
-    var platform = PLATFORMS.find(p => p.id === selectedPlatform);
+    var platform = PLATFORMS.find(function(p) { return p.id === selectedPlatform; });
     createMutation.mutate({
       creator_id: (user && user.id),
       platform: selectedPlatform,
@@ -226,7 +261,7 @@ export default function MultiStreamManager() {
               </Button>
             )}
             <Button
-              onClick={() => setShowAddForm(!showAddForm)}
+              onClick={function() { setShowAddForm(!showAddForm); }}
               className="bg-[#d4af37] hover:bg-[#f5e6a3] text-black font-bold gap-2"
             >
               <Plus className="w-4 h-4" /> Add Destination
@@ -253,7 +288,7 @@ export default function MultiStreamManager() {
                   <motion.div
                     className="h-full rounded-full transition-all"
                     style={{
-                      width: `${Math.min(100, (totalBitrate / recommendedMax) * 100)}%`,
+                      width: Math.min(100, (totalBitrate / recommendedMax) * 100) + '%',
                       background: totalBitrate > recommendedMax ? '#C0392B' : 'linear-gradient(90deg, #6DBF7E, #d4af37)',
                     }}
                   />
@@ -285,32 +320,30 @@ export default function MultiStreamManager() {
                 </CardHeader>
                 <CardContent className="p-4 space-y-4">
                   <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                    {PLATFORMS.map(p => (
-                      <button
-                        key={p.id}
-                        onClick={() => setSelectedPlatform(p.id)}
-                        className={`py-2 px-2 rounded-lg border text-xs font-semibold transition-all ${
-                          selectedPlatform === p.id
-                            ? 'border-[#d4af37] bg-[#d4af37]/10 text-white'
-                            : 'border-white/10 text-white/40 hover:border-white/20'
-                        }`}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
+                    {PLATFORMS.map(function(p) {
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={function() { setSelectedPlatform(p.id); }}
+                          className={'py-2 px-2 rounded-lg border text-xs font-semibold transition-all ' + (selectedPlatform === p.id ? 'border-[#d4af37] bg-[#d4af37]/10 text-white' : 'border-white/10 text-white/40 hover:border-white/20')}
+                        >
+                          {p.label}
+                        </button>
+                      );
+                    })}
                   </div>
                   <div className="flex gap-3">
                     <Input
-                      value={newLabel} onChange={(e) => setNewLabel(e.target.value)}
-                      placeholder={`Label (e.g., My ${(PLATFORMS.find(function(p) { return p.id === selectedPlatform; }) || {}).label || ''} Stream)`}
+                      value={newLabel} onChange={function(e) { setNewLabel(e.target.value); }}
+                      placeholder={'Label (e.g., My ' + ((PLATFORMS.find(function(p) { return p.id === selectedPlatform; }) || {}).label || '') + ' Stream)'}
                       className="bg-white/5 border-white/20 text-white placeholder:text-white/30"
-                      onKeyDown={(e) => e.key === 'Enter' && addDestination()}
+                      onKeyDown={function(e) { if (e.key === 'Enter') { addDestination(); } }}
                     />
                     <Button onClick={addDestination} disabled={createMutation.isPending || !newLabel.trim()}
                       className="bg-[#d4af37] text-black font-bold hover:bg-[#f5e6a3] shrink-0">
                       Add
                     </Button>
-                    <Button variant="ghost" onClick={() => setShowAddForm(false)} className="text-white/50">Cancel</Button>
+                    <Button variant="ghost" onClick={function() { setShowAddForm(false); }} className="text-white/50">Cancel</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -321,7 +354,7 @@ export default function MultiStreamManager() {
         {/* Destinations List */}
         {isLoading ? (
           <div className="space-y-3">
-            {[1, 2, 3].map(i => <div key={i} className="h-28 bg-white/5 rounded-xl animate-pulse" />)}
+            {[1, 2, 3].map(function(i) { return <div key={i} className="h-28 bg-white/5 rounded-xl animate-pulse" />; })}
           </div>
         ) : destinations.length === 0 ? (
           <Card className="bg-[rgba(255,255,255,0.04)] border-[rgba(212,175,55,0.1)]">
@@ -333,22 +366,18 @@ export default function MultiStreamManager() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {destinations.map((dest) => {
-              var platform = PLATFORMS.find(p => p.id === dest.platform);
+            {destinations.map(function(dest) {
+              var platform = PLATFORMS.find(function(p) { return p.id === dest.platform; });
               var isTesting = testingId === dest.id;
               return (
                 <motion.div key={dest.id} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                  <Card className={`bg-[rgba(255,255,255,0.04)] transition-all ${
-                    dest.is_enabled
-                      ? 'border-[rgba(212,175,55,0.2)]'
-                      : 'border-white/5 opacity-60'
-                  }`}>
+                  <Card className={'bg-[rgba(255,255,255,0.04)] transition-all ' + (dest.is_enabled ? 'border-[rgba(212,175,55,0.2)]' : 'border-white/5 opacity-60')}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">
                         {/* Platform indicator */}
                         <div
                           className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0"
-                          style={{ background: `${(platform && platform.color)}30`, border: `1px solid ${(platform && platform.color)}40` }}
+                          style={{ background: (platform && platform.color) + '30', border: '1px solid ' + (platform && platform.color) + '40' }}
                         >
                           {(platform && platform.label) ? (platform.label).charAt(0) : ''}
                         </div>
@@ -358,9 +387,9 @@ export default function MultiStreamManager() {
                           <div className="flex items-center gap-3 flex-wrap">
                             <p className="font-semibold text-white text-sm">{dest.label}</p>
                             <Badge className="text-[11px] px-1.5 py-0" style={{
-                              background: `${(platform && platform.color)}20`,
+                              background: (platform && platform.color) + '20',
                               color: (platform && platform.color),
-                              borderColor: `${(platform && platform.color)}40`
+                              borderColor: (platform && platform.color) + '40'
                             }}>
                               {(platform && platform.label)}
                             </Badge>
@@ -374,13 +403,13 @@ export default function MultiStreamManager() {
                               <Input
                                 type={showKeyFor[dest.id] ? 'text' : 'password'}
                                 value={dest.stream_key_encrypted || ''}
-                                onChange={(e) => updateMutation.mutate({ id: dest.id, data: { stream_key_encrypted: e.target.value } })}
+                                onChange={function(e) { updateMutation.mutate({ id: dest.id, data: { stream_key_encrypted: e.target.value } }); }}
                                 placeholder="Stream key..."
                                 className="pl-8 h-7 text-xs bg-white/5 border-white/10 text-white font-mono"
                               />
                             </div>
                             <button
-                              onClick={() => setShowKeyFor(prev => ({ ...prev, [dest.id]: !prev[dest.id] }))}
+                              onClick={function() { setShowKeyFor(function(prev) { return Object.assign({}, prev, { [dest.id]: !prev[dest.id] }); }); }}
                               className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-white"
                             >
                               {showKeyFor[dest.id] ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
@@ -391,7 +420,7 @@ export default function MultiStreamManager() {
                           {dest.platform === 'custom' && (
                             <Input
                               value={dest.server_url || ''}
-                              onChange={(e) => updateMutation.mutate({ id: dest.id, data: { server_url: e.target.value } })}
+                              onChange={function(e) { updateMutation.mutate({ id: dest.id, data: { server_url: e.target.value } }); }}
                               placeholder="rtmp://your-server/live"
                               className="h-7 text-xs bg-white/5 border-white/10 text-white font-mono"
                             />
@@ -402,7 +431,7 @@ export default function MultiStreamManager() {
                             <p className="text-[10px] text-white/30 shrink-0">Bitrate</p>
                             <Slider
                               value={[dest.bitrate_kbps || 3000]}
-                              onValueChange={([v]) => updateMutation.mutate({ id: dest.id, data: { bitrate_kbps: v } })}
+                              onValueChange={function(vals) { var v = vals[0]; updateMutation.mutate({ id: dest.id, data: { bitrate_kbps: v } }); }}
                               min={500} max={8000} step={500}
                               className="flex-1 [&_[role=slider]]:bg-[#d4af37] [&_[role=slider]]:border-[#d4af37]"
                             />
@@ -412,12 +441,12 @@ export default function MultiStreamManager() {
 
                         {/* Controls */}
                         <div className="flex flex-col items-end gap-2 shrink-0">
-                          <div onClick={() => toggleEnabled(dest)} style={{ width: 40, height: 22, borderRadius: 99, background: dest.is_enabled ? '#D4AF37' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
+                          <div onClick={function() { toggleEnabled(dest); }} style={{ width: 40, height: 22, borderRadius: 99, background: dest.is_enabled ? '#D4AF37' : 'rgba(255,255,255,0.1)', position: 'relative', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}>
                             <div style={{ position: 'absolute', top: 3, left: dest.is_enabled ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
                           </div>
                           <div className="flex gap-1">
                             <button
-                              onClick={() => testConnection(dest)}
+                              onClick={function() { testConnection(dest); }}
                               disabled={isTesting}
                               className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#4A8A7A] hover:border-[#4A8A7A]/30 disabled:opacity-50"
                             >
@@ -426,7 +455,7 @@ export default function MultiStreamManager() {
                                 : <Wifi className="w-3 h-3" />}
                             </button>
                             <button
-                              onClick={() => { if (window.confirm('Remove this destination?')) deleteMutation.mutate(dest.id); }}
+                              onClick={function() { if (window.confirm('Remove this destination?')) { deleteMutation.mutate(dest.id); } }}
                               className="w-7 h-7 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-[#C0392B] hover:border-red-700/40"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -453,7 +482,7 @@ export default function MultiStreamManager() {
                 <div className="w-3 h-3 rounded-full bg-[#6DBF7E] animate-pulse" />
                 <div className="flex-1">
                   <p className="text-sm font-bold text-[#6DBF7E]">MediaMTX Fanout Active</p>
-                  <p className="text-xs text-green-300/60">SeeWhy ingest → MediaMTX → {destinations.filter(d => d.status === 'live').length} RTMP destinations</p>
+                  <p className="text-xs text-green-300/60">SeeWhy ingest &rarr; MediaMTX &rarr; {destinations.filter(function(d) { return d.status === 'live'; }).length} RTMP destinations</p>
                 </div>
                 <Button onClick={stopAllFanout} className="bg-red-700 hover:bg-red-800 text-white text-xs h-8">
                   🛑 Stop All
@@ -481,7 +510,7 @@ export default function MultiStreamManager() {
           <OBSBridge roomId={activeRoomId} isHost={true} />
           <GuestRTMPPanel participantId={null} userId={(user && user.id)} />
           <GuestStreamMonitor guestName="Guest" isStreaming={anyLive} />
-          <LiveTranslationWidget chatMessage={null} onTranslation={() => {}} />
+          <LiveTranslationWidget chatMessage={null} onTranslation={function() {}} />
           <StreamAnalyticsDashboard roomId={activeRoomId} isHost={true} isLive={anyLive} />
           <OnlineUsersGrid compact maxVisible={10} />
         </div>
@@ -492,11 +521,13 @@ export default function MultiStreamManager() {
             { label: '🌐 Platform+',         href: 'MultiPlatformIntegration' },
             { label: '🔴 Go Live',           href: 'GoLive'                   },
             { label: '🎬 Broadcast Studio',  href: 'BroadcastStudio'          },
-          ].map(item => (
-            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
-              <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
-            </Link>
-          ))}
+          ].map(function(item) {
+            return (
+              <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+                <span style={{ display: 'block', fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 99, background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', cursor: 'pointer' }}>{item.label}</span>
+              </Link>
+            );
+          })}
         </div>
       </div>
       <SwanAIRecommendations roomId={activeRoomId} currentLayout="multistream" viewerCount={destinations.length} />
