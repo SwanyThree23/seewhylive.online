@@ -641,7 +641,7 @@ export default function GoLive() {
   var [hypeLevel, setHypeLevel] = useState(0);
   useHighlightDetector({ partyId, roomId: partyId, isHost: true, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
-  useEffect(() => { setPeakViewers(prev => Math.max(prev, viewerCount)); }, [viewerCount]);
+  useEffect(function() { setPeakViewers(function(prev) { return Math.max(prev, viewerCount); }); }, [viewerCount]);
   var [isSharing, setIsSharing] = useState(false);
   var [activeScene, setActiveScene] = useState('main');
   var [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
@@ -664,56 +664,57 @@ export default function GoLive() {
   var [whisperTarget, setWhisperTarget] = useState(null);       // { id, name } | null
   var [incomingWhisper, setIncomingWhisper] = useState(null);   // latest unread whisper | null
   var screenStreamRef = useRef(null);
-  var handleStartShare = async () => {
+  var handleStartShare = async function() {
     try {
       var stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
       screenStreamRef.current = stream;
-      stream.getVideoTracks()[0].onended = () => { screenStreamRef.current = null; setIsSharing(false); };
+      stream.getVideoTracks()[0].onended = function() { screenStreamRef.current = null; setIsSharing(false); };
       setIsSharing(true);
-    } catch {}
+    } catch(e) {}
   };
-  var handleStopShare = () => {
+  var handleStopShare = function() {
     if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); }
     screenStreamRef.current = null;
     setIsSharing(false);
   };
 
   // Elapsed counter — only runs while live (partyId set)
-  useEffect(() => {
+  useEffect(function() {
     if (!partyId) return;
-    var iv = setInterval(() => setElapsed(s => s + 1), 1000);
-    return () => clearInterval(iv);
+    var iv = setInterval(function() { setElapsed(function(s) { return s + 1; }); }, 1000);
+    return function() { clearInterval(iv); };
   }, [partyId]);
 
   // Poll for incoming whispers addressed to the current user in this room
-  useEffect(() => {
+  useEffect(function() {
     if (!partyId || !(user && user.id)) return;
     var lastSeenId = null;
-    var pollId = setInterval(() => {
+    var pollId = setInterval(function() {
       base44.entities.DirectMessage.filter({ room_id: partyId, recipient_id: user.id, is_whisper: true })
-        .then(msgs => {
+        .then(function(msgs) {
           if (!msgs || msgs.length === 0) return;
-          var latest = msgs.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
+          var latest = msgs.sort(function(a, b) { return new Date(b.created_date) - new Date(a.created_date); })[0];
           if (latest && latest.id !== lastSeenId) {
             lastSeenId = latest.id;
             setIncomingWhisper(latest);
           }
         })
-        .catch(() => {});
+        .catch(function() {});
     }, 5000);
-    return () => clearInterval(pollId);
+    return function() { clearInterval(pollId); };
   }, [partyId, (user && user.id)]);
 
-  var { data: activePoll } = useQuery({
+  var activePollQuery = useQuery({
     queryKey: ['active-poll', partyId],
-    queryFn: () => base44.entities.Poll.filter({ room_id: partyId, status: 'active' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Poll.filter({ room_id: partyId, status: 'active' }).then(function(r) { return r[0] || null; }); },
     enabled: !!partyId,
     refetchInterval: 5000,
   });
+  var activePoll = activePollQuery.data || null;
 
 
   var streamKey = (user && user.id)
-    ? `sw-${user.id.slice(0, 8)}-${Math.abs(user.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)).toString(16).slice(0, 6)}`
+    ? ('sw-' + user.id.slice(0, 8) + '-' + Math.abs(user.id.split('').reduce(function(a, c) { return a + c.charCodeAt(0); }, 0)).toString(16).slice(0, 6))
     : 'sw-xxxxxxxx-demo';
 
   function selectFormat(fmt) {
@@ -726,14 +727,14 @@ export default function GoLive() {
       e.preventDefault();
       var t = tagInput.trim().replace(/^#/, '');
       if (t && !tags.includes(t) && tags.length < 8) {
-        setTags(prev => [...prev, t]);
+        setTags(function(prev) { return prev.concat([t]); });
       }
       setTagInput('');
     }
   }
 
   function removeTag(t) {
-    setTags(prev => prev.filter(x => x !== t));
+    setTags(function(prev) { return prev.filter(function(x) { return x !== t; }); });
   }
 
   async function suggestTitles() {
@@ -823,7 +824,7 @@ export default function GoLive() {
           var dests = await base44.entities.RTMPDestination.filter({ creator_id: user.id, is_enabled: true });
           if (dests && dests.length > 0) {
             var API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
-            var r = await fetch(`${API_BASE}/fanout-start`, {
+            var r = await fetch(API_BASE + '/fanout-start', {
               method:  'POST',
               headers: { 'Content-Type': 'application/json' },
               body:    JSON.stringify({
@@ -832,18 +833,18 @@ export default function GoLive() {
                 room_id:      party.id,
                 // Vault keys looked up server-side via guest_id + dest_id —
                 // the frontend never holds or transmits plaintext stream keys.
-                destinations: dests.map(d => ({
+                destinations: dests.map(function(d) { return {
                   dest_id:  d.id,
                   url:      d.server_url,
                   platform: d.platform,
                   label:    d.label || d.platform || 'custom',
                   enabled:  true,
-                })),
+                }; }),
               }),
             });
             var json = await r.json();
             if (json.ok) {
-              toast.success(`📡 Fanout live — ${json.destinations} platform${json.destinations !== 1 ? 's' : ''}`);
+              toast.success('Fanout live — ' + json.destinations + ' platform' + (json.destinations !== 1 ? 's' : ''));
             }
           }
         } catch {
@@ -861,18 +862,18 @@ export default function GoLive() {
   // Stop fanout if the user navigates away before the redirect completes
   useEffect(() => {
     if (!partyId) return;
-    var stopFanout = () => {
+    var stopFanout = function() {
       var API_BASE = (import.meta.env.VITE_SERVER_URL || import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001') + '/api';
       var blob = new Blob([JSON.stringify({ stream_id: partyId })], { type: 'application/json' });
       if (navigator.sendBeacon) navigator.sendBeacon(API_BASE + '/fanout-stop', blob);
     };
     window.addEventListener('beforeunload', stopFanout);
-    return () => window.removeEventListener('beforeunload', stopFanout);
+    return function() { window.removeEventListener('beforeunload', stopFanout); };
   }, [partyId]);
 
   function onCountdownDone() {
     var dest = (format && format.dest) || 'BroadcastStudio';
-    window.location.href = `${createPageUrl(dest)}?id=${partyId}`;
+    window.location.href = createPageUrl(dest) + '?id=' + partyId;
   }
 
   // Room entry gate — age verification, ToS, display name, device permissions
@@ -881,9 +882,9 @@ export default function GoLive() {
       <RoomEntryGate
         role="host"
         user={user}
-        onPass={() => setEntryPassed(true)}
-        onRoleDowngrade={() => setEntryPassed(true)}
-        onExit={() => navigate(-1)}
+        onPass={function() { setEntryPassed(true); }}
+        onRoleDowngrade={function() { setEntryPassed(true); }}
+        onExit={function() { navigate(-1); }}
       />
     );
   }
@@ -916,7 +917,7 @@ export default function GoLive() {
         backdropFilter: 'blur(12px)',
       }}>
         {step === 'setup' ? (
-          <button onClick={() => setStep('pick')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+          <button onClick={function() { setStep('pick'); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
             <ChevronLeft style={{ width: 22, height: 22, color: 'rgba(255,255,255,0.6)' }} />
           </button>
         ) : (
@@ -924,7 +925,7 @@ export default function GoLive() {
         )}
         <div style={{ flex: 1 }}>
           <h1 style={{ fontSize: 22, fontWeight: 900, color: GOLD, margin: 0, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            {step === 'setup' ? `${(format && format.emoji)} ${(format && format.title)}` : 'Go Live'}
+            {step === 'setup' ? ('' + (format && format.emoji) + ' ' + (format && format.title)) : 'Go Live'}
           </h1>
           <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: 0, fontFamily: FONT }}>
             {step === 'setup' ? 'Configure your stream' : 'Choose your format'}
@@ -933,7 +934,7 @@ export default function GoLive() {
         {step === 'setup' && format && (
           <div style={{
             padding: '3px 10px', borderRadius: 999,
-            background: `${format.color}18`, border: `1px solid ${format.color}35`,
+            background: format.color + '18', border: '1px solid ' + format.color + '35',
             fontSize: 10, fontWeight: 900, color: format.color, fontFamily: FONT, letterSpacing: '0.04em',
           }}>
             {format.title}
@@ -955,7 +956,7 @@ export default function GoLive() {
               What kind of stream?
             </p>
 
-            {FORMATS.map(fmt => <FormatCard key={fmt.id} fmt={fmt} onSelect={selectFormat} />)}
+            {FORMATS.map(function(fmt) { return <FormatCard key={fmt.id} fmt={fmt} onSelect={selectFormat} />; })}
 
             {/* ── Creator Studios ── */}
             <div style={{ marginTop: 4 }}>
@@ -1048,27 +1049,27 @@ export default function GoLive() {
                 style={{ ...INPUT, fontSize: 16, fontWeight: 700, borderColor: title ? 'rgba(255,184,0,0.3)' : 'rgba(255,255,255,0.1)' }}
                 placeholder="What's your stream about?"
                 value={title}
-                onChange={e => setTitle(e.target.value)}
+                onChange={function(e) { setTitle(e.target.value); }}
                 maxLength={80}
               />
               <div style={{ textAlign: 'right', fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: FONT, marginTop: 3 }}>{title.length}/80</div>
               {titleSuggestions.length > 0 && (
                 <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  {titleSuggestions.map((s, i) => (
+                  {titleSuggestions.map(function(s, i) { return (
                     <button
                       key={i}
-                      onClick={() => { setTitle(s); setTitleSuggestions([]); }}
+                      onClick={function() { setTitle(s); setTitleSuggestions([]); }}
                       style={{
                         textAlign: 'left', padding: '8px 12px', borderRadius: 9, cursor: 'pointer',
                         background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.18)',
                         color: 'rgba(255,255,255,0.8)', fontSize: 13, fontFamily: FONT, fontWeight: 700,
                         transition: 'all .15s',
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,184,0,0.12)'; e.currentTarget.style.color = GOLD; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,184,0,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}>
+                      onMouseEnter={function(e) { e.currentTarget.style.background = 'rgba(255,184,0,0.12)'; e.currentTarget.style.color = GOLD; }}
+                      onMouseLeave={function(e) { e.currentTarget.style.background = 'rgba(255,184,0,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; }}>
                       {s}
                     </button>
-                  ))}
+                  ); })}
                 </div>
               )}
             </div>
@@ -1076,10 +1077,10 @@ export default function GoLive() {
             <div>
               <div style={SL}><Layers style={{ width: 10, height: 10 }} /> Category</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {CATEGORIES.map(c => (
+                {CATEGORIES.map(function(c) { return (
                   <button
                     key={c}
-                    onClick={() => setCategory(cat => cat === c ? '' : c)}
+                    onClick={function() { setCategory(function(cat) { return cat === c ? '' : c; }); }}
                     style={{
                       padding: '5px 12px',
                       borderRadius: 999,
@@ -1087,13 +1088,13 @@ export default function GoLive() {
                       fontWeight: 700,
                       fontFamily: FONT,
                       cursor: 'pointer',
-                      border: category === c ? `1px solid ${GOLD}` : '1px solid rgba(255,255,255,0.1)',
-                      background: category === c ? `${GOLD}18` : 'rgba(255,255,255,0.04)',
+                      border: category === c ? ('1px solid ' + GOLD) : '1px solid rgba(255,255,255,0.1)',
+                      background: category === c ? (GOLD + '18') : 'rgba(255,255,255,0.04)',
                       color: category === c ? GOLD : 'rgba(255,255,255,0.5)',
                       transition: 'all 0.15s',
                     }}
                   >{c}</button>
-                ))}
+                ); })}
               </div>
             </div>
 
@@ -1103,12 +1104,12 @@ export default function GoLive() {
                 style={INPUT}
                 placeholder="Add tags — press Enter"
                 value={tagInput}
-                onChange={e => setTagInput(e.target.value)}
+                onChange={function(e) { setTagInput(e.target.value); }}
                 onKeyDown={addTag}
               />
               {tags.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 7 }}>
-                  {tags.map(t => (
+                  {tags.map(function(t) { return (
                     <span key={t} style={{
                       display: 'inline-flex', alignItems: 'center', gap: 4,
                       padding: '3px 9px', borderRadius: 999,
@@ -1116,9 +1117,9 @@ export default function GoLive() {
                       color: GOLD, fontSize: 11, fontFamily: FONT, fontWeight: 700,
                     }}>
                       #{t}
-                      <button onClick={() => removeTag(t)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(255,184,0,0.5)', fontSize: 11, lineHeight: 1 }}>×</button>
+                      <button onClick={function() { removeTag(t); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(255,184,0,0.5)', fontSize: 11, lineHeight: 1 }}>×</button>
                     </span>
-                  ))}
+                  ); })}
                 </div>
               )}
             </div>
