@@ -41,9 +41,9 @@ var INDUSTRY_TEMPLATES = [
     label: 'Streaming Host',
     icon: '🎙️',
     desc: 'Hypes viewers, announces milestones, moderates chat',
-    personality: `You are an energetic streaming host assistant named {name}. You hype up the audience, celebrate subscriber milestones, call out top tippers, and keep the stream energy high. You speak fast, use stream slang, and always keep it positive. When someone donates, you thank them by name with genuine excitement.`,
+    personality: 'You are an energetic streaming host assistant named {name}. You hype up the audience, celebrate subscriber milestones, call out top tippers, and keep the stream energy high. You speak fast, use stream slang, and always keep it positive. When someone donates, you thank them by name with genuine excitement.',
     triggers: [
-      { type: 'sub_event', value: '', responseTemplate: 'Welcome to the squad, {username}! The crew just got stronger — var\'s go!' },
+      { type: 'sub_event', value: '', responseTemplate: 'Welcome to the squad, {username}! The crew just got stronger — let\'s go!' },
       { type: 'tip_event', value: '', responseTemplate: 'Big shoutout to {username} for the {amount} tip! You are an absolute legend!' },
       { type: 'chat_command', value: '!hype', responseTemplate: 'The energy in here is INSANE right now! Let\'s go! Drop those hearts in the chat!' },
     ],
@@ -53,7 +53,7 @@ var INDUSTRY_TEMPLATES = [
     label: 'Healthcare Receptionist',
     icon: '🏥',
     desc: 'Appointment scheduling, FAQ, insurance verification',
-    personality: `You are a friendly and professional medical office assistant named {name}. You help patients schedule appointments, answer general health questions, verify insurance eligibility, and provide directions to the clinic. Always maintain patient confidentiality. Never provide medical diagnoses — always direct specific medical questions to the doctor.`,
+    personality: 'You are a friendly and professional medical office assistant named {name}. You help patients schedule appointments, answer general health questions, verify insurance eligibility, and provide directions to the clinic. Always maintain patient confidentiality. Never provide medical diagnoses — always direct specific medical questions to the doctor.',
     triggers: [
       { type: 'chat_command', value: '!schedule', responseTemplate: 'I can help you schedule an appointment! Please provide your preferred date and whether this is for a new or existing patient.' },
       { type: 'chat_command', value: '!hours', responseTemplate: 'Our office is open Monday–Friday 8 AM to 5 PM, and Saturday 9 AM to 1 PM. We\'re closed on Sundays.' },
@@ -67,7 +67,7 @@ var INDUSTRY_TEMPLATES = [
     label: 'Real Estate Agent',
     icon: '🏡',
     desc: 'Property info, showing scheduling, mortgage pre-qual',
-    personality: `You are a knowledgeable real estate assistant named {name}. You help buyers and sellers navigate the real estate process. You provide property information, neighborhood insights, estimated values, and help schedule showings. You speak professionally but in a warm, approachable manner. Always encourage prospects to speak with the agent for specific pricing and negotiation strategies.`,
+    personality: 'You are a knowledgeable real estate assistant named {name}. You help buyers and sellers navigate the real estate process. You provide property information, neighborhood insights, estimated values, and help schedule showings. You speak professionally but in a warm, approachable manner. Always encourage prospects to speak with the agent for specific pricing and negotiation strategies.',
     triggers: [
       { type: 'chat_command', value: '!showing', responseTemplate: 'I\'d love to schedule a showing for you! What neighborhood or property are you interested in, and what days work best?' },
       { type: 'chat_command', value: '!value', responseTemplate: 'I can help you get a free home value estimate! What\'s the property address, and has it been updated recently?' },
@@ -80,7 +80,7 @@ var INDUSTRY_TEMPLATES = [
     label: 'Restaurant Host',
     icon: '🍽️',
     desc: 'Reservations, menu questions, specials, wait times',
-    personality: `You are a warm and welcoming restaurant assistant named {name}. You handle reservations, answer menu questions, announce daily specials, and provide wait time estimates. You speak in a friendly, hospitable tone and always make guests feel excited about their dining experience. You know the full menu and can make recommendations based on dietary preferences.`,
+    personality: 'You are a warm and welcoming restaurant assistant named {name}. You handle reservations, answer menu questions, announce daily specials, and provide wait time estimates. You speak in a friendly, hospitable tone and always make guests feel excited about their dining experience. You know the full menu and can make recommendations based on dietary preferences.',
     triggers: [
       { type: 'chat_command', value: '!reserve', responseTemplate: 'Wonderful! I\'d love to reserve a table for you. How many guests, what date and time, and any special occasion we should know about?' },
       { type: 'chat_command', value: '!specials', responseTemplate: 'Tonight\'s specials are prepared fresh by our chef! Would you like me to walk you through what\'s on the board today?' },
@@ -93,7 +93,7 @@ var INDUSTRY_TEMPLATES = [
     label: 'Fitness Coach',
     icon: '💪',
     desc: 'Workout plans, class schedules, nutrition tips',
-    personality: `You are an energetic and motivating fitness coach assistant named {name}. You help members with class schedules, workout recommendations, nutrition guidance, and membership questions. You speak with energy and encouragement, using fitness lingo naturally. You motivate members to push through plateaus while emphasizing safety and proper form.`,
+    personality: 'You are an energetic and motivating fitness coach assistant named {name}. You help members with class schedules, workout recommendations, nutrition guidance, and membership questions. You speak with energy and encouragement, using fitness lingo naturally. You motivate members to push through plateaus while emphasizing safety and proper form.',
     triggers: [
       { type: 'chat_command', value: '!classes', responseTemplate: 'Ready to crush it? Here\'s what\'s on the schedule this week — which time slot fits your grind?' },
       { type: 'chat_command', value: '!tip', responseTemplate: 'Fitness tip: Consistency beats intensity every time. Show up even on the days you don\'t feel like it — that\'s where the real gains happen!' },
@@ -106,7 +106,7 @@ var INDUSTRY_TEMPLATES = [
     label: 'E-Commerce Support',
     icon: '🛍️',
     desc: 'Order tracking, returns, product questions, upsells',
-    personality: `You are a helpful and efficient e-commerce support assistant named {name}. You handle order inquiries, track shipments, process return requests, and answer product questions. You speak clearly and empathetically, understanding that customer experience is everything. You always resolve issues quickly and look for opportunities to recommend products that genuinely help the customer.`,
+    personality: 'You are a helpful and efficient e-commerce support assistant named {name}. You handle order inquiries, track shipments, process return requests, and answer product questions. You speak clearly and empathetically, understanding that customer experience is everything. You always resolve issues quickly and look for opportunities to recommend products that genuinely help the customer.',
     triggers: [
       { type: 'chat_command', value: '!order', responseTemplate: 'I can look up your order! Please share your order number and I\'ll get you the latest status right away.' },
       { type: 'chat_command', value: '!return', responseTemplate: 'No problem — our return process is simple. Orders within 30 days qualify for a full refund. Want me to start the return for you?' },
@@ -119,7 +119,7 @@ var INDUSTRY_TEMPLATES = [
     label: 'Legal Intake Agent',
     icon: '⚖️',
     desc: 'Case intake, consultation scheduling, FAQ',
-    personality: `You are a professional legal intake assistant named {name}. You gather initial information from potential clients, answer general questions about practice areas, and schedule consultations. You are precise, empathetic, and confidential. You always clarify that information gathered is for intake purposes only and does not constitute legal advice. You encourage prospects to schedule a consultation with an attorney.`,
+    personality: 'You are a professional legal intake assistant named {name}. You gather initial information from potential clients, answer general questions about practice areas, and schedule consultations. You are precise, empathetic, and confidential. You always clarify that information gathered is for intake purposes only and does not constitute legal advice. You encourage prospects to schedule a consultation with an attorney.',
     triggers: [
       { type: 'chat_command', value: '!consult', responseTemplate: 'I can schedule a consultation with one of our attorneys. To get started, could you briefly describe the nature of your legal matter?' },
       { type: 'keyword', value: 'help', responseTemplate: 'I\'m here to help. Can you tell me more about your situation? Everything shared is strictly confidential during this intake process.' },
@@ -132,7 +132,7 @@ var INDUSTRY_TEMPLATES = [
     label: 'Nonprofit Engagement',
     icon: '❤️',
     desc: 'Donation drives, volunteer sign-ups, event info',
-    personality: `You are a passionate and compassionate nonprofit engagement assistant named {name}. You share the organization\'s mission, inspire donations, recruit volunteers, and provide event information. You speak from the heart, making donors feel their contribution matters. You celebrate every donation — large or small — and help connect volunteers with meaningful opportunities.`,
+    personality: 'You are a passionate and compassionate nonprofit engagement assistant named {name}. You share the organization\'s mission, inspire donations, recruit volunteers, and provide event information. You speak from the heart, making donors feel their contribution matters. You celebrate every donation — large or small — and help connect volunteers with meaningful opportunities.',
     triggers: [
       { type: 'tip_event', value: '', responseTemplate: 'Thank you so much, {username}! Your {amount} donation is going directly to the people who need it most. You are making a real difference!' },
       { type: 'chat_command', value: '!volunteer', responseTemplate: 'Thank you for wanting to help! We have volunteer opportunities in outreach, events, and mentorship. What area speaks to your passion?' },
@@ -144,7 +144,7 @@ var INDUSTRY_TEMPLATES = [
     label: 'Creator Monetization',
     icon: '🌟',
     desc: 'Merch drops, membership upsells, collab pitches',
-    personality: `You are an enthusiastic creator economy assistant named {name}. You promote merchandise drops, exclusive membership tiers, upcoming collabs, and limited-time offers. You speak authentically in the creator\'s voice, building FOMO and community excitement. You know all the current promotions and can answer questions about perks and pricing.`,
+    personality: 'You are an enthusiastic creator economy assistant named {name}. You promote merchandise drops, exclusive membership tiers, upcoming collabs, and limited-time offers. You speak authentically in the creator\'s voice, building FOMO and community excitement. You know all the current promotions and can answer questions about perks and pricing.',
     triggers: [
       { type: 'chat_command', value: '!merch', responseTemplate: 'The merch drop is LIVE and selling fast! Limited quantities available — grab yours before it\'s gone. Link in bio!' },
       { type: 'chat_command', value: '!join', responseTemplate: 'Ready to join the inner circle? Members get exclusive content, early access, and direct access to me. Link is in the description!' },
@@ -212,14 +212,14 @@ function TriggerRow({ trigger, onChange, onRemove }) {
         <div style={{ display: 'flex', gap: 6 }}>
           <MobileSelect
             value={trigger.type}
-            onChange={v => onChange({ ...trigger, type: v })}
-            options={TRIGGER_TYPES.map(tt => ({ value: tt.id, label: tt.label }))}
+            onChange={function(v) { onChange({ ...trigger, type: v }); }}
+            options={TRIGGER_TYPES.map(function(tt) { return { value: tt.id, label: tt.label }; })}
             placeholder="Trigger type"
           />
           {(trigger.type === 'chat_command' || trigger.type === 'keyword') && (
             <input
               value={trigger.value || ''}
-              onChange={e => onChange({ ...trigger, value: e.target.value })}
+              onChange={function(e) { onChange({ ...trigger, value: e.target.value }); }}
               placeholder={trigger.type === 'chat_command' ? '!ask' : 'keyword'}
               style={{ width: 90, padding: '6px 8px', borderRadius: 7, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(201,168,76,0.2)', color: 'rgba(255,255,255,0.8)', fontSize: 11, fontFamily: 'monospace' }}
             />
@@ -227,7 +227,7 @@ function TriggerRow({ trigger, onChange, onRemove }) {
         </div>
         <input
           value={trigger.responseTemplate || ''}
-          onChange={e => onChange({ ...trigger, responseTemplate: e.target.value })}
+          onChange={function(e) { onChange({ ...trigger, responseTemplate: e.target.value }); }}
           placeholder="Response template — use {message}, {username}, {amount}"
           style={{ width: '100%', padding: '6px 8px', borderRadius: 7, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.75)', fontSize: 11, fontFamily: 'inherit', boxSizing: 'border-box' }}
         />
@@ -240,31 +240,31 @@ function TriggerRow({ trigger, onChange, onRemove }) {
 }
 
 export default function VoiceAgentBuilder() {
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
   var { invoke: invokeAI, loading: aiLoading } = useOpenRouter();
 
-  var [agents, setAgents]         = useState(loadAgents);
-  var [editingId, setEditingId]   = useState(null);
-  var [draft, setDraft]           = useState(null);
-  var [tab, setTab]               = useState('agents');   // agents | templates | analytics
-  var [testText, setTestText]     = useState('');
-  var [testing, setTesting]       = useState(false);
+  var [agents, setAgents]           = useState(loadAgents);
+  var [editingId, setEditingId]     = useState(null);
+  var [draft, setDraft]             = useState(null);
+  var [tab, setTab]                 = useState('agents');
+  var [testText, setTestText]       = useState('');
+  var [testing, setTesting]         = useState(false);
   var [simMessages, setSimMessages] = useState([]);
-  var [simInput, setSimInput]     = useState('');
-  var [simRunning, setSimRunning] = useState(false);
+  var [simInput, setSimInput]       = useState('');
+  var [simRunning, setSimRunning]   = useState(false);
   var audioRef = useRef(null);
   var analytics = loadAnalytics();
 
   function applyTemplate(tpl) {
     var agent = blankAgent();
-    agent.name       = tpl.label + ' Agent';
-    agent.industry   = tpl.id;
+    agent.name        = tpl.label + ' Agent';
+    agent.industry    = tpl.id;
     agent.personality = tpl.personality.replace('{name}', tpl.label + ' Agent');
-    agent.triggers   = tpl.triggers || agent.triggers;
+    agent.triggers    = tpl.triggers || agent.triggers;
     setDraft(agent);
     setEditingId(agent.id);
     setTab('agents');
-    toast.success(`Template applied — customize and save!`);
+    toast.success('Template applied — customize and save!');
   }
 
   function startNew() {
@@ -282,18 +282,18 @@ export default function VoiceAgentBuilder() {
     if (!draft) return;
     if (!draft.name.trim())        { toast.error('Agent needs a name.'); return; }
     if (!draft.personality.trim()) { toast.error('Add a personality prompt.'); return; }
-    var updated = agents.find(a => a.id === draft.id)
-      ? agents.map(a => a.id === draft.id ? draft : a)
+    var updated = agents.find(function(a) { return a.id === draft.id; })
+      ? agents.map(function(a) { return a.id === draft.id ? draft : a; })
       : [...agents, draft];
     setAgents(updated);
     saveAgents(updated);
     setDraft(null);
     setEditingId(null);
-    toast.success(`Agent "${draft.name}" saved.`);
+    toast.success('Agent "' + draft.name + '" saved.');
   }
 
   function deleteAgent(id) {
-    var updated = agents.filter(a => a.id !== id);
+    var updated = agents.filter(function(a) { return a.id !== id; });
     setAgents(updated);
     saveAgents(updated);
     if (editingId === id) { setDraft(null); setEditingId(null); }
@@ -301,19 +301,19 @@ export default function VoiceAgentBuilder() {
   }
 
   function toggleActive(id) {
-    var updated = agents.map(a => a.id === id ? { ...a, active: !a.active } : a);
+    var updated = agents.map(function(a) { return a.id === id ? { ...a, active: !a.active } : a; });
     setAgents(updated);
     saveAgents(updated);
   }
 
   function updateTrigger(idx, t) {
-    setDraft(d => ({ ...d, triggers: d.triggers.map((tr, i) => i === idx ? t : tr) }));
+    setDraft(function(d) { return { ...d, triggers: d.triggers.map(function(tr, i) { return i === idx ? t : tr; }) }; });
   }
   function removeTrigger(idx) {
-    setDraft(d => ({ ...d, triggers: d.triggers.filter((_, i) => i !== idx) }));
+    setDraft(function(d) { return { ...d, triggers: d.triggers.filter(function(_, i) { return i !== idx; }) }; });
   }
   function addTrigger() {
-    setDraft(d => ({ ...d, triggers: [...(d.triggers || []), { type: 'chat_command', value: '', responseTemplate: '' }] }));
+    setDraft(function(d) { return { ...d, triggers: [...(d.triggers || []), { type: 'chat_command', value: '', responseTemplate: '' }] }; });
   }
 
   async function testVoice() {
@@ -323,18 +323,18 @@ export default function VoiceAgentBuilder() {
     var voiceId = (draft && draft.voiceId) || 'rachel';
     setTesting(true);
     try {
-      var res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + voiceId, {
         method: 'POST',
         headers: { 'xi-api-key': elKey, 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
-        body: JSON.stringify({ text, model_id: 'eleven_monolingual_v1', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
+        body: JSON.stringify({ text: text, model_id: 'eleven_monolingual_v1', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
       });
-      if (!res.ok) throw new Error(`ElevenLabs ${res.status}`);
+      if (!res.ok) throw new Error('ElevenLabs ' + res.status);
       var blob = await res.blob();
       var url = URL.createObjectURL(blob);
       if (audioRef.current) { audioRef.current.src = url; audioRef.current.play(); }
       toast.success('Playing preview…');
     } catch (e) {
-      toast.error(`Voice test failed: ${e.message}`);
+      toast.error('Voice test failed: ' + e.message);
     } finally {
       setTesting(false);
     }
@@ -343,7 +343,7 @@ export default function VoiceAgentBuilder() {
   async function sendSimMessage(text) {
     if (!text.trim() || simRunning) return;
     var userMsg = text.trim();
-    setSimMessages(m => [...m, { role: 'user', text: userMsg }]);
+    setSimMessages(function(m) { return [...m, { role: 'user', text: userMsg }]; });
     setSimInput('');
     setSimRunning(true);
     try {
@@ -353,10 +353,10 @@ export default function VoiceAgentBuilder() {
         systemPrompt: personality + '\n\nRespond in 1–2 sentences max, in character. Never break character.',
         maxTokens: 120,
       });
-      setSimMessages(m => [...m, { role: 'agent', text: reply.trim() }]);
+      setSimMessages(function(m) { return [...m, { role: 'agent', text: reply.trim() }]; });
       if ((draft && draft.id)) recordTrigger(draft.id);
       if ((draft && draft.voiceId) && getElKey()) {
-        var res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${draft.voiceId}`, {
+        var res = await fetch('https://api.elevenlabs.io/v1/text-to-speech/' + draft.voiceId, {
           method: 'POST',
           headers: { 'xi-api-key': getElKey(), 'Content-Type': 'application/json', 'Accept': 'audio/mpeg' },
           body: JSON.stringify({ text: reply.trim(), model_id: 'eleven_monolingual_v1', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }),
@@ -368,7 +368,7 @@ export default function VoiceAgentBuilder() {
         }
       }
     } catch (e) {
-      setSimMessages(m => [...m, { role: 'agent', text: `[Error: ${e.message}]` }]);
+      setSimMessages(function(m) { return [...m, { role: 'agent', text: '[Error: ' + e.message + ']' }]; });
     } finally {
       setSimRunning(false);
     }
@@ -376,40 +376,40 @@ export default function VoiceAgentBuilder() {
 
   async function generatePersonality() {
     if (!(draft && draft.name && draft.name.trim())) { toast.error('Name the agent first.'); return; }
-    var industry = INDUSTRY_TEMPLATES.find(t => t.id === draft.industry);
+    var industry = INDUSTRY_TEMPLATES.find(function(t) { return t.id === draft.industry; });
     try {
       var text = await invokeAI({
-        prompt: `Write a concise AI voice agent personality prompt for "${draft.name}", a ${(industry && industry.label) || 'streaming'} assistant on SeeWhy LIVE.
-Industry focus: ${(industry && industry.desc) || 'live streaming'}
-Requirements: 80 words max, conversational, stays in character, no fluff.
-Output only the personality text, no labels or headers.`,
+        prompt: 'Write a concise AI voice agent personality prompt for "' + draft.name + '", a ' + ((industry && industry.label) || 'streaming') + ' assistant on SeeWhy LIVE.\n' +
+          'Industry focus: ' + ((industry && industry.desc) || 'live streaming') + '\n' +
+          'Requirements: 80 words max, conversational, stays in character, no fluff.\n' +
+          'Output only the personality text, no labels or headers.',
         maxTokens: 200,
       });
-      setDraft(d => ({ ...d, personality: text.trim() }));
+      setDraft(function(d) { return { ...d, personality: text.trim() }; });
       toast.success('Personality generated!');
     } catch {
       toast.error('Generation failed — check your OpenRouter API key.');
     }
   }
 
-  var hasElKey  = !!getElKey();
-  var hasOrKey  = !!getOrKey();
+  var hasElKey    = !!getElKey();
+  var hasOrKey    = !!getOrKey();
   var simStarters = SIM_DIALOGUES[(draft && draft.industry)] || SIM_DIALOGUES.streaming;
 
   return (
-    <div style={{ minHeight: '100vh', background: BG, ...T, paddingBottom: 60 }}>
+    <div style={{ minHeight: '100vh', background: BG, fontFamily: 'Barlow Condensed, sans-serif', paddingBottom: 60 }}>
       <audio ref={audioRef} style={{ display: 'none' }} />
 
       {/* Header */}
       <div style={{ position: 'sticky', top: 0, zIndex: 20, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(7,5,10,0.97)', borderBottom: '1px solid rgba(201,168,76,0.12)', backdropFilter: 'blur(12px)' }}>
-        <div style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: `${GOLD}20`, border: `1px solid ${GOLD}40` }}>
+        <div style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: GOLD + '20', border: '1px solid ' + GOLD + '40' }}>
           <Bot style={{ width: 16, height: 16, color: GOLD }} />
         </div>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 18, fontWeight: 900, color: '#fff', lineHeight: 1, ...T }}>Voice Agent Builder</h1>
-          <p style={{ fontSize: 11, color: DIM, ...T }}>AI voice agents for live streams & business automation</p>
+          <h1 style={{ fontSize: 18, fontWeight: 900, color: '#fff', lineHeight: 1, fontFamily: 'Barlow Condensed, sans-serif' }}>Voice Agent Builder</h1>
+          <p style={{ fontSize: 11, color: DIM, fontFamily: 'Barlow Condensed, sans-serif' }}>AI voice agents for live streams &amp; business automation</p>
         </div>
-        <button onClick={startNew} style={{ padding: '7px 14px', borderRadius: 8, background: `${GOLD}20`, border: `1px solid ${GOLD}45`, color: GOLD, cursor: 'pointer', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, display: 'flex', alignItems: 'center', gap: 5, ...T }}>
+        <button onClick={startNew} style={{ padding: '7px 14px', borderRadius: 8, background: GOLD + '20', border: '1px solid ' + GOLD + '45', color: GOLD, cursor: 'pointer', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'Barlow Condensed, sans-serif' }}>
           <Plus style={{ width: 12, height: 12 }} /> New Agent
         </button>
       </div>
@@ -420,23 +420,25 @@ Output only the personality text, no labels or headers.`,
           { id: 'agents',    label: 'My Agents',  icon: <Bot style={{ width: 11, height: 11 }} /> },
           { id: 'templates', label: 'Templates',  icon: <BookOpen style={{ width: 11, height: 11 }} /> },
           { id: 'analytics', label: 'Analytics',  icon: <BarChart2 style={{ width: 11, height: 11 }} /> },
-        ].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '6px 14px', borderRadius: 7, cursor: 'pointer', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, display: 'flex', alignItems: 'center', gap: 5, ...T, background: tab === t.id ? `${GOLD}18` : 'transparent', border: `1px solid ${tab === t.id ? GOLD + '40' : 'transparent'}`, color: tab === t.id ? GOLD : DIM }}>
-            {t.icon} {t.label}
-          </button>
-        ))}
+        ].map(function(t) {
+          return (
+            <button key={t.id} onClick={function() { setTab(t.id); }} style={{ padding: '6px 14px', borderRadius: 7, cursor: 'pointer', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, display: 'flex', alignItems: 'center', gap: 5, fontFamily: 'Barlow Condensed, sans-serif', background: tab === t.id ? GOLD + '18' : 'transparent', border: '1px solid ' + (tab === t.id ? GOLD + '40' : 'transparent'), color: tab === t.id ? GOLD : DIM }}>
+              {t.icon} {t.label}
+            </button>
+          );
+        })}
       </div>
 
       <div style={{ maxWidth: 760, margin: '0 auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
         {/* API key warnings */}
         {!hasElKey && (
-          <div style={{ borderRadius: 10, padding: '10px 14px', background: 'rgba(107,31,42,0.12)', border: '1px solid rgba(107,31,42,0.3)', fontSize: 12, color: 'rgba(255,150,100,0.85)', ...T }}>
-            No ElevenLabs API key — go to <strong>Settings → API Keys</strong> to enable voice preview & live speech.
+          <div style={{ borderRadius: 10, padding: '10px 14px', background: 'rgba(107,31,42,0.12)', border: '1px solid rgba(107,31,42,0.3)', fontSize: 12, color: 'rgba(255,150,100,0.85)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+            No ElevenLabs API key — go to <strong>Settings → API Keys</strong> to enable voice preview &amp; live speech.
           </div>
         )}
         {!hasOrKey && (
-          <div style={{ borderRadius: 10, padding: '10px 14px', background: 'rgba(107,31,42,0.08)', border: '1px solid rgba(107,31,42,0.2)', fontSize: 12, color: 'rgba(255,150,100,0.7)', ...T }}>
+          <div style={{ borderRadius: 10, padding: '10px 14px', background: 'rgba(107,31,42,0.08)', border: '1px solid rgba(107,31,42,0.2)', fontSize: 12, color: 'rgba(255,150,100,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             No OpenRouter API key — AI personality generation and simulated dialogue require it.
           </div>
         )}
@@ -444,23 +446,25 @@ Output only the personality text, no labels or headers.`,
         {/* ── TEMPLATES TAB ── */}
         {tab === 'templates' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
-            {INDUSTRY_TEMPLATES.map(tpl => (
-              <div key={tpl.id} style={{ borderRadius: 12, background: 'rgba(13,6,24,0.8)', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ padding: '12px 14px', flex: 1 }}>
-                  <p style={{ fontSize: 22, lineHeight: 1, marginBottom: 6 }}>{tpl.icon}</p>
-                  <p style={{ fontSize: 13, fontWeight: 800, color: '#fff', ...T }}>{tpl.label}</p>
-                  <p style={{ fontSize: 11, color: DIM, ...T, marginTop: 3 }}>{tpl.desc}</p>
-                  <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 6, ...T }}>
-                    {(tpl.triggers && tpl.triggers.length) || 0} triggers pre-built
-                  </p>
+            {INDUSTRY_TEMPLATES.map(function(tpl) {
+              return (
+                <div key={tpl.id} style={{ borderRadius: 12, background: 'rgba(13,6,24,0.8)', border: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ padding: '12px 14px', flex: 1 }}>
+                    <p style={{ fontSize: 22, lineHeight: 1, marginBottom: 6 }}>{tpl.icon}</p>
+                    <p style={{ fontSize: 13, fontWeight: 800, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>{tpl.label}</p>
+                    <p style={{ fontSize: 11, color: DIM, fontFamily: 'Barlow Condensed, sans-serif', marginTop: 3 }}>{tpl.desc}</p>
+                    <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      {(tpl.triggers && tpl.triggers.length) || 0} triggers pre-built
+                    </p>
+                  </div>
+                  <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <button onClick={function() { applyTemplate(tpl); }} style={{ width: '100%', padding: '7px 0', borderRadius: 7, background: GOLD + '15', border: '1px solid ' + GOLD + '35', color: GOLD, cursor: 'pointer', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      Use Template
+                    </button>
+                  </div>
                 </div>
-                <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => applyTemplate(tpl)} style={{ width: '100%', padding: '7px 0', borderRadius: 7, background: `${GOLD}15`, border: `1px solid ${GOLD}35`, color: GOLD, cursor: 'pointer', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, ...T }}>
-                    Use Template
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -468,27 +472,27 @@ Output only the personality text, no labels or headers.`,
         {tab === 'analytics' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ borderRadius: 12, padding: '14px 16px', background: 'rgba(13,6,24,0.8)', border: '1px solid rgba(201,168,76,0.12)' }}>
-              <p style={{ fontSize: 11, color: GOLD, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10, ...T }}>Session Triggers</p>
-              <p style={{ fontSize: 32, fontWeight: 900, color: '#fff', ...T, lineHeight: 1 }}>{analytics.total}</p>
-              <p style={{ fontSize: 11, color: DIM, ...T }}>total triggers fired (local session)</p>
+              <p style={{ fontSize: 11, color: GOLD, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10, fontFamily: 'Barlow Condensed, sans-serif' }}>Session Triggers</p>
+              <p style={{ fontSize: 32, fontWeight: 900, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1 }}>{analytics.total}</p>
+              <p style={{ fontSize: 11, color: DIM, fontFamily: 'Barlow Condensed, sans-serif' }}>total triggers fired (local session)</p>
             </div>
-            {agents.map(agent => {
+            {agents.map(function(agent) {
               var count = analytics.byAgent[agent.id] || 0;
               var pct   = analytics.total ? Math.round((count / analytics.total) * 100) : 0;
               return (
                 <div key={agent.id} style={{ borderRadius: 10, padding: '11px 14px', background: 'rgba(13,6,24,0.7)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                     <Bot style={{ width: 12, height: 12, color: GOLD, flexShrink: 0 }} />
-                    <p style={{ fontSize: 12, fontWeight: 800, color: '#fff', flex: 1, ...T }}>{agent.name}</p>
-                    <p style={{ fontSize: 11, color: GOLD, fontWeight: 700, ...T }}>{count} <span style={{ color: DIM, fontWeight: 400 }}>fires</span></p>
+                    <p style={{ fontSize: 12, fontWeight: 800, color: '#fff', flex: 1, fontFamily: 'Barlow Condensed, sans-serif' }}>{agent.name}</p>
+                    <p style={{ fontSize: 11, color: GOLD, fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif' }}>{count} <span style={{ color: DIM, fontWeight: 400 }}>fires</span></p>
                   </div>
                   <div style={{ height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.07)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', width: `${pct}%`, background: GOLD, borderRadius: 2, transition: 'width 0.4s' }} />
+                    <div style={{ height: '100%', width: pct + '%', background: GOLD, borderRadius: 2, transition: 'width 0.4s' }} />
                   </div>
                 </div>
               );
             })}
-            {agents.length === 0 && <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13, textAlign: 'center', padding: 24, ...T }}>Create agents to see trigger analytics.</p>}
+            {agents.length === 0 && <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13, textAlign: 'center', padding: 24, fontFamily: 'Barlow Condensed, sans-serif' }}>Create agents to see trigger analytics.</p>}
           </div>
         )}
 
@@ -496,74 +500,76 @@ Output only the personality text, no labels or headers.`,
         {tab === 'agents' && (
           <>
             {agents.length === 0 && !draft && (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.2)', fontSize: 13, ...T }}>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.2)', fontSize: 13, fontFamily: 'Barlow Condensed, sans-serif' }}>
                 No voice agents yet. Hit <strong style={{ color: GOLD }}>New Agent</strong> or pick a <strong style={{ color: GOLD }}>Template</strong> to get started.
               </div>
             )}
 
-            {agents.map(agent => (
-              <div key={agent.id} style={{ borderRadius: 12, background: 'rgba(13,6,24,0.8)', border: `1px solid ${editingId === agent.id ? GOLD + '40' : 'rgba(255,255,255,0.07)'}`, overflow: 'hidden' }}>
-                <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: agent.active ? '#6DBF7E' : 'rgba(255,255,255,0.2)' }} />
-                  <span style={{ fontSize: 18 }}>{(function(){ var _it = INDUSTRY_TEMPLATES.find(function(t){ return t.id === agent.industry; }); return _it ? _it.icon : null; })() || '🤖'}</span>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, fontWeight: 800, color: '#fff', ...T }}>{agent.name}</p>
-                    <p style={{ fontSize: 10, color: DIM, ...T }}>
-                      {(agent.triggers && agent.triggers.length) || 0} trigger{(agent.triggers && agent.triggers.length) !== 1 ? 's' : ''} · {(EL_VOICES.find(v => v.id === agent.voiceId) && EL_VOICES.find(v => v.id === agent.voiceId).label) || agent.voiceId}
-                      {agent.webhookUrl ? ' · webhook' : ''}
-                      {agent.bookingUrl ? ' · booking' : ''}
-                    </p>
+            {agents.map(function(agent) {
+              return (
+                <div key={agent.id} style={{ borderRadius: 12, background: 'rgba(13,6,24,0.8)', border: '1px solid ' + (editingId === agent.id ? GOLD + '40' : 'rgba(255,255,255,0.07)'), overflow: 'hidden' }}>
+                  <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: agent.active ? '#6DBF7E' : 'rgba(255,255,255,0.2)' }} />
+                    <span style={{ fontSize: 18 }}>{(function(){ var _it = INDUSTRY_TEMPLATES.find(function(t){ return t.id === agent.industry; }); return _it ? _it.icon : null; })() || '🤖'}</span>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 13, fontWeight: 800, color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}>{agent.name}</p>
+                      <p style={{ fontSize: 10, color: DIM, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        {(agent.triggers && agent.triggers.length) || 0} trigger{(agent.triggers && agent.triggers.length) !== 1 ? 's' : ''} · {(EL_VOICES.find(function(v) { return v.id === agent.voiceId; }) && EL_VOICES.find(function(v) { return v.id === agent.voiceId; }).label) || agent.voiceId}
+                        {agent.webhookUrl ? ' · webhook' : ''}
+                        {agent.bookingUrl ? ' · booking' : ''}
+                      </p>
+                    </div>
+                    <button onClick={function() { toggleActive(agent.id); }} style={{ padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: agent.active ? 'rgba(109,191,126,0.12)' : 'rgba(255,255,255,0.05)', border: '1px solid ' + (agent.active ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.07)'), color: agent.active ? '#6DBF7E' : DIM, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      {agent.active ? 'Active' : 'Off'}
+                    </button>
+                    <button onClick={function() { if (editingId === agent.id) { setEditingId(null); setDraft(null); setSimMessages([]); } else { editAgent(agent); } }} style={{ padding: '5px 10px', borderRadius: 6, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: GOLD, cursor: 'pointer', fontSize: 10, fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      {editingId === agent.id ? 'Close' : 'Edit'}
+                    </button>
+                    <button onClick={function() { deleteAgent(agent.id); }} style={{ padding: '5px 7px', borderRadius: 6, background: 'rgba(107,31,42,0.08)', border: '1px solid rgba(107,31,42,0.2)', color: BURG, cursor: 'pointer' }}>
+                      <Trash2 style={{ width: 12, height: 12 }} />
+                    </button>
                   </div>
-                  <button onClick={() => toggleActive(agent.id)} style={{ padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 10, fontWeight: 700, textTransform: 'uppercase', background: agent.active ? 'rgba(109,191,126,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${agent.active ? 'rgba(109,191,126,0.3)' : 'rgba(255,255,255,0.07)'}`, color: agent.active ? '#6DBF7E' : DIM, ...T }}>
-                    {agent.active ? 'Active' : 'Off'}
-                  </button>
-                  <button onClick={() => editingId === agent.id ? (setEditingId(null), setDraft(null), setSimMessages([])) : editAgent(agent)} style={{ padding: '5px 10px', borderRadius: 6, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: GOLD, cursor: 'pointer', fontSize: 10, fontWeight: 700, ...T }}>
-                    {editingId === agent.id ? 'Close' : 'Edit'}
-                  </button>
-                  <button onClick={() => deleteAgent(agent.id)} style={{ padding: '5px 7px', borderRadius: 6, background: 'rgba(107,31,42,0.08)', border: '1px solid rgba(107,31,42,0.2)', color: BURG, cursor: 'pointer' }}>
-                    <Trash2 style={{ width: 12, height: 12 }} />
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* ── EDITOR ── */}
             {draft && (
-              <div style={{ borderRadius: 14, background: 'rgba(13,6,24,0.9)', border: `1px solid ${GOLD}35`, overflow: 'hidden' }}>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: 11, fontWeight: 700, color: GOLD, letterSpacing: 1, textTransform: 'uppercase', ...T }}>
-                  {agents.find(a => a.id === draft.id) ? `Edit: ${draft.name || 'Agent'}` : 'New Agent'}
+              <div style={{ borderRadius: 14, background: 'rgba(13,6,24,0.9)', border: '1px solid ' + GOLD + '35', overflow: 'hidden' }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', fontSize: 11, fontWeight: 700, color: GOLD, letterSpacing: 1, textTransform: 'uppercase', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  {agents.find(function(a) { return a.id === draft.id; }) ? 'Edit: ' + (draft.name || 'Agent') : 'New Agent'}
                 </div>
 
                 <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 14 }}>
 
                   {/* Industry */}
                   <div>
-                    <label style={{ fontSize: 11, color: DIM, ...T }}>Industry / Role</label>
+                    <label style={{ fontSize: 11, color: DIM, fontFamily: 'Barlow Condensed, sans-serif' }}>Industry / Role</label>
                     <MobileSelect
                       value={draft.industry || 'streaming'}
-                      onChange={v => setDraft(d => ({ ...d, industry: v }))}
-                      options={INDUSTRY_TEMPLATES.map(t => ({ value: t.id, label: `${t.icon} ${t.label}` }))}
+                      onChange={function(v) { setDraft(function(d) { return { ...d, industry: v }; }); }}
+                      options={INDUSTRY_TEMPLATES.map(function(t) { return { value: t.id, label: t.icon + ' ' + t.label }; })}
                       placeholder="Industry / Role"
                     />
                   </div>
 
                   {/* Name */}
                   <div>
-                    <label style={{ fontSize: 11, color: DIM, ...T }}>Agent Name</label>
-                    <input value={draft.name} onChange={e => setDraft(d => ({ ...d, name: e.target.value }))} placeholder="e.g. SwanBot, AuraVoice, Coach Riley" style={{ marginTop: 4, width: '100%', padding: '9px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(201,168,76,0.25)', color: 'rgba(255,255,255,0.9)', fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
+                    <label style={{ fontSize: 11, color: DIM, fontFamily: 'Barlow Condensed, sans-serif' }}>Agent Name</label>
+                    <input value={draft.name} onChange={function(e) { setDraft(function(d) { return { ...d, name: e.target.value }; }); }} placeholder="e.g. SwanBot, AuraVoice, Coach Riley" style={{ marginTop: 4, width: '100%', padding: '9px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(201,168,76,0.25)', color: 'rgba(255,255,255,0.9)', fontSize: 13, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
 
                   {/* Personality */}
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <label style={{ fontSize: 11, color: DIM, ...T, flex: 1 }}>Personality Prompt</label>
-                      <button onClick={generatePersonality} disabled={aiLoading} style={{ padding: '3px 9px', borderRadius: 5, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: GOLD, cursor: 'pointer', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, ...T, opacity: aiLoading ? 0.5 : 1 }}>
+                      <label style={{ fontSize: 11, color: DIM, fontFamily: 'Barlow Condensed, sans-serif', flex: 1 }}>Personality Prompt</label>
+                      <button onClick={generatePersonality} disabled={aiLoading} style={{ padding: '3px 9px', borderRadius: 5, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: GOLD, cursor: 'pointer', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif', opacity: aiLoading ? 0.5 : 1 }}>
                         <Zap style={{ width: 10, height: 10 }} /> {aiLoading ? 'Generating…' : 'AI Generate'}
                       </button>
                     </div>
                     <textarea
                       value={draft.personality}
-                      onChange={e => setDraft(d => ({ ...d, personality: e.target.value }))}
+                      onChange={function(e) { setDraft(function(d) { return { ...d, personality: e.target.value }; }); }}
                       placeholder="Describe how this agent speaks and behaves…"
                       rows={4}
                       style={{ width: '100%', padding: '9px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.85)', fontSize: 12, fontFamily: 'inherit', outline: 'none', resize: 'vertical', boxSizing: 'border-box' }}
@@ -572,79 +578,83 @@ Output only the personality text, no labels or headers.`,
 
                   {/* Voice */}
                   <div>
-                    <label style={{ fontSize: 11, color: DIM, ...T }}>ElevenLabs Voice</label>
+                    <label style={{ fontSize: 11, color: DIM, fontFamily: 'Barlow Condensed, sans-serif' }}>ElevenLabs Voice</label>
                     <div style={{ marginTop: 6, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
-                      {EL_VOICES.map(v => (
-                        <button key={v.id} onClick={() => setDraft(d => ({ ...d, voiceId: v.id }))} style={{ padding: '7px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', background: draft.voiceId === v.id ? `${GOLD}18` : 'rgba(0,0,0,0.3)', border: `1px solid ${draft.voiceId === v.id ? GOLD + '55' : 'rgba(255,255,255,0.06)'}` }}>
-                          <p style={{ fontSize: 11, fontWeight: 800, color: draft.voiceId === v.id ? GOLD : 'rgba(255,255,255,0.75)', ...T }}>{v.label}</p>
-                          <p style={{ fontSize: 9, color: DIM, ...T }}>{v.desc}</p>
-                        </button>
-                      ))}
+                      {EL_VOICES.map(function(v) {
+                        return (
+                          <button key={v.id} onClick={function() { setDraft(function(d) { return { ...d, voiceId: v.id }; }); }} style={{ padding: '7px 10px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', background: draft.voiceId === v.id ? GOLD + '18' : 'rgba(0,0,0,0.3)', border: '1px solid ' + (draft.voiceId === v.id ? GOLD + '55' : 'rgba(255,255,255,0.06)') }}>
+                            <p style={{ fontSize: 11, fontWeight: 800, color: draft.voiceId === v.id ? GOLD : 'rgba(255,255,255,0.75)', fontFamily: 'Barlow Condensed, sans-serif' }}>{v.label}</p>
+                            <p style={{ fontSize: 9, color: DIM, fontFamily: 'Barlow Condensed, sans-serif' }}>{v.desc}</p>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
                   {/* Triggers */}
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
-                      <span style={{ fontSize: 11, color: DIM, ...T, flex: 1 }}>Triggers</span>
-                      <button onClick={addTrigger} style={{ padding: '3px 9px', borderRadius: 5, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: GOLD, cursor: 'pointer', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, ...T }}>
+                      <span style={{ fontSize: 11, color: DIM, fontFamily: 'Barlow Condensed, sans-serif', flex: 1 }}>Triggers</span>
+                      <button onClick={addTrigger} style={{ padding: '3px 9px', borderRadius: 5, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: GOLD, cursor: 'pointer', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>
                         <Plus style={{ width: 10, height: 10 }} /> Add
                       </button>
                     </div>
-                    {(draft.triggers || []).map((tr, i) => (
-                      <TriggerRow key={i} trigger={tr} onChange={t => updateTrigger(i, t)} onRemove={() => removeTrigger(i)} />
-                    ))}
-                    {!(draft.triggers && draft.triggers.length) && <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', ...T }}>No triggers — add one above.</p>}
+                    {(draft.triggers || []).map(function(tr, i) {
+                      return (
+                        <TriggerRow key={i} trigger={tr} onChange={function(t) { updateTrigger(i, t); }} onRemove={function() { removeTrigger(i); }} />
+                      );
+                    })}
+                    {!(draft.triggers && draft.triggers.length) && <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>No triggers — add one above.</p>}
                   </div>
 
                   {/* Webhook */}
                   <div>
-                    <label style={{ fontSize: 11, color: DIM, display: 'flex', alignItems: 'center', gap: 4, ...T }}>
+                    <label style={{ fontSize: 11, color: DIM, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>
                       <Webhook style={{ width: 11, height: 11 }} /> CRM Webhook URL <span style={{ color: 'rgba(255,255,255,0.15)' }}>(optional)</span>
                     </label>
                     <input
                       value={draft.webhookUrl || ''}
-                      onChange={e => setDraft(d => ({ ...d, webhookUrl: e.target.value }))}
+                      onChange={function(e) { setDraft(function(d) { return { ...d, webhookUrl: e.target.value }; }); }}
                       placeholder="https://your-crm.com/webhook/voice-agent"
                       style={{ marginTop: 4, width: '100%', padding: '9px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.8)', fontSize: 12, fontFamily: 'monospace', outline: 'none', boxSizing: 'border-box' }}
                     />
-                    {(INDUSTRY_TEMPLATES.find(t => t.id === draft.industry) && INDUSTRY_TEMPLATES.find(t => t.id === draft.industry).webhookPrompt) && (
-                      <p style={{ fontSize: 10, color: 'rgba(201,168,76,0.5)', marginTop: 3, ...T }}>
-                        {INDUSTRY_TEMPLATES.find(t => t.id === draft.industry) && INDUSTRY_TEMPLATES.find(t => t.id === draft.industry).webhookPrompt}
+                    {(INDUSTRY_TEMPLATES.find(function(t) { return t.id === draft.industry; }) && INDUSTRY_TEMPLATES.find(function(t) { return t.id === draft.industry; }).webhookPrompt) && (
+                      <p style={{ fontSize: 10, color: 'rgba(201,168,76,0.5)', marginTop: 3, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        {INDUSTRY_TEMPLATES.find(function(t) { return t.id === draft.industry; }) && INDUSTRY_TEMPLATES.find(function(t) { return t.id === draft.industry; }).webhookPrompt}
                       </p>
                     )}
                   </div>
 
                   {/* Booking URL */}
                   <div>
-                    <label style={{ fontSize: 11, color: DIM, display: 'flex', alignItems: 'center', gap: 4, ...T }}>
+                    <label style={{ fontSize: 11, color: DIM, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'Barlow Condensed, sans-serif' }}>
                       <Link style={{ width: 11, height: 11 }} /> Calendly / Booking URL <span style={{ color: 'rgba(255,255,255,0.15)' }}>(optional)</span>
                     </label>
                     <input
                       value={draft.bookingUrl || ''}
-                      onChange={e => setDraft(d => ({ ...d, bookingUrl: e.target.value }))}
+                      onChange={function(e) { setDraft(function(d) { return { ...d, bookingUrl: e.target.value }; }); }}
                       placeholder="https://calendly.com/yourpage"
                       style={{ marginTop: 4, width: '100%', padding: '9px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.8)', fontSize: 12, fontFamily: 'monospace', outline: 'none', boxSizing: 'border-box' }}
                     />
-                    {(INDUSTRY_TEMPLATES.find(t => t.id === draft.industry) && INDUSTRY_TEMPLATES.find(t => t.id === draft.industry).bookingPrompt) && (
-                      <p style={{ fontSize: 10, color: 'rgba(201,168,76,0.5)', marginTop: 3, ...T }}>
-                        {INDUSTRY_TEMPLATES.find(t => t.id === draft.industry) && INDUSTRY_TEMPLATES.find(t => t.id === draft.industry).bookingPrompt}
+                    {(INDUSTRY_TEMPLATES.find(function(t) { return t.id === draft.industry; }) && INDUSTRY_TEMPLATES.find(function(t) { return t.id === draft.industry; }).bookingPrompt) && (
+                      <p style={{ fontSize: 10, color: 'rgba(201,168,76,0.5)', marginTop: 3, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        {INDUSTRY_TEMPLATES.find(function(t) { return t.id === draft.industry; }) && INDUSTRY_TEMPLATES.find(function(t) { return t.id === draft.industry; }).bookingPrompt}
                       </p>
                     )}
                   </div>
 
                   {/* Voice preview */}
                   <div style={{ borderRadius: 10, padding: 12, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p style={{ fontSize: 11, color: GOLD, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8, ...T }}>Voice Preview</p>
+                    <p style={{ fontSize: 11, color: GOLD, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8, fontFamily: 'Barlow Condensed, sans-serif' }}>Voice Preview</p>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <input
                         value={testText}
-                        onChange={e => setTestText(e.target.value)}
+                        onChange={function(e) { setTestText(e.target.value); }}
                         placeholder="Type text to preview, or leave blank…"
                         style={{ flex: 1, padding: '8px 10px', borderRadius: 7, background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.8)', fontSize: 12, fontFamily: 'inherit', outline: 'none' }}
                       />
-                      <button onClick={testVoice} disabled={testing || !hasElKey} style={{ padding: '8px 14px', borderRadius: 7, background: testing ? 'rgba(201,168,76,0.06)' : `${GOLD}18`, border: `1px solid ${GOLD}40`, color: testing ? DIM : GOLD, cursor: hasElKey ? 'pointer' : 'not-allowed', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, ...T }}>
-                        {testing ? <><Volume2 style={{ width: 13, height: 13 }} /> Playing…</> : <><Play style={{ width: 13, height: 13 }} /> Test</>}
+                      <button onClick={testVoice} disabled={testing || !hasElKey} style={{ padding: '8px 14px', borderRadius: 7, background: testing ? 'rgba(201,168,76,0.06)' : GOLD + '18', border: '1px solid ' + GOLD + '40', color: testing ? DIM : GOLD, cursor: hasElKey ? 'pointer' : 'not-allowed', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        {testing ? <><Volume2 style={{ width: 13, height: 13 }} /> Playing&hellip;</> : <><Play style={{ width: 13, height: 13 }} /> Test</>}
                       </button>
                     </div>
                   </div>
@@ -653,8 +663,8 @@ Output only the personality text, no labels or headers.`,
                   <div style={{ borderRadius: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
                     <div style={{ padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 6 }}>
                       <MessageSquare style={{ width: 12, height: 12, color: GOLD }} />
-                      <p style={{ fontSize: 11, color: GOLD, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', flex: 1, ...T }}>Simulate Dialogue</p>
-                      <button onClick={() => setSimMessages([])} style={{ padding: '2px 8px', borderRadius: 4, background: 'transparent', border: '1px solid rgba(255,255,255,0.07)', color: DIM, cursor: 'pointer', fontSize: 9, ...T }}>
+                      <p style={{ fontSize: 11, color: GOLD, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', flex: 1, fontFamily: 'Barlow Condensed, sans-serif' }}>Simulate Dialogue</p>
+                      <button onClick={function() { setSimMessages([]); }} style={{ padding: '2px 8px', borderRadius: 4, background: 'transparent', border: '1px solid rgba(255,255,255,0.07)', color: DIM, cursor: 'pointer', fontSize: 9, fontFamily: 'Barlow Condensed, sans-serif' }}>
                         Clear
                       </button>
                     </div>
@@ -662,28 +672,32 @@ Output only the personality text, no labels or headers.`,
                     {/* Starter chips */}
                     {simMessages.length === 0 && (
                       <div style={{ padding: '8px 12px', display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                        {simStarters.map((s, i) => (
-                          <button key={i} onClick={() => sendSimMessage(s)} style={{ padding: '4px 10px', borderRadius: 20, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: GOLD, cursor: 'pointer', fontSize: 10, ...T }}>
-                            {s}
-                          </button>
-                        ))}
+                        {simStarters.map(function(s, i) {
+                          return (
+                            <button key={i} onClick={function() { sendSimMessage(s); }} style={{ padding: '4px 10px', borderRadius: 20, background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', color: GOLD, cursor: 'pointer', fontSize: 10, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                              {s}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
 
                     {/* Messages */}
                     {simMessages.length > 0 && (
                       <div style={{ maxHeight: 200, overflowY: 'auto', padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {simMessages.map((msg, i) => (
-                          <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                            <div style={{ maxWidth: '80%', padding: '7px 10px', borderRadius: msg.role === 'user' ? '10px 10px 2px 10px' : '10px 10px 10px 2px', background: msg.role === 'user' ? `${GOLD}18` : 'rgba(255,255,255,0.07)', border: `1px solid ${msg.role === 'user' ? GOLD + '30' : 'rgba(255,255,255,0.06)'}`, fontSize: 12, color: msg.role === 'user' ? GOLD : 'rgba(255,255,255,0.85)', ...T }}>
-                              {msg.text}
+                        {simMessages.map(function(msg, i) {
+                          return (
+                            <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                              <div style={{ maxWidth: '80%', padding: '7px 10px', borderRadius: msg.role === 'user' ? '10px 10px 2px 10px' : '10px 10px 10px 2px', background: msg.role === 'user' ? GOLD + '18' : 'rgba(255,255,255,0.07)', border: '1px solid ' + (msg.role === 'user' ? GOLD + '30' : 'rgba(255,255,255,0.06)'), fontSize: 12, color: msg.role === 'user' ? GOLD : 'rgba(255,255,255,0.85)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                                {msg.text}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                         {simRunning && (
                           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                            <div style={{ padding: '7px 14px', borderRadius: '10px 10px 10px 2px', background: 'rgba(255,255,255,0.06)', fontSize: 12, color: DIM, ...T }}>
-                              <RefreshCw style={{ width: 10, height: 10, display: 'inline', marginRight: 4 }} />thinking…
+                            <div style={{ padding: '7px 14px', borderRadius: '10px 10px 10px 2px', background: 'rgba(255,255,255,0.06)', fontSize: 12, color: DIM, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                              <RefreshCw style={{ width: 10, height: 10, display: 'inline', marginRight: 4 }} />thinking&hellip;
                             </div>
                           </div>
                         )}
@@ -694,12 +708,12 @@ Output only the personality text, no labels or headers.`,
                     <div style={{ padding: '8px 12px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: 6 }}>
                       <input
                         value={simInput}
-                        onChange={e => setSimInput(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendSimMessage(simInput))}
+                        onChange={function(e) { setSimInput(e.target.value); }}
+                        onKeyDown={function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSimMessage(simInput); } }}
                         placeholder="Ask the agent something…"
                         style={{ flex: 1, padding: '7px 10px', borderRadius: 7, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.85)', fontSize: 12, fontFamily: 'inherit', outline: 'none' }}
                       />
-                      <button onClick={() => sendSimMessage(simInput)} disabled={simRunning || !hasOrKey} style={{ padding: '7px 13px', borderRadius: 7, background: `${GOLD}15`, border: `1px solid ${GOLD}35`, color: GOLD, cursor: 'pointer', fontSize: 11, fontWeight: 700, ...T }}>
+                      <button onClick={function() { sendSimMessage(simInput); }} disabled={simRunning || !hasOrKey} style={{ padding: '7px 13px', borderRadius: 7, background: GOLD + '15', border: '1px solid ' + GOLD + '35', color: GOLD, cursor: 'pointer', fontSize: 11, fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif' }}>
                         Send
                       </button>
                     </div>
@@ -707,10 +721,10 @@ Output only the personality text, no labels or headers.`,
 
                   {/* Save */}
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button onClick={saveDraft} style={{ flex: 1, padding: '11px 0', borderRadius: 10, background: `${GOLD}22`, border: `1px solid ${GOLD}55`, color: GOLD, cursor: 'pointer', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, ...T }}>
+                    <button onClick={saveDraft} style={{ flex: 1, padding: '11px 0', borderRadius: 10, background: GOLD + '22', border: '1px solid ' + GOLD + '55', color: GOLD, cursor: 'pointer', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: 'Barlow Condensed, sans-serif' }}>
                       <Save style={{ width: 14, height: 14 }} /> Save Agent
                     </button>
-                    <button onClick={() => { setDraft(null); setEditingId(null); setSimMessages([]); }} style={{ padding: '11px 16px', borderRadius: 10, background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: DIM, cursor: 'pointer', fontSize: 12, ...T }}>
+                    <button onClick={function() { setDraft(null); setEditingId(null); setSimMessages([]); }} style={{ padding: '11px 16px', borderRadius: 10, background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', color: DIM, cursor: 'pointer', fontSize: 12, fontFamily: 'Barlow Condensed, sans-serif' }}>
                       Cancel
                     </button>
                   </div>
