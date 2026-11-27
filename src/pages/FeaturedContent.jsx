@@ -95,13 +95,13 @@ function YouTubeEmbed({ videoId, title }) {
     return (
       <div
         className="relative aspect-video bg-black rounded-xl overflow-hidden cursor-pointer group"
-        onClick={() => setPlaying(true)}
+        onClick={function() { setPlaying(true); }}
       >
         <img
-          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+          src={'https://img.youtube.com/vi/' + videoId + '/maxresdefault.jpg'}
           alt={title}
           className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-          onError={e => { e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; }}
+          onError={function(e) { e.target.src = 'https://img.youtube.com/vi/' + videoId + '/hqdefault.jpg'; }}
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform" style={{ background: '#C0392B' }}>
@@ -119,7 +119,7 @@ function YouTubeEmbed({ videoId, title }) {
     <div className="aspect-video rounded-xl overflow-hidden">
       <iframe
         className="w-full h-full"
-        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+        src={'https://www.youtube.com/embed/' + videoId + '?autoplay=1&rel=0'}
         title={title}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
@@ -129,20 +129,23 @@ function YouTubeEmbed({ videoId, title }) {
 }
 
 export default function FeaturedContent() {
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
   var [activeChannel, setActiveChannel] = useState(null);
-  var { data: userCommunity } = useQuery({
+  var userCommunityQuery = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
+  var userCommunity = userCommunityQuery.data || null;
   var userCommunityId = (userCommunity && userCommunity.id) || null;
-  var { data: activeRoom } = useQuery({
+  var activeRoomQuery = useQuery({
     queryKey: ['featured-active-room', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = activeRoomQuery.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
 
   return (
@@ -163,7 +166,7 @@ export default function FeaturedContent() {
         </div>
 
         {/* Featured Demo Video */}
-        {FEATURED_VIDEOS.map(video => (
+        {FEATURED_VIDEOS.map(function(video) { return (
           <div key={video.id} className="space-y-3">
             <div className="flex items-center gap-2">
               <span style={{ background: '#D4AF37', color: '#000', fontSize: 11, fontWeight: 900, padding: '2px 8px', borderRadius: 99, border: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}>⭐ Featured</span>
@@ -172,7 +175,7 @@ export default function FeaturedContent() {
             <YouTubeEmbed videoId={video.embedId} title={video.title} />
             <p className="text-white/40 text-sm">{video.description}</p>
           </div>
-        ))}
+        ); })}
 
         {/* Partner Channels */}
         <div className="space-y-4">
@@ -182,12 +185,12 @@ export default function FeaturedContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {CHANNELS.map(channel => (
+            {CHANNELS.map(function(channel) { return (
               <div
                 key={channel.id}
                 className="rounded-2xl p-5 space-y-3 transition-all cursor-pointer"
-              style={{ background: channel.bg, border: `1px solid ${channel.border}` }}
-                onClick={() => setActiveChannel(activeChannel === channel.id ? null : channel.id)}
+              style={{ background: channel.bg, border: '1px solid ' + channel.border }}
+                onClick={function() { setActiveChannel(activeChannel === channel.id ? null : channel.id); }}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
@@ -201,7 +204,7 @@ export default function FeaturedContent() {
                     href={channel.url}
                     target="_blank"
                     rel="noreferrer"
-                    onClick={e => e.stopPropagation()}
+                    onClick={function(e) { e.stopPropagation(); }}
                     className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-lg text-white transition-all"
                     style={{ background: 'rgba(192,57,43,0.5)' }}
                   >
@@ -235,7 +238,7 @@ export default function FeaturedContent() {
                   <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> SeeWhy Partner</span>
                 </div>
               </div>
-            ))}
+            ); })}
           </div>
         </div>
 
