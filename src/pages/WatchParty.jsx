@@ -72,34 +72,38 @@ import BrandChyron from '../components/live/BrandChyron';
 var OCT = 'polygon(25% 0%, 75% 0%, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0% 75%, 0% 25%)';
 var REACTION_EMOJIS = ['🔥', '❤️', '😂', '😮', '🎉', '👏', '💯', '🤩', '⚡'];
 
-function Button({ children, onClick, disabled, className = '', style = {}, size }) {
+function Button({ children, onClick, disabled, className, size }) {
+  var cls = className || '';
   return (
     <button onClick={onClick} disabled={disabled}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-xl font-black uppercase text-xs transition-all ${className}`}
-      style={{ padding: size === 'sm' ? '5px 10px' : '8px 16px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', cursor: disabled ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: disabled ? 0.4 : 1, ...style }}>
+      className={'inline-flex items-center justify-center gap-1.5 rounded-xl font-black uppercase text-xs transition-all ' + cls}
+      style={{ padding: size === 'sm' ? '5px 10px' : '8px 16px', background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.3)', color: '#D4AF37', cursor: disabled ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif', opacity: disabled ? 0.4 : 1 }}>
       {children}
     </button>
   );
 }
-function Input({ value, onChange, placeholder, className = '', style = {}, maxLength }) {
+function Input({ value, onChange, placeholder, className, maxLength }) {
+  var cls = className || '';
   return (
     <input value={value} onChange={onChange} placeholder={placeholder} maxLength={maxLength}
-      className={className}
-      style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif', ...style }} />
+      className={cls}
+      style={{ width: '100%', padding: '10px 14px', background: 'rgba(8,11,24,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }} />
   );
 }
-function Badge({ children, className = '', style = {} }) {
+function Badge({ children, className }) {
+  var cls = className || '';
   return (
-    <span className={`inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ${className}`}
-      style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', ...style }}>
+    <span className={'inline-flex items-center gap-1 text-[11px] font-black px-2 py-0.5 rounded-full uppercase ' + cls}
+      style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37' }}>
       {children}
     </span>
   );
 }
-function Card({ children, className = '', style = {} }) {
-  return <div className={`rounded-2xl ${className}`} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)', ...style }}>{children}</div>;
+function Card({ children, className }) {
+  var cls = className || '';
+  return <div className={'rounded-2xl ' + cls} style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>{children}</div>;
 }
-function CardContent({ children, className = '', style = {} }) {
+function CardContent({ children, className, style }) {
   return <div className={className} style={style}>{children}</div>;
 }
 
@@ -109,7 +113,7 @@ function useSyncEngine({ party, isHost, onTimeSync }) {
   var qc = useQueryClient();
   var syncInterval = useRef(null);
 
-  var pushState = useCallback(async (playerState) => {
+  var pushState = useCallback(async function(playerState) {
     if (!isHost || !(party && party.id)) return;
     try {
       await base44.entities.WatchParty.update(party.id, {
@@ -120,9 +124,9 @@ function useSyncEngine({ party, isHost, onTimeSync }) {
     } catch {}
   }, [isHost, (party && party.id)]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (!(party && party.id)) return;
-    var unsub = base44.entities.WatchParty.subscribe((event) => {
+    var unsub = base44.entities.WatchParty.subscribe(function(event) {
       if (event.id !== party.id) return;
       if (!isHost && event.data) {
         onTimeSync(event.data);
@@ -139,17 +143,17 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
   var iframeRef = useRef(null);
   var playerRef = useRef(null);
 
-  useEffect(() => {
+  useEffect(function() {
     if (!videoId) return;
     var tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
     document.head.appendChild(tag);
-    window.onYouTubeIframeAPIReady = () => {
+    window.onYouTubeIframeAPIReady = function() {
       playerRef.current = new window.YT.Player(iframeRef.current, {
         videoId,
         playerVars: { autoplay: 0, controls: isHost ? 1 : 0 },
         events: {
-          onStateChange: (e) => {
+          onStateChange: function(e) {
             if (!isHost) return;
             var state = e.data;
             if (state === window.YT.PlayerState.PLAYING || state === window.YT.PlayerState.PAUSED) {
@@ -165,16 +169,16 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
   }, [videoId]);
 
   // Host: 5-second heartbeat so viewers always get a fresh reference point
-  useEffect(() => {
+  useEffect(function() {
     if (!isHost) return;
-    var iv = setInterval(() => {
+    var iv = setInterval(function() {
       if (!playerRef.current || !playerRef.current.getPlayerState) return;
       var state = playerRef.current.getPlayerState();
       if (state === (window.YT && window.YT.PlayerState && window.YT.PlayerState.PLAYING)) {
         onStateChange({ playing: true, currentTime: playerRef.current.getCurrentTime() || 0 });
       }
     }, 5000);
-    return () => clearInterval(iv);
+    return function() { clearInterval(iv); };
   }, [isHost, onStateChange]);
 
   // Viewer: 300ms drift-correction via the shared sync hook
@@ -193,7 +197,7 @@ function YouTubeEmbed({ videoId, isHost, syncData, onStateChange }) {
 function DirectPlayer({ url, isHost, syncData, onStateChange }) {
   var videoRef = useRef(null);
 
-  var handleEvent = () => {
+  var handleEvent = function() {
     if (!isHost || !videoRef.current) return;
     onStateChange({
       playing: !videoRef.current.paused,
@@ -202,13 +206,13 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
   };
 
   // Host: 5-second heartbeat
-  useEffect(() => {
+  useEffect(function() {
     if (!isHost) return;
-    var iv = setInterval(() => {
+    var iv = setInterval(function() {
       if (!videoRef.current || videoRef.current.paused) return;
       onStateChange({ playing: true, currentTime: videoRef.current.currentTime });
     }, 5000);
-    return () => clearInterval(iv);
+    return function() { clearInterval(iv); };
   }, [isHost, onStateChange]);
 
   // Viewer: 300ms drift-correction via the shared sync hook
@@ -234,11 +238,12 @@ function DirectPlayer({ url, isHost, syncData, onStateChange }) {
   );
 }
 
-function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size = 52, onDoubleClick }) {
+function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size, onDoubleClick }) {
+  var cellSize = size || 52;
   var vRef = useRef(null);
-  useEffect(() => { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
+  useEffect(function() { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
   return (
-    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }} onDoubleClick={onDoubleClick}>
+    <div style={{ position: 'relative', width: cellSize, height: cellSize, flexShrink: 0 }} onDoubleClick={onDoubleClick}>
       {isSpeaking && (
         <motion.div
           style={{ position: 'absolute', inset: 0, clipPath: OCT, background: '#D4AF37', zIndex: 0 }}
@@ -251,13 +256,13 @@ function OctVideoCell({ member, isHost: isMemberHost, isSpeaking, stream, size =
         {stream ? (
           <video ref={vRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         ) : (
-          <span style={{ fontSize: size * 0.28, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
+          <span style={{ fontSize: cellSize * 0.28, fontWeight: 900, color: '#d4af37', fontFamily: 'Barlow Condensed, sans-serif' }}>
             {member.user_name ? member.user_name.charAt(0).toUpperCase() : '?'}
           </span>
         )}
       </div>
       {isMemberHost && (
-        <span style={{ position: 'absolute', top: size * 0.04, left: '50%', transform: 'translateX(-50%)', fontSize: size * 0.14, zIndex: 3 }}>👑</span>
+        <span style={{ position: 'absolute', top: cellSize * 0.04, left: '50%', transform: 'translateX(-50%)', fontSize: cellSize * 0.14, zIndex: 3 }}>👑</span>
       )}
     </div>
   );
@@ -277,7 +282,7 @@ function MobileParticipantStrip({ members, hostId, speakingIds, remoteStreams, p
         var stream = (peerId && remoteStreams) ? remoteStreams.get(peerId) : null;
         return (
           <div key={m.id || m.user_id} className="flex flex-col items-center shrink-0 gap-0.5">
-            <OctVideoCell member={m} isHost={isHostMember} isSpeaking={isSpeaking} stream={stream} size={52} onDoubleClick={onSpotlight ? () => onSpotlight(m) : undefined} />
+            <OctVideoCell member={m} isHost={isHostMember} isSpeaking={isSpeaking} stream={stream} size={52} onDoubleClick={onSpotlight ? function() { onSpotlight(m); } : undefined} />
             <span className="text-white/50 truncate max-w-[52px]" style={{ fontSize: 7 }}>{m.user_name}</span>
           </div>
         );
@@ -300,9 +305,13 @@ function ReactionsPanel({ partyId }) {
   var floaterIdRef = useRef(0);
 
   var handleReaction = function(emoji) {
-    setCounts(function(prev) { return { ...prev, [emoji]: (prev[emoji] || 0) + 1 }; });
+    setCounts(function(prev) {
+      var next = Object.assign({}, prev);
+      next[emoji] = (prev[emoji] || 0) + 1;
+      return next;
+    });
     var id = ++floaterIdRef.current;
-    setFloaters(function(prev) { return [...prev, { id, emoji }]; });
+    setFloaters(function(prev) { return prev.concat([{ id: id, emoji: emoji }]); });
     setTimeout(function() { setFloaters(function(prev) { return prev.filter(function(f) { return f.id !== id; }); }); }, 1200);
   };
 
@@ -377,7 +386,7 @@ function AISummaryButton({ members, elapsed, partyId }) {
     setLoading(true);
     try {
       var result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Summarize this watch party in 2 sentences: ${members.length} viewers, active for ${Math.round(elapsed / 60)} minutes, party ID: ${partyId}. Be concise and engaging.`,
+        prompt: 'Summarize this watch party in 2 sentences: ' + members.length + ' viewers, active for ' + Math.round(elapsed / 60) + ' minutes, party ID: ' + partyId + '. Be concise and engaging.',
         add_context_from_internet: false,
       });
       toast.success(result || 'No summary available.');
@@ -421,7 +430,7 @@ export default function WatchPartyPage() {
   var [hypeLevel, setHypeLevel] = useState(0);
   var [activeScene, setActiveScene] = useState('main');
   var [selectedBitrate, setSelectedBitrate] = useState(3000);
-  var handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
+  var handleBitrateChange = function(b) { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
   var [busViewerCount, setBusViewerCount] = useState(0);
   var directVideoRef = useRef(null);
   var prevMemberCountRef = useRef(null);
@@ -444,7 +453,7 @@ export default function WatchPartyPage() {
   var [wpDjTrack, setWpDjTrack] = useState(null);
 
   // Read DJ track from localStorage
-  useEffect(() => {
+  useEffect(function() {
     function readDjTrack() {
       try {
         var raw = sessionStorage.getItem('seewhy_dj_track');
@@ -455,7 +464,7 @@ export default function WatchPartyPage() {
     }
     readDjTrack();
     var iv = setInterval(readDjTrack, 4000);
-    return () => clearInterval(iv);
+    return function() { clearInterval(iv); };
   }, []);
 
   async function generateWpAriaWelcome() {
@@ -473,39 +482,39 @@ export default function WatchPartyPage() {
     }
   }
 
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
 
   var { data: party } = useQuery({
     queryKey: ['watchparty', partyId],
-    queryFn: () => base44.entities.WatchParty.filter({ id: partyId }).then(r => r[0]),
+    queryFn: function() { return base44.entities.WatchParty.filter({ id: partyId }).then(function(r) { return r[0]; }); },
     enabled: !!partyId,
     refetchInterval: 30000,
   });
 
   var { data: members = [] } = useQuery({
     queryKey: ['watchparty-members', partyId],
-    queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }),
+    queryFn: function() { return base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }); },
     enabled: !!partyId,
   });
-  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]);  
+  useEffect(function() { setPeakViewers(function(prev) { return Math.max(prev, members.length); }); }, [members.length]);
 
   var { data: activePoll } = useQuery({
     queryKey: ['active-poll', partyId],
-    queryFn: () => base44.entities.Poll.filter({ room_id: partyId, status: 'active' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Poll.filter({ room_id: partyId, status: 'active' }).then(function(r) { return r[0] || null; }); },
     enabled: !!partyId,
     refetchInterval: 5000,
   });
 
   var { data: activeBattle } = useQuery({
     queryKey: ['pk-battle-active', partyId],
-    queryFn: () => base44.entities.PKBattle.filter({ room_id: partyId, status: 'active' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.PKBattle.filter({ room_id: partyId, status: 'active' }).then(function(r) { return r[0] || null; }); },
     enabled: !!partyId,
     refetchInterval: 3000,
   });
 
-  useEffect(() => {
+  useEffect(function() {
     if (!partyId) return;
-    var unsub = base44.entities.PKBattle.subscribe((event) => {
+    var unsub = base44.entities.PKBattle.subscribe(function(event) {
       if ((event.data && event.data.room_id) !== partyId) return;
       qc.invalidateQueries({ queryKey: ['pk-battle-active', partyId] });
     });
@@ -519,7 +528,7 @@ export default function WatchPartyPage() {
   var { remoteStreams, peerUserIds, announceJoin, leaveRoom: leaveRTCRoom, peersRef } = useWebRTCPeers(partyId, localStream);
 
   var [activeWpPc, setActiveWpPc] = useState(null);
-  useEffect(() => {
+  useEffect(function() {
     for (var { pc } of peersRef.current.values()) {
       if (pc.connectionState === 'connected') { setActiveWpPc(pc); return; }
     }
@@ -527,7 +536,7 @@ export default function WatchPartyPage() {
   }, [peerUserIds]);
   var { quality: netQuality, rtt: netRtt } = useConnectionQuality(activeWpPc, 5000);
   var { extractClipBlobUrl } = useVODRecording({ streamId: partyId || '', creatorId: (user && user.id) || '', title: (party && party.title) || 'Watch Party', stream: localStream });
-  var [peerQuality, setPeerQuality] = useState(() => new Map());
+  var [peerQuality, setPeerQuality] = useState(function() { return new Map(); });
   var speakingSet = useMultiSpeakingSet({ localStream, localUserId: (user && user.id), remoteStreams, peerUserIds });
   var [spotlightMember, setSpotlightMember] = useState(null);
 
@@ -537,7 +546,7 @@ export default function WatchPartyPage() {
   var [autoGain, setAutoGain] = useState(true);
   var [pttActive, setPttActive] = useState(false);
   var pttWasEnabledRef = useRef(false);
-  var [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  var [prefSpeaker, setPrefSpeaker] = useState(function() { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
   var [wpAudioSettingsOpen, setWpAudioSettingsOpen] = useState(false);
   var { speakers: speakerDevices } = useCameraDevices();
   useHighlightDetector({ partyId, roomId: partyId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
@@ -545,24 +554,28 @@ export default function WatchPartyPage() {
   var [screenCaptureStream, setScreenCaptureStream] = useState(null);
   var [chatLines, setChatLines] = useState([]);
 
-  var handleScreenCapture = async () => {
+  var handleScreenCapture = async function() {
     try {
       var stream = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
       // Stop old stream only after successfully acquiring the new one
-      if (screenCaptureStream) screenCaptureStream.getTracks().forEach(t => t.stop());
+      if (screenCaptureStream) screenCaptureStream.getTracks().forEach(function(t) { t.stop(); });
       setScreenCaptureStream(stream);
-      stream.getVideoTracks()[0].onended = () => setScreenCaptureStream(null);
+      stream.getVideoTracks()[0].onended = function() { setScreenCaptureStream(null); };
       return stream;
     } catch {
       // User cancelled or permission denied — leave existing stream running
     }
   };
 
-  useEffect(() => () => {
-    (screenCaptureStream && screenCaptureStream.getTracks)().forEach(t => t.stop());
+  useEffect(function() {
+    return function() {
+      if (screenCaptureStream && screenCaptureStream.getTracks) {
+        screenCaptureStream.getTracks().forEach(function(t) { t.stop(); });
+      }
+    };
   }, [screenCaptureStream]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (!partyId || !(user && user.id)) return;
     announceJoin(user.id);
     return leaveRTCRoom;
@@ -571,24 +584,24 @@ export default function WatchPartyPage() {
   var wpCompositorSlots = [{ stream: screenCaptureStream, label: '' }];
   var wpOverlayConfig = {
     title: (party && party.title) || 'Watch Party',
-    subtitle: `${(members && members.length) || 0} watching`,
+    subtitle: ((members && members.length) || 0) + ' watching',
     showLive: true,
     chatLines,
   };
 
-  useEffect(() => {
+  useEffect(function() {
     if (!partyId) return;
-    var unsub = base44.entities.WatchPartyMember.subscribe((event) => {
+    var unsub = base44.entities.WatchPartyMember.subscribe(function(event) {
       if ((event.data && event.data.party_id) !== partyId) return;
       qc.invalidateQueries({ queryKey: ['watchparty-members', partyId] });
     });
     return unsub;
   }, [partyId, qc]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (!party || !user) return;
     var mounted = true;
-    var join = async () => {
+    var join = async function() {
       try {
         var existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
         if (!mounted) return;
@@ -607,64 +620,65 @@ export default function WatchPartyPage() {
       } catch {}
     };
     join();
-    return () => { mounted = false; };
+    return function() { mounted = false; };
   }, [(party && party.id), (user && user.id)]);
 
-  useEffect(() => {
-    return () => {
+  useEffect(function() {
+    return function() {
       if (!party || !user) return;
       base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true })
-        .then(activeMembers => {
-          activeMembers.forEach(m =>
-            base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(() => {})
-          );
+        .then(function(activeMembers) {
+          activeMembers.forEach(function(m) {
+            base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(function() {});
+          });
           if (activeMembers.length > 0) {
-            base44.entities.WatchParty.filter({ id: party.id }).then(([current]) => {
+            base44.entities.WatchParty.filter({ id: party.id }).then(function(arr) {
+              var current = arr[0];
               if (!current) return;
               var newCount = Math.max(0, (current.participant_count || 1) - 1);
-              base44.entities.WatchParty.update(party.id, { participant_count: newCount }).catch(() => {});
-            }).catch(() => {});
+              base44.entities.WatchParty.update(party.id, { participant_count: newCount }).catch(function() {});
+            }).catch(function() {});
           }
-        }).catch(() => {});
+        }).catch(function() {});
     };
   }, [(party && party.id), (user && user.id)]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (prevMemberCountRef.current === null) {
       prevMemberCountRef.current = members.length;
       return;
     }
     if (members.length > prevMemberCountRef.current) {
       var newest = members[members.length - 1];
-      toast.success(`👤 ${(newest && newest.user_name) || 'Someone'} joined!`, { duration: 2500 });
+      toast.success('👤 ' + ((newest && newest.user_name) || 'Someone') + ' joined!', { duration: 2500 });
     }
     prevMemberCountRef.current = members.length;
   }, [members.length]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (!partyId) return;
-    var iv = setInterval(() => setElapsed(s => s + 1), 1000);
-    return () => clearInterval(iv);
+    var iv = setInterval(function() { setElapsed(function(s) { return s + 1; }); }, 1000);
+    return function() { clearInterval(iv); };
   }, [partyId]);
 
   // Speaker output routing
-  useEffect(() => {
+  useEffect(function() {
     if (!prefSpeaker) return;
-    document.querySelectorAll('video, audio').forEach(el => {
-      if (typeof el.setSinkId === 'function') el.setSinkId(prefSpeaker).catch(() => {});
+    document.querySelectorAll('video, audio').forEach(function(el) {
+      if (typeof el.setSinkId === 'function') el.setSinkId(prefSpeaker).catch(function() {});
     });
     try { localStorage.setItem('swl_pref_speaker', prefSpeaker); } catch {}
   }, [prefSpeaker]);
 
   // Audio processing constraints (NS / EC / AGC)
-  useEffect(() => {
+  useEffect(function() {
     applyAudioConstraints({ noiseSuppression: noiseSupp, echoCancellation: echoCan, autoGainControl: autoGain });
   }, [noiseSupp, echoCan, autoGain, applyAudioConstraints]);
 
   // Keyboard shortcuts: M = mic toggle, Space = push-to-talk
-  useEffect(() => {
+  useEffect(function() {
     if (!partyId) return;
-    var onDown = (e) => {
+    var onDown = function(e) {
       var tag = document.activeElement && document.activeElement.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement && document.activeElement.isContentEditable)) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); toggleAudio(); }
@@ -674,7 +688,7 @@ export default function WatchPartyPage() {
         else { pttWasEnabledRef.current = true; }
       }
     };
-    var onUp = (e) => {
+    var onUp = function(e) {
       if (e.key === ' ') {
         e.preventDefault();
         if (pttActive && !pttWasEnabledRef.current) toggleAudio();
@@ -683,11 +697,11 @@ export default function WatchPartyPage() {
     };
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
-    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
-     
+    return function() { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
+
   }, [partyId, audioEnabled, pttActive]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (isHost || !partyId) return;
     var iv = setInterval(function() {
       var lastMs = (syncData && syncData.updated_at_ms) || (party && party.updated_at_ms);
@@ -700,14 +714,14 @@ export default function WatchPartyPage() {
     return function() { clearInterval(iv); };
   }, [isHost, syncData, party, partyId]);
 
-  var onTimeSync = useCallback((data) => {
+  var onTimeSync = useCallback(function(data) {
     setSyncData(data);
     setShowSyncWarn(false);
   }, []);
   var { pushState } = useSyncEngine({ party, isHost, onTimeSync });
 
   var createMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async function() {
       if (!(user && user.id)) throw new Error('auth_required');
       var type = detectType(videoUrl);
       return base44.entities.WatchParty.create({
@@ -722,17 +736,17 @@ export default function WatchPartyPage() {
         playback_state: 'paused',
       });
     },
-    onSuccess: (p) => {
+    onSuccess: function(p) {
       if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'room_created',
-          title: `Started watch party: ${(p && p.title) || 'Watch Party'}`,
-        }).catch(() => {});
+          title: 'Started watch party: ' + ((p && p.title) || 'Watch Party'),
+        }).catch(function() {});
       }
-      window.location.href = `${window.location.pathname}?id=${p.id}`;
+      window.location.href = window.location.pathname + '?id=' + p.id;
     },
-    onError: (e) => {
+    onError: function(e) {
       if ((e && e.message) === 'auth_required') {
         toast.error('Please sign in to create a Watch Party');
       } else {
@@ -742,26 +756,26 @@ export default function WatchPartyPage() {
   });
 
   var endPartyMutation = useMutation({
-    mutationFn: () => base44.entities.WatchParty.update(partyId, { status: 'ended' }),
-    onSuccess: () => {
+    mutationFn: function() { return base44.entities.WatchParty.update(partyId, { status: 'ended' }); },
+    onSuccess: function() {
       toast.success('Watch party ended');
       if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'room_ended',
-          title: `Ended watch party: ${(party && party.title) || 'Watch Party'}`,
-        }).catch(() => {});
+          title: 'Ended watch party: ' + ((party && party.title) || 'Watch Party'),
+        }).catch(function() {});
       }
       setSearchParams({});
     },
-    onError: () => toast.error('Failed to end watch party.'),
+    onError: function() { toast.error('Failed to end watch party.'); },
   });
 
-  var copyInvite = () => {
-    navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => toast.error('Copy failed.'));
+  var copyInvite = function() {
+    navigator.clipboard.writeText(window.location.href).then(function() { toast.success('Invite link copied!'); }).catch(function() { toast.error('Copy failed.'); });
   };
 
-  var changeVideo = async (source) => {
+  var changeVideo = async function(source) {
     if (!isHost || !(party && party.id)) return;
     try {
       await base44.entities.WatchParty.update(party.id, {
@@ -788,15 +802,15 @@ export default function WatchPartyPage() {
   // ── Active parties for lobby ───────────────────────────────────────────────
   var { data: activeParties = [], refetch: refetchParties } = useQuery({
     queryKey: ['watchparties-active'],
-    queryFn: () => base44.entities.WatchParty.filter({ status: 'active' }, '-participant_count', 20),
+    queryFn: function() { return base44.entities.WatchParty.filter({ status: 'active' }, '-participant_count', 20); },
     enabled: !partyId,
     refetchInterval: 15000,
   });
 
   // Real-time lobby updates
-  useEffect(() => {
+  useEffect(function() {
     if (partyId) return;
-    var unsub = base44.entities.WatchParty.subscribe((event) => {
+    var unsub = base44.entities.WatchParty.subscribe(function(event) {
       if ((event.data && event.data.status) === 'active' || (event.data && event.data.status) === 'ended') {
         refetchParties();
       }
@@ -829,7 +843,7 @@ export default function WatchPartyPage() {
                 return (
                   <motion.a
                     key={p.id}
-                    href={`/WatchParty?id=${p.id}`}
+                    href={'/WatchParty?id=' + p.id}
                     whileTap={{ scale: 0.98 }}
                     style={{ textDecoration: 'none', display: 'block', borderRadius: 16, overflow: 'hidden', background: 'rgba(8,11,24,0.95)', border: '1px solid rgba(212,175,55,0.15)', boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
                   >
@@ -837,7 +851,7 @@ export default function WatchPartyPage() {
                       {/* Thumbnail */}
                       <div style={{ width: 80, height: 45, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: '#0F1428', position: 'relative' }}>
                         {ytId ? (
-                          <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={'https://img.youtube.com/vi/' + ytId + '/mqdefault.jpg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
                           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <Video size={20} style={{ color: 'rgba(212,175,55,0.3)' }} />
@@ -879,18 +893,16 @@ export default function WatchPartyPage() {
             <Input
               placeholder="Party title (e.g. Movie Night)"
               value={partyTitle}
-              onChange={e => setPartyTitle(e.target.value)}
+              onChange={function(e) { setPartyTitle(e.target.value); }}
               className="h-11 text-white placeholder:text-white/30"
-              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
             />
             <div className="space-y-2">
               <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Video Source</p>
               <Input
                 placeholder="YouTube URL or direct video URL"
                 value={videoUrl}
-                onChange={e => setVideoUrl(e.target.value)}
+                onChange={function(e) { setVideoUrl(e.target.value); }}
                 className="h-11 text-white placeholder:text-white/30"
-                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
               />
               {videoUrl && (
                 <div className="flex items-center gap-2 text-xs" style={{ color: detectType(videoUrl) === 'youtube' ? '#FF0000' : '#D4AF37' }}>
@@ -901,7 +913,7 @@ export default function WatchPartyPage() {
               )}
               {videoUrl && getYouTubeId(videoUrl) && (
                 <img
-                  src={`https://img.youtube.com/vi/${getYouTubeId(videoUrl)}/mqdefault.jpg`}
+                  src={'https://img.youtube.com/vi/' + getYouTubeId(videoUrl) + '/mqdefault.jpg'}
                   className="w-full rounded-xl object-cover" style={{ maxHeight: 130 }}
                   alt="preview"
                 />
@@ -910,8 +922,7 @@ export default function WatchPartyPage() {
             <Button
               className="w-full h-11 text-sm font-bold"
               disabled={!videoUrl.trim() || createMutation.isPending}
-              onClick={() => createMutation.mutate()}
-              style={{ background: '#d4af37', color: '#000' }}
+              onClick={function() { createMutation.mutate(); }}
             >
               <Plus className="w-4 h-4 mr-2" />
               {!user ? 'Sign In to Create Watch Party' : createMutation.isPending ? 'Creating…' : 'Create Watch Party'}
@@ -930,8 +941,21 @@ export default function WatchPartyPage() {
     ? Math.round((((syncData && syncData.current_time) || 0) - ((directVideoRef && directVideoRef.current && directVideoRef.current.currentTime) || 0)) * 1000)
     : 0;
 
+  var tabDefs = [
+    { id: 'chat',        label: '💬 Chat' },
+    { id: 'queue',       label: '🎵 Queue' },
+    { id: 'reactions',   label: '⚡ React' },
+    { id: 'battle',      label: '⚔️ Battle' },
+    { id: 'leaderboard', label: '🏆 Ranks' },
+    { id: 'polls',       label: '📊 Polls' },
+    { id: 'collab',      label: '🎬 Collab' },
+    { id: 'viewers',     label: '👥 Viewers' },
+    { id: 'screen',      label: '🖥️ Screen' },
+  ];
+  if (isHost) { tabDefs.splice(7, 0, { id: 'analytics', label: '📈 Stats' }); }
+
   return (
-    <div className={`flex flex-col overflow-hidden transition-all duration-300 ${theaterMode ? 'h-screen fixed inset-0 z-50' : 'h-[calc(100vh-120px)]'}`} style={{ background: '#0B0B18' }}>
+    <div className={'flex flex-col overflow-hidden transition-all duration-300 ' + (theaterMode ? 'h-screen fixed inset-0 z-50' : 'h-[calc(100vh-120px)]')} style={{ background: '#0B0B18' }}>
       <div className="shrink-0" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
 
         <div className="flex items-center gap-2 px-3 h-12">
@@ -953,14 +977,14 @@ export default function WatchPartyPage() {
               onClick={toggleAudio}
               title={audioEnabled ? 'Mute mic (M)' : 'Unmute mic (M)'}
               className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
-              style={{ background: audioEnabled ? 'rgba(109,191,126,0.15)' : 'rgba(192,57,43,0.15)', border: `1px solid ${audioEnabled ? 'rgba(109,191,126,0.35)' : 'rgba(192,57,43,0.35)'}` }}>
+              style={{ background: audioEnabled ? 'rgba(109,191,126,0.15)' : 'rgba(192,57,43,0.15)', border: '1px solid ' + (audioEnabled ? 'rgba(109,191,126,0.35)' : 'rgba(192,57,43,0.35)') }}>
               {audioEnabled
                 ? <Mic className="w-3.5 h-3.5" style={{ color: '#6DBF7E' }} />
                 : <MicOff className="w-3.5 h-3.5" style={{ color: '#C0392B' }} />}
             </button>
             {/* Audio settings */}
             <button
-              onClick={() => setWpAudioSettingsOpen(v => !v)}
+              onClick={function() { setWpAudioSettingsOpen(function(v) { return !v; }); }}
               title="Audio settings"
               className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
               style={{ background: wpAudioSettingsOpen ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: wpAudioSettingsOpen ? '#D4AF37' : 'rgba(255,255,255,0.4)' }}>
@@ -976,7 +1000,7 @@ export default function WatchPartyPage() {
             )}
             <ShareButtons
               url={window.location.href}
-              title={`Join my Watch Party: ${(party && party.title)}`}
+              title={'Join my Watch Party: ' + (party && party.title)}
               className="text-white [&_button]:text-white/60"
             />
             <VideoSourcePicker
@@ -987,7 +1011,7 @@ export default function WatchPartyPage() {
               onPlaylistChange={setPlaylist}
               onSelect={changeVideo}
             />
-            <button onClick={() => setTheaterMode(v => !v)}
+            <button onClick={function() { setTheaterMode(function(v) { return !v; }); }}
               className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
               style={{ background: theaterMode ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: theaterMode ? '#d4af37' : 'rgba(255,255,255,0.4)' }}
               title="Theater Mode">
@@ -1004,8 +1028,8 @@ export default function WatchPartyPage() {
               />
             )}
             {isHost && (
-              <Button size="sm" onClick={() => endPartyMutation.mutate()}
-                className="h-7 text-[10px] px-2" style={{ background: 'rgba(180,50,30,0.3)', color: '#ff8866', border: '1px solid rgba(200,80,30,0.3)' }}>
+              <Button size="sm" onClick={function() { endPartyMutation.mutate(); }}
+                className="h-7 text-[10px] px-2">
                 <LogOut className="w-3 h-3 mr-1" /> End
               </Button>
             )}
@@ -1071,10 +1095,9 @@ export default function WatchPartyPage() {
                     value={prefSpeaker}
                     onChange={setPrefSpeaker}
                     label="Output Device"
-                    options={[
-                      { value: '', label: 'Default speakers' },
-                      ...speakerDevices.map(d => ({ value: d.deviceId, label: d.label || `Speaker ${d.deviceId.slice(0, 6)}` })),
-                    ]}
+                    options={[{ value: '', label: 'Default speakers' }].concat(speakerDevices.map(function(d) {
+                      return { value: d.deviceId, label: d.label || ('Speaker ' + d.deviceId.slice(0, 6)) };
+                    }))}
                   />
                 </div>
               )}
@@ -1085,21 +1108,26 @@ export default function WatchPartyPage() {
                   { label: 'Noise Suppress.', val: noiseSupp, set: setNoiseSupp },
                   { label: 'Echo Cancel.', val: echoCan, set: setEchoCan },
                   { label: 'Auto Gain', val: autoGain, set: setAutoGain },
-                ].map(({ label, val, set }) => (
-                  <button
-                    key={label}
-                    onClick={() => set(v => !v)}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all"
-                    style={{
-                      fontFamily: 'Barlow Condensed, sans-serif',
-                      background: val ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
-                      border: `1px solid ${val ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.1)'}`,
-                      color: val ? '#6DBF7E' : 'rgba(255,255,255,0.35)',
-                    }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: val ? '#6DBF7E' : 'rgba(255,255,255,0.2)', display: 'inline-block', flexShrink: 0 }} />
-                    {label}
-                  </button>
-                ))}
+                ].map(function(item) {
+                  var label = item.label;
+                  var val = item.val;
+                  var set = item.set;
+                  return (
+                    <button
+                      key={label}
+                      onClick={function() { set(function(v) { return !v; }); }}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all"
+                      style={{
+                        fontFamily: 'Barlow Condensed, sans-serif',
+                        background: val ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.05)',
+                        border: '1px solid ' + (val ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.1)'),
+                        color: val ? '#6DBF7E' : 'rgba(255,255,255,0.35)',
+                      }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: val ? '#6DBF7E' : 'rgba(255,255,255,0.2)', display: 'inline-block', flexShrink: 0 }} />
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
               {pttActive && (
                 <p className="text-[10px] font-bold uppercase" style={{ color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>● PTT Active — release Space to mute</p>
@@ -1143,8 +1171,8 @@ export default function WatchPartyPage() {
             playerType={party.video_type === 'youtube' ? 'youtube' : 'direct'}
             isHost={isHost}
             isCoHost={false}
-            onPlay={() => pushState({ playing: true, currentTime: 0 })}
-            onPause={() => pushState({ playing: false, currentTime: 0 })}
+            onPlay={function() { pushState({ playing: true, currentTime: 0 }); }}
+            onPause={function() { pushState({ playing: false, currentTime: 0 }); }}
             syncStatus={!isHost ? 'synced' : null}
           />
         </div>
@@ -1157,7 +1185,7 @@ export default function WatchPartyPage() {
         )}
       </div>
 
-      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={speakingSet} remoteStreams={remoteStreams} peerUserIds={peerUserIds} onSpotlight={(m) => setSpotlightMember(prev => (prev && prev.user_id) === m.user_id ? null : m)} />
+      <MobileParticipantStrip members={members} hostId={party.host_id} speakingIds={speakingSet} remoteStreams={remoteStreams} peerUserIds={peerUserIds} onSpotlight={function(m) { setSpotlightMember(function(prev) { return (prev && prev.user_id) === m.user_id ? null : m; }); }} />
 
       <ViewerRail members={members} hostId={party.host_id} />
 
@@ -1182,7 +1210,7 @@ export default function WatchPartyPage() {
       {/* ── AI Floating Button ── */}
       <motion.button
         whileTap={{ scale: 0.9 }}
-        onClick={() => setAiPanelOpen(v => !v)}
+        onClick={function() { setAiPanelOpen(function(v) { return !v; }); }}
         style={{
           position: 'fixed', bottom: 80, right: 16, zIndex: 200,
           width: 44, height: 44, borderRadius: '50%',
@@ -1220,7 +1248,7 @@ export default function WatchPartyPage() {
                 🤖 AI Controls
               </span>
               <button
-                onClick={() => setAiPanelOpen(false)}
+                onClick={function() { setAiPanelOpen(false); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', padding: 4 }}
               >
                 <XIcon size={18} />
@@ -1237,7 +1265,7 @@ export default function WatchPartyPage() {
                   🤖 ARIA Co-host
                 </span>
                 <button
-                  onClick={() => setWpAriaOn(v => !v)}
+                  onClick={function() { setWpAriaOn(function(v) { return !v; }); }}
                   style={{
                     width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
                     background: wpAriaOn ? '#D4AF37' : 'rgba(255,255,255,0.12)',
@@ -1296,14 +1324,14 @@ export default function WatchPartyPage() {
                     fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 800,
                     padding: '2px 8px', borderRadius: 999, letterSpacing: '0.08em',
                     background: wpGuardianOn ? 'rgba(109,191,126,0.15)' : 'rgba(255,255,255,0.08)',
-                    border: `1px solid ${wpGuardianOn ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                    border: '1px solid ' + (wpGuardianOn ? 'rgba(109,191,126,0.4)' : 'rgba(255,255,255,0.1)'),
                     color: wpGuardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.3)',
                     textTransform: 'uppercase',
                   }}>
                     {wpGuardianOn ? 'Active' : 'Off'}
                   </span>
                   <button
-                    onClick={() => setWpGuardianOn(v => !v)}
+                    onClick={function() { setWpGuardianOn(function(v) { return !v; }); }}
                     style={{
                       width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
                       background: wpGuardianOn ? '#6DBF7E' : 'rgba(255,255,255,0.12)',
@@ -1334,7 +1362,7 @@ export default function WatchPartyPage() {
                   background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)',
                 }}>
                   <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, color: '#D4AF37', fontWeight: 700, margin: 0 }}>
-                    Now Playing: {wpDjTrack.emoji && `${wpDjTrack.emoji} `}{wpDjTrack.title}
+                    Now Playing: {wpDjTrack.emoji && (wpDjTrack.emoji + ' ')}{wpDjTrack.title}
                   </p>
                 </div>
               ) : (
@@ -1342,7 +1370,7 @@ export default function WatchPartyPage() {
                   No track active
                 </p>
               )}
-              <Link to={createPageUrl('AIMusic')} style={{ textDecoration: 'none' }} onClick={() => setAiPanelOpen(false)}>
+              <Link to={createPageUrl('AIMusic')} style={{ textDecoration: 'none' }} onClick={function() { setAiPanelOpen(false); }}>
                 <div style={{
                   fontFamily: 'Barlow Condensed, sans-serif', padding: '8px 0', borderRadius: 8,
                   textAlign: 'center', background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)',
@@ -1359,8 +1387,17 @@ export default function WatchPartyPage() {
 
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
 
-        <div className={`shrink-0 overflow-hidden ${theaterMode ? 'hidden md:block md:w-[160px] relative' : 'hidden md:block'}`}
-          style={{ width: theaterMode ? undefined : '220px', borderRight: '1px solid rgba(255,255,255,0.06)', ...(theaterMode ? { position: 'absolute', right: 0, top: 0, bottom: 0, zIndex: 10, background: 'rgba(8,11,24,0.95)' } : {}) }}>
+        <div className={'shrink-0 overflow-hidden ' + (theaterMode ? 'hidden md:block md:w-[160px] relative' : 'hidden md:block')}
+          style={{
+            width: theaterMode ? undefined : '220px',
+            borderRight: '1px solid rgba(255,255,255,0.06)',
+            position: theaterMode ? 'absolute' : undefined,
+            right: theaterMode ? 0 : undefined,
+            top: theaterMode ? 0 : undefined,
+            bottom: theaterMode ? 0 : undefined,
+            zIndex: theaterMode ? 10 : undefined,
+            background: theaterMode ? 'rgba(8,11,24,0.95)' : undefined,
+          }}>
           <AnimatePresence>
             {activeBattle && <PKLiveScoreboard battle={activeBattle} />}
           </AnimatePresence>
@@ -1380,30 +1417,21 @@ export default function WatchPartyPage() {
 
         <div className="flex-1 flex flex-col overflow-hidden" style={{ background: '#080B18' }}>
           <div className="flex shrink-0 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)', background: '#0B0B18' }}>
-            {[
-              { id: 'chat',        label: '💬 Chat' },
-              { id: 'queue',       label: '🎵 Queue' },
-              { id: 'reactions',   label: '⚡ React' },
-              { id: 'battle',      label: '⚔️ Battle' },
-              { id: 'leaderboard', label: '🏆 Ranks' },
-              { id: 'polls',       label: '📊 Polls' },
-              { id: 'collab',      label: '🎬 Collab' },
-              ...(isHost ? [{ id: 'analytics', label: '📈 Stats' }] : []),
-              { id: 'viewers',     label: '👥 Viewers' },
-              { id: 'screen',      label: '🖥️ Screen' },
-            ].map(tab => (
-              <button key={tab.id} onClick={() => setActivePanel(tab.id)}
-                className="flex-1 py-2 text-[11px] font-black uppercase transition-all"
-                style={{
-                  fontFamily: 'Barlow Condensed, sans-serif',
-                  letterSpacing: '0.06em',
-                  color: activePanel === tab.id ? '#d4af37' : 'rgba(255,255,255,0.3)',
-                  background: activePanel === tab.id ? 'rgba(212,175,55,0.07)' : 'transparent',
-                  borderBottom: activePanel === tab.id ? '2px solid #d4af37' : '2px solid transparent',
-                }}>
-                {tab.label}
-              </button>
-            ))}
+            {tabDefs.map(function(tab) {
+              return (
+                <button key={tab.id} onClick={function() { setActivePanel(tab.id); }}
+                  className="flex-1 py-2 text-[11px] font-black uppercase transition-all"
+                  style={{
+                    fontFamily: 'Barlow Condensed, sans-serif',
+                    letterSpacing: '0.06em',
+                    color: activePanel === tab.id ? '#d4af37' : 'rgba(255,255,255,0.3)',
+                    background: activePanel === tab.id ? 'rgba(212,175,55,0.07)' : 'transparent',
+                    borderBottom: activePanel === tab.id ? '2px solid #d4af37' : '2px solid transparent',
+                  }}>
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
 
           <div className="flex-1 overflow-y-auto p-2 space-y-2" style={{ overscrollBehavior: "contain" }}>
@@ -1414,7 +1442,7 @@ export default function WatchPartyPage() {
                   <AISummaryButton members={members} elapsed={elapsed} partyId={partyId} />
                 </div>
                 {isHost && (
-                  <HostControls isHost={isHost} party={party} onUpdate={(updates) => { if ((party && party.id)) base44.entities.WatchParty.update(party.id, updates).catch(() => {}); }} />
+                  <HostControls isHost={isHost} party={party} onUpdate={function(updates) { if ((party && party.id)) base44.entities.WatchParty.update(party.id, updates).catch(function() {}); }} />
                 )}
                 <AggregatedChat roomId={party.room_id || partyId} currentUser={user} isHost={isHost} />
                 {(party && party.host_id) && (
@@ -1434,9 +1462,9 @@ export default function WatchPartyPage() {
                 party={party}
                 isHost={isHost}
                 currentUser={user}
-                onPlayVideo={(url) => {
+                onPlayVideo={function(url) {
                   if (isHost && (party && party.id)) {
-                    base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {});
+                    base44.entities.WatchParty.update(party.id, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(function() {});
                   }
                 }}
               />
@@ -1450,7 +1478,7 @@ export default function WatchPartyPage() {
                 roomId={party.room_id}
                 currentUser={user}
                 isHost={isHost}
-                onPollLaunched={() => setPollCount(c => c + 1)}
+                onPollLaunched={function() { setPollCount(function(c) { return c + 1; }); }}
               />
             )}
             {activePanel === 'analytics' && (
@@ -1489,7 +1517,7 @@ export default function WatchPartyPage() {
             )}
             {activePanel === 'collab' && (
               <div className="space-y-3 p-2">
-                <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={url => setVideoUrl(url)} />
+                <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={function(url) { setVideoUrl(url); }} />
               </div>
             )}
             {activePanel === 'battle' && (
@@ -1518,13 +1546,13 @@ export default function WatchPartyPage() {
                 party={party}
                 members={members}
                 remoteStreams={remoteStreams}
-                onSyncEvent={(type, payload) => {
+                onSyncEvent={function(type, payload) {
                   if (isHost && (party && party.id)) {
                     base44.entities.WatchParty.update(party.id, {
                       playback_state: type === 'play' ? 'playing' : type === 'pause' ? 'paused' : undefined,
                       current_time: (payload && payload.time),
                       updated_at_ms: Date.now(),
-                    }).catch(() => {});
+                    }).catch(function() {});
                   }
                 }}
                 syncEvent={party ? { type: party.playback_state === 'playing' ? 'play' : 'pause', payload: { time: party.current_time }, ts: party.updated_at_ms } : null}
@@ -1540,7 +1568,7 @@ export default function WatchPartyPage() {
         <ViewerControlsPanel roomId={partyId} currentUser={user} isHost={isHost} />
         <LivePollOverlay roomId={partyId} isHost={isHost} currentUser={user} />
         <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />
-        {!isHost && (party && party.host_id) && <TipNowModal roomId={partyId} recipientId={party.host_id} isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} />}
+        {!isHost && (party && party.host_id) && <TipNowModal roomId={partyId} recipientId={party.host_id} isOpen={showTippingModal} onClose={function() { setShowTippingModal(false); }} />}
         <OnlineUsersGrid roomId={partyId} remoteStreams={remoteStreams} peerUserIds={peerUserIds} localStream={localStream} currentUser={user} compact maxVisible={10} />
         <ContentRecommendations />
         <CollaborationMatcher />
@@ -1549,7 +1577,7 @@ export default function WatchPartyPage() {
         {partyId && <SuperChatRail roomId={partyId} currentUser={user} />}
         {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={(user && user.id)} activePoll={activePoll} />}
         {isHost && (user && user.id) && <FanoutEnginePanel members={members} isHost={isHost} roomId={partyId} />}
-        <ShareToSocial content={{ url: window.location.href, title: (party && party.title) ? `Watching "${party.title}" on SeeWhy LIVE!` : 'Join my watch party on SeeWhy LIVE!' }} />
+        <ShareToSocial content={{ url: window.location.href, title: (party && party.title) ? ('Watching "' + party.title + '" on SeeWhy LIVE!') : 'Join my watch party on SeeWhy LIVE!' }} />
         {partyId && (party && party.host_id) && !isHost && (
           <LoveTap roomId={partyId} user={user} creatorId={party.host_id} creatorName={party.host_name || 'Host'} />
         )}
@@ -1573,7 +1601,7 @@ export default function WatchPartyPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSpotlightMember(null)}
+            onClick={function() { setSpotlightMember(null); }}
             style={{
               position: 'fixed', inset: 0, zIndex: 600,
               background: 'rgba(0,0,0,0.92)',
@@ -1584,7 +1612,7 @@ export default function WatchPartyPage() {
               member={spotlightMember}
               isHost={spotlightMember.user_id === (party && party.host_id)}
               isSpeaking={speakingSet.has(spotlightMember.user_id)}
-              stream={(() => {
+              stream={(function() {
                 if (peerUserIds && remoteStreams) {
                   for (var [peerId, uid] of peerUserIds) {
                     if (uid === spotlightMember.user_id) return remoteStreams.get(peerId) || null;

@@ -40,20 +40,22 @@ function ProductSheet({ item, onClose, user }) {
   var creatorGets = Math.floor(item.price_usd * qty * 90) / 100;
 
   var orderMutation = useMutation({
-    mutationFn: () => base44.entities.MerchandiseOrder.create({
-      buyer_id: (user && user.id),
-      buyer_name: (user && user.full_name) || (user && user.email) || 'Fan',
-      creator_id: item.creator_id,
-      item_id: item.id,
-      item_name: item.name,
-      size, quantity: qty,
-      total_usd: totalUsd,
-      creator_payout: creatorGets,
-      platform_cut: Math.floor(item.price_usd * qty * 10) / 100,
-      status: 'pending',
-    }),
-    onSuccess: () => { setSuccess(true); queryClient.invalidateQueries(['merch-items']); },
-    onError: () => toast.error('Order failed — please try again'),
+    mutationFn: function() {
+      return base44.entities.MerchandiseOrder.create({
+        buyer_id: (user && user.id),
+        buyer_name: (user && user.full_name) || (user && user.email) || 'Fan',
+        creator_id: item.creator_id,
+        item_id: item.id,
+        item_name: item.name,
+        size: size, quantity: qty,
+        total_usd: totalUsd,
+        creator_payout: creatorGets,
+        platform_cut: Math.floor(item.price_usd * qty * 10) / 100,
+        status: 'pending',
+      });
+    },
+    onSuccess: function() { setSuccess(true); queryClient.invalidateQueries(['merch-items']); },
+    onError: function() { toast.error('Order failed — please try again'); },
   });
 
   return (
@@ -61,8 +63,8 @@ function ProductSheet({ item, onClose, user }) {
       style={{ background: 'rgba(0,0,0,0.75)' }} onClick={onClose}>
       <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
         className="w-full max-w-lg rounded-t-2xl overflow-hidden"
-        style={{ background: 'rgba(13,6,24,0.99)', border: `1px solid rgba(212,175,55,0.2)` }}
-        onClick={e => e.stopPropagation()}>
+        style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(212,175,55,0.2)' }}
+        onClick={function(e) { e.stopPropagation(); }}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
@@ -75,10 +77,10 @@ function ProductSheet({ item, onClose, user }) {
         {success ? (
           <div className="p-10 text-center">
             <div className="text-5xl mb-3">✅</div>
-            <p className="font-black text-xl mb-1" style={{ color: GOLD, ...T }}>Order Placed!</p>
+            <p className="font-black text-xl mb-1" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>Order Placed!</p>
             <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>Pending confirmation from creator</p>
             <button onClick={onClose} className="mt-5 px-6 py-2.5 rounded-xl font-black uppercase text-xs"
-              style={{ background: CRIMSON, border: `1px solid ${GOLD}30`, color: GOLD, cursor: 'pointer', ...T }}>
+              style={{ background: CRIMSON, border: '1px solid ' + GOLD + '30', color: GOLD, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Close
             </button>
           </div>
@@ -86,7 +88,7 @@ function ProductSheet({ item, onClose, user }) {
           <div className="p-5 space-y-4">
             {/* Product image */}
             <div className="h-44 rounded-xl flex items-center justify-center overflow-hidden"
-              style={{ background: item.image_url ? undefined : `linear-gradient(135deg, ${CRIMSON}44, rgba(13,6,24,0.8))` }}>
+              style={{ background: item.image_url ? undefined : 'linear-gradient(135deg, ' + CRIMSON + '44, rgba(13,6,24,0.8))' }}>
               {item.image_url
                 ? <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                 : <span className="text-6xl">👕</span>}
@@ -104,29 +106,31 @@ function ProductSheet({ item, onClose, user }) {
             {/* Sizes */}
             {(item.sizes_available && item.sizes_available.length) > 0 && (
               <div>
-                <p className="text-[10px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Size</p>
+                <p className="text-[10px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Size</p>
                 <div className="flex gap-2 flex-wrap">
-                  {item.sizes_available.map(s => (
-                    <button key={s} onClick={() => setSize(s)}
-                      className="px-3 py-1.5 rounded-lg font-black text-xs transition-all"
-                      style={{ background: size === s ? `${GOLD}18` : 'rgba(255,255,255,0.04)', border: `1px solid ${size === s ? GOLD : 'rgba(255,255,255,0.1)'}`, color: size === s ? GOLD : 'rgba(255,255,255,0.5)', cursor: 'pointer', ...T }}>
-                      {s}
-                    </button>
-                  ))}
+                  {item.sizes_available.map(function(s) {
+                    return (
+                      <button key={s} onClick={function() { setSize(s); }}
+                        className="px-3 py-1.5 rounded-lg font-black text-xs transition-all"
+                        style={{ background: size === s ? GOLD + '18' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (size === s ? GOLD : 'rgba(255,255,255,0.1)'), color: size === s ? GOLD : 'rgba(255,255,255,0.5)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        {s}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
 
             {/* Quantity */}
             <div className="flex items-center gap-3">
-              <p className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Qty</p>
-              <button onClick={() => setQty(q => Math.max(1, q - 1))}
+              <p className="text-[10px] font-black uppercase" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Qty</p>
+              <button onClick={function() { setQty(function(q) { return Math.max(1, q - 1); }); }}
                 className="w-8 h-8 rounded-full flex items-center justify-center font-black text-lg"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer' }}>
                 −
               </button>
               <span className="font-black text-xl w-6 text-center" style={{ color: '#fff', fontFamily: 'Orbitron, monospace' }}>{qty}</span>
-              <button onClick={() => setQty(q => q + 1)}
+              <button onClick={function() { setQty(function(q) { return q + 1; }); }}
                 className="w-8 h-8 rounded-full flex items-center justify-center font-black text-lg"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer' }}>
                 +
@@ -135,19 +139,19 @@ function ProductSheet({ item, onClose, user }) {
 
             {/* 90/10 split note */}
             <div className="p-3 rounded-xl flex items-center justify-between"
-              style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}20` }}>
-              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
+              style={{ background: GOLD + '08', border: '1px solid ' + GOLD + '20' }}>
+              <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 Creator keeps 90% · Total: <strong style={{ color: GOLD }}>${totalUsd}</strong>
               </span>
             </div>
 
             {/* Buy CTA */}
             <motion.button whileTap={{ scale: 0.96 }}
-              onClick={() => orderMutation.mutate()}
+              onClick={function() { orderMutation.mutate(); }}
               disabled={orderMutation.isPending}
               className="w-full py-3.5 rounded-xl font-black uppercase text-sm"
-              style={{ background: orderMutation.isPending ? 'rgba(128,0,32,0.4)' : `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: orderMutation.isPending ? 'rgba(255,255,255,0.3)' : '#07050A', cursor: orderMutation.isPending ? 'default' : 'pointer', ...T }}>
-              {orderMutation.isPending ? 'Placing Order…' : `Buy Now — $${totalUsd}`}
+              style={{ background: orderMutation.isPending ? 'rgba(128,0,32,0.4)' : 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')', border: 'none', color: orderMutation.isPending ? 'rgba(255,255,255,0.3)' : '#07050A', cursor: orderMutation.isPending ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+              {orderMutation.isPending ? 'Placing Order…' : 'Buy Now — $' + totalUsd}
             </motion.button>
           </div>
         )}
@@ -160,29 +164,35 @@ function ProductSheet({ item, onClose, user }) {
 function AddItemModal({ creatorId, onClose }) {
   var queryClient = useQueryClient();
   var [form, setForm] = useState({ name: '', price_usd: '', description: '', sizes_available: [] });
-  var set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  var set = function(k, v) { setForm(function(f) { return { ...f, [k]: v }; }); };
 
-  var toggleSize = (s) => setForm(f => ({
-    ...f,
-    sizes_available: f.sizes_available.includes(s)
-      ? f.sizes_available.filter(x => x !== s)
-      : [...f.sizes_available, s],
-  }));
+  var toggleSize = function(s) {
+    setForm(function(f) {
+      return {
+        ...f,
+        sizes_available: f.sizes_available.includes(s)
+          ? f.sizes_available.filter(function(x) { return x !== s; })
+          : f.sizes_available.concat([s]),
+      };
+    });
+  };
 
   var addMutation = useMutation({
-    mutationFn: () => base44.entities.MerchandiseItem.create({
-      ...form,
-      creator_id: creatorId,
-      price_usd: parseFloat(form.price_usd) || 0,
-      is_active: true,
-      times_sold: 0,
-    }),
-    onSuccess: () => {
+    mutationFn: function() {
+      return base44.entities.MerchandiseItem.create({
+        ...form,
+        creator_id: creatorId,
+        price_usd: parseFloat(form.price_usd) || 0,
+        is_active: true,
+        times_sold: 0,
+      });
+    },
+    onSuccess: function() {
       queryClient.invalidateQueries(['merch-items', creatorId]);
       toast.success('Item added!');
       onClose();
     },
-    onError: () => toast.error('Failed to add item'),
+    onError: function() { toast.error('Failed to add item'); },
   });
 
   return (
@@ -190,8 +200,8 @@ function AddItemModal({ creatorId, onClose }) {
       style={{ background: 'rgba(0,0,0,0.75)' }} onClick={onClose}>
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md rounded-2xl overflow-hidden"
-        style={{ background: 'rgba(13,6,24,0.99)', border: `1px solid rgba(212,175,55,0.2)` }}
-        onClick={e => e.stopPropagation()}>
+        style={{ background: 'rgba(13,6,24,0.99)', border: '1px solid rgba(212,175,55,0.2)' }}
+        onClick={function(e) { e.stopPropagation(); }}>
 
         <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
           <div className="flex items-center gap-2">
@@ -208,36 +218,44 @@ function AddItemModal({ creatorId, onClose }) {
             { key: 'name',        label: 'Item Name',   ph: 'e.g. Vintage Hoodie',    max: 100 },
             { key: 'price_usd',   label: 'Price (USD)', ph: '29.99',                  max: 10 },
             { key: 'description', label: 'Description', ph: 'Optional description…',  max: 300 },
-          ].map(({ key, label, ph, max }) => (
-            <div key={key}>
-              <p className="text-[10px] font-black uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>{label}</p>
-              <input value={form[key]} onChange={e => set(key, e.target.value)} placeholder={ph}
-                maxLength={max}
-                className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
-                style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}
-              />
-            </div>
-          ))}
+          ].map(function(item_) {
+            var key = item_.key;
+            var label = item_.label;
+            var ph = item_.ph;
+            var max = item_.max;
+            return (
+              <div key={key}>
+                <p className="text-[10px] font-black uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</p>
+                <input value={form[key]} onChange={function(e) { set(key, e.target.value); }} placeholder={ph}
+                  maxLength={max}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm outline-none"
+                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif' }}
+                />
+              </div>
+            );
+          })}
 
           {/* Sizes */}
           <div>
-            <p className="text-[10px] font-black uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.35)', ...T }}>Available Sizes</p>
+            <p className="text-[10px] font-black uppercase mb-1.5" style={{ color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>Available Sizes</p>
             <div className="flex gap-2 flex-wrap">
-              {SIZES.map(s => (
-                <button key={s} onClick={() => toggleSize(s)}
-                  className="px-3 py-1 rounded-lg font-black text-xs transition-all"
-                  style={{ background: form.sizes_available.includes(s) ? `${GOLD}18` : 'rgba(255,255,255,0.04)', border: `1px solid ${form.sizes_available.includes(s) ? GOLD : 'rgba(255,255,255,0.1)'}`, color: form.sizes_available.includes(s) ? GOLD : 'rgba(255,255,255,0.4)', cursor: 'pointer', ...T }}>
-                  {s}
-                </button>
-              ))}
+              {SIZES.map(function(s) {
+                return (
+                  <button key={s} onClick={function() { toggleSize(s); }}
+                    className="px-3 py-1 rounded-lg font-black text-xs transition-all"
+                    style={{ background: form.sizes_available.includes(s) ? GOLD + '18' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (form.sizes_available.includes(s) ? GOLD : 'rgba(255,255,255,0.1)'), color: form.sizes_available.includes(s) ? GOLD : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                    {s}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
           <motion.button whileTap={{ scale: 0.97 }}
-            onClick={() => form.name && addMutation.mutate()}
+            onClick={function() { if (form.name) { addMutation.mutate(); } }}
             disabled={!form.name || addMutation.isPending}
             className="w-full py-3 rounded-xl font-black uppercase text-xs mt-2"
-            style={{ background: !form.name || addMutation.isPending ? 'rgba(128,0,32,0.3)' : `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: !form.name || addMutation.isPending ? 'rgba(255,255,255,0.3)' : '#07050A', cursor: !form.name || addMutation.isPending ? 'default' : 'pointer', ...T }}>
+            style={{ background: !form.name || addMutation.isPending ? 'rgba(128,0,32,0.3)' : 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')', border: 'none', color: !form.name || addMutation.isPending ? 'rgba(255,255,255,0.3)' : '#07050A', cursor: !form.name || addMutation.isPending ? 'default' : 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
             {addMutation.isPending ? 'Adding…' : 'Add to Store'}
           </motion.button>
         </div>
@@ -256,7 +274,7 @@ export default function MerchStorePage() {
 
   var { data: user } = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
 
   var targetCreatorId = creatorParam || (user && user.id);
@@ -264,43 +282,43 @@ export default function MerchStorePage() {
 
   var { data: items = [], isLoading } = useQuery({
     queryKey: ['merch-items', targetCreatorId],
-    queryFn: () => base44.entities.MerchandiseItem.filter({ creator_id: targetCreatorId, is_active: true }),
+    queryFn: function() { return base44.entities.MerchandiseItem.filter({ creator_id: targetCreatorId, is_active: true }); },
     enabled: !!targetCreatorId,
   });
 
   var { data: allItems = [] } = useQuery({
     queryKey: ['merch-all-items', targetCreatorId],
-    queryFn: () => base44.entities.MerchandiseItem.filter({ creator_id: targetCreatorId }),
+    queryFn: function() { return base44.entities.MerchandiseItem.filter({ creator_id: targetCreatorId }); },
     enabled: !!targetCreatorId && isOwnStore,
   });
 
   var { data: orders = [] } = useQuery({
     queryKey: ['merch-orders', targetCreatorId],
-    queryFn: () => base44.entities.MerchandiseOrder.filter({ creator_id: targetCreatorId }, '-created_date', 50),
+    queryFn: function() { return base44.entities.MerchandiseOrder.filter({ creator_id: targetCreatorId }, '-created_date', 50); },
     enabled: !!targetCreatorId && isOwnStore,
   });
 
   var queryClient = useQueryClient();
 
   var toggleItemMutation = useMutation({
-    mutationFn: ({ id, field, val }) => base44.entities.MerchandiseItem.update(id, { [field]: val }),
-    onSuccess: () => queryClient.invalidateQueries(['merch-all-items', targetCreatorId]),
+    mutationFn: function(args) { return base44.entities.MerchandiseItem.update(args.id, { [args.field]: args.val }); },
+    onSuccess: function() { queryClient.invalidateQueries(['merch-all-items', targetCreatorId]); },
   });
 
   var updateOrderMutation = useMutation({
-    mutationFn: ({ id, status }) => base44.entities.MerchandiseOrder.update(id, { status }),
-    onSuccess: () => queryClient.invalidateQueries(['merch-orders', targetCreatorId]),
+    mutationFn: function(args) { return base44.entities.MerchandiseOrder.update(args.id, { status: args.status }); },
+    onSuccess: function() { queryClient.invalidateQueries(['merch-orders', targetCreatorId]); },
   });
 
-  var totalRevenue = orders.filter(o => o.status !== 'cancelled' && o.status !== 'refunded')
-    .reduce((s, o) => s + (o.creator_payout || 0), 0);
-  var totalSold    = allItems.reduce((s, i) => s + (i.times_sold || 0), 0);
+  var totalRevenue = orders.filter(function(o) { return o.status !== 'cancelled' && o.status !== 'refunded'; })
+    .reduce(function(s, o) { return s + (o.creator_payout || 0); }, 0);
+  var totalSold    = allItems.reduce(function(s, i) { return s + (i.times_sold || 0); }, 0);
 
   var TABS = isOwnStore
     ? [
         { id: 'store',     label: 'Public Store', icon: ShoppingBag },
         { id: 'manage',    label: 'Manage Items', icon: Package },
-        { id: 'orders',    label: `Orders (${orders.length})`, icon: Truck },
+        { id: 'orders',    label: 'Orders (' + orders.length + ')', icon: Truck },
         { id: 'dashboard', label: 'Dashboard',    icon: BarChart2 },
       ]
     : [{ id: 'store', label: 'Store', icon: ShoppingBag }];
@@ -313,7 +331,7 @@ export default function MerchStorePage() {
         style={{ borderColor: 'rgba(212,175,55,0.12)', background: 'rgba(8,11,24,0.97)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-            style={{ background: `linear-gradient(135deg, ${CRIMSON}, ${GOLD})` }}>
+            style={{ background: 'linear-gradient(135deg, ' + CRIMSON + ', ' + GOLD + ')' }}>
             <ShoppingBag className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -321,14 +339,14 @@ export default function MerchStorePage() {
               {isOwnStore ? 'My Merch Store' : 'Merch Store'}
             </h1>
             <p className="text-[11px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>
-              {isOwnStore ? 'Manage your merchandise & orders' : `${items.length} items available`}
+              {isOwnStore ? 'Manage your merchandise & orders' : items.length + ' items available'}
             </p>
           </div>
         </div>
         {isOwnStore && (
-          <button onClick={() => setShowAdd(true)}
+          <button onClick={function() { setShowAdd(true); }}
             className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-xs"
-            style={{ background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, border: 'none', color: '#07050A', cursor: 'pointer', ...T }}>
+            style={{ background: 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')', border: 'none', color: '#07050A', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <Plus className="w-3.5 h-3.5" /> Add Item
           </button>
         )}
@@ -340,30 +358,34 @@ export default function MerchStorePage() {
         {isOwnStore && (
           <div className="grid grid-cols-3 gap-3 mb-5">
             {[
-              { label: 'Items',    value: allItems.length,             color: '#4A8A7A' },
-              { label: 'Sold',     value: totalSold,                   color: GOLD      },
-              { label: 'Revenue',  value: `$${totalRevenue.toFixed(0)}`, color: GREEN   },
-            ].map(({ label, value, color }) => (
-              <div key={label} className="rounded-2xl p-4 text-center"
-                style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
-                <p className="text-2xl font-black" style={{ color, fontFamily: 'Orbitron, monospace' }}>{value}</p>
-                <p className="text-[10px] font-black uppercase mt-1" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{label}</p>
-              </div>
-            ))}
+              { label: 'Items',    value: allItems.length,               color: '#4A8A7A' },
+              { label: 'Sold',     value: totalSold,                     color: GOLD      },
+              { label: 'Revenue',  value: '$' + totalRevenue.toFixed(0), color: GREEN     },
+            ].map(function(stat) {
+              return (
+                <div key={stat.label} className="rounded-2xl p-4 text-center"
+                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
+                  <p className="text-2xl font-black" style={{ color: stat.color, fontFamily: 'Orbitron, monospace' }}>{stat.value}</p>
+                  <p className="text-[10px] font-black uppercase mt-1" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{stat.label}</p>
+                </div>
+              );
+            })}
           </div>
         )}
 
         {/* Tabs */}
         {TABS.length > 1 && (
           <div className="flex border-b mb-5" style={{ borderColor: 'rgba(255,255,255,0.07)' }}>
-            {TABS.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className="flex items-center gap-1.5 px-4 py-2.5 font-black uppercase text-[10px] border-b-2 transition-all"
-                style={{ ...T, color: activeTab === tab.id ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: activeTab === tab.id ? GOLD : 'transparent', background: 'transparent', cursor: 'pointer' }}>
-                <tab.icon className="w-3 h-3" />
-                {tab.label}
-              </button>
-            ))}
+            {TABS.map(function(tab) {
+              return (
+                <button key={tab.id} onClick={function() { setActiveTab(tab.id); }}
+                  className="flex items-center gap-1.5 px-4 py-2.5 font-black uppercase text-[10px] border-b-2 transition-all"
+                  style={{ fontFamily: 'Barlow Condensed, sans-serif', color: activeTab === tab.id ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: activeTab === tab.id ? GOLD : 'transparent', background: 'transparent', cursor: 'pointer' }}>
+                  <tab.icon className="w-3 h-3" />
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -372,64 +394,68 @@ export default function MerchStorePage() {
           <>
             {isLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} className="rounded-2xl animate-pulse h-56" style={{ background: 'rgba(255,255,255,0.04)' }} />
-                ))}
+                {[...Array(8)].map(function(_, i) {
+                  return (
+                    <div key={i} className="rounded-2xl animate-pulse h-56" style={{ background: 'rgba(255,255,255,0.04)' }} />
+                  );
+                })}
               </div>
             ) : items.length === 0 ? (
               <div className="flex flex-col items-center py-24">
                 <ShoppingBag className="w-14 h-14 mb-3" style={{ color: 'rgba(255,255,255,0.08)' }} />
-                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No items yet</p>
+                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>No items yet</p>
                 {isOwnStore && (
-                  <button onClick={() => setShowAdd(true)}
+                  <button onClick={function() { setShowAdd(true); }}
                     className="mt-4 px-5 py-2 rounded-xl font-black uppercase text-xs"
-                    style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD, cursor: 'pointer', ...T }}>
+                    style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: GOLD, cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
                     + Add Your First Item
                   </button>
                 )}
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {items.map((item, i) => (
-                  <motion.div key={item.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.04 }}
-                    whileHover={{ y: -4, scale: 1.02 }}
-                    onClick={() => setSelected(item)}
-                    className="rounded-2xl overflow-hidden cursor-pointer"
-                    style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
+                {items.map(function(item, i) {
+                  return (
+                    <motion.div key={item.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.04 }}
+                      whileHover={{ y: -4, scale: 1.02 }}
+                      onClick={function() { setSelected(item); }}
+                      className="rounded-2xl overflow-hidden cursor-pointer"
+                      style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(212,175,55,0.1)' }}>
 
-                    {/* Image */}
-                    <div className="h-40 flex items-center justify-center overflow-hidden relative"
-                      style={{ background: item.image_url ? undefined : `linear-gradient(135deg, ${CRIMSON}44, rgba(13,6,24,0.8))` }}>
-                      {item.image_url
-                        ? <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-                        : <span className="text-5xl">👕</span>}
-                      {item.is_live_exclusive && (
-                        <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-black uppercase"
-                          style={{ background: CRIMSON, color: GOLD, ...T }}>Live Only</div>
-                      )}
-                      {item.stock != null && item.stock < 10 && item.stock > 0 && (
-                        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[9px] font-black uppercase"
-                          style={{ background: '#FF9500', color: '#000', ...T }}>Low Stock</div>
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div className="p-3">
-                      <p className="font-black text-sm text-white truncate" style={T}>{item.name}</p>
-                      {item.description && <p className="text-[10px] mt-0.5 line-clamp-1" style={{ color: 'rgba(255,255,255,0.35)' }}>{item.description}</p>}
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="font-black text-base" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${item.price_usd}</span>
-                        <span className="text-[10px] font-black px-1.5 py-0.5 rounded"
-                          style={{ background: 'rgba(212,175,55,0.08)', color: 'rgba(255,255,255,0.35)', ...T }}>
-                          {item.times_sold || 0} sold
-                        </span>
+                      {/* Image */}
+                      <div className="h-40 flex items-center justify-center overflow-hidden relative"
+                        style={{ background: item.image_url ? undefined : 'linear-gradient(135deg, ' + CRIMSON + '44, rgba(13,6,24,0.8))' }}>
+                        {item.image_url
+                          ? <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                          : <span className="text-5xl">👕</span>}
+                        {item.is_live_exclusive && (
+                          <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-black uppercase"
+                            style={{ background: CRIMSON, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>Live Only</div>
+                        )}
+                        {item.stock != null && item.stock < 10 && item.stock > 0 && (
+                          <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[9px] font-black uppercase"
+                            style={{ background: '#FF9500', color: '#000', fontFamily: 'Barlow Condensed, sans-serif' }}>Low Stock</div>
+                        )}
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+
+                      {/* Info */}
+                      <div className="p-3">
+                        <p className="font-black text-sm text-white truncate" style={T}>{item.name}</p>
+                        {item.description && <p className="text-[10px] mt-0.5 line-clamp-1" style={{ color: 'rgba(255,255,255,0.35)' }}>{item.description}</p>}
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="font-black text-base" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${item.price_usd}</span>
+                          <span className="text-[10px] font-black px-1.5 py-0.5 rounded"
+                            style={{ background: 'rgba(212,175,55,0.08)', color: 'rgba(255,255,255,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                            {item.times_sold || 0} sold
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
           </>
@@ -441,34 +467,36 @@ export default function MerchStorePage() {
             {allItems.length === 0 ? (
               <div className="text-center py-12">
                 <Package className="w-12 h-12 mx-auto mb-2" style={{ color: 'rgba(255,255,255,0.1)' }} />
-                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No items yet</p>
+                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>No items yet</p>
               </div>
-            ) : allItems.map(item => (
-              <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                <div className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl overflow-hidden shrink-0"
-                  style={{ background: item.image_url ? undefined : `${CRIMSON}20`, border: '1px solid rgba(255,255,255,0.08)' }}>
-                  {item.image_url ? <img src={item.image_url} className="w-full h-full object-cover" alt={item.name} /> : '👕'}
+            ) : allItems.map(function(item) {
+              return (
+                <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl"
+                  style={{ background: 'rgba(13,6,24,0.9)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center text-2xl overflow-hidden shrink-0"
+                    style={{ background: item.image_url ? undefined : CRIMSON + '20', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    {item.image_url ? <img src={item.image_url} className="w-full h-full object-cover" alt={item.name} /> : '👕'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-black text-sm text-white truncate" style={T}>{item.name}</p>
+                    <p className="text-[11px]" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${item.price_usd}</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>{item.times_sold || 0} sold</span>
+                    <button onClick={function() { toggleItemMutation.mutate({ id: item.id, field: 'is_live_exclusive', val: !item.is_live_exclusive }); }}
+                      className="px-2 py-1 rounded text-[9px] font-black uppercase transition-all"
+                      style={{ background: item.is_live_exclusive ? GOLD + '15' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (item.is_live_exclusive ? GOLD : 'rgba(255,255,255,0.1)'), color: item.is_live_exclusive ? GOLD : 'rgba(255,255,255,0.35)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      Live
+                    </button>
+                    <button onClick={function() { toggleItemMutation.mutate({ id: item.id, field: 'is_active', val: !item.is_active }); }}
+                      className="px-2 py-1 rounded text-[9px] font-black uppercase transition-all"
+                      style={{ background: item.is_active ? GREEN + '15' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (item.is_active ? GREEN : 'rgba(255,255,255,0.1)'), color: item.is_active ? GREEN : 'rgba(255,255,255,0.35)', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                      {item.is_active ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-black text-sm text-white truncate" style={T}>{item.name}</p>
-                  <p className="text-[11px]" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${item.price_usd}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>{item.times_sold || 0} sold</span>
-                  <button onClick={() => toggleItemMutation.mutate({ id: item.id, field: 'is_live_exclusive', val: !item.is_live_exclusive })}
-                    className="px-2 py-1 rounded text-[9px] font-black uppercase transition-all"
-                    style={{ background: item.is_live_exclusive ? `${GOLD}15` : 'rgba(255,255,255,0.04)', border: `1px solid ${item.is_live_exclusive ? GOLD : 'rgba(255,255,255,0.1)'}`, color: item.is_live_exclusive ? GOLD : 'rgba(255,255,255,0.35)', cursor: 'pointer', ...T }}>
-                    Live
-                  </button>
-                  <button onClick={() => toggleItemMutation.mutate({ id: item.id, field: 'is_active', val: !item.is_active })}
-                    className="px-2 py-1 rounded text-[9px] font-black uppercase transition-all"
-                    style={{ background: item.is_active ? `${GREEN}15` : 'rgba(255,255,255,0.04)', border: `1px solid ${item.is_active ? GREEN : 'rgba(255,255,255,0.1)'}`, color: item.is_active ? GREEN : 'rgba(255,255,255,0.35)', cursor: 'pointer', ...T }}>
-                    {item.is_active ? 'ON' : 'OFF'}
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -478,9 +506,9 @@ export default function MerchStorePage() {
             {orders.length === 0 ? (
               <div className="text-center py-12">
                 <Truck className="w-12 h-12 mx-auto mb-2" style={{ color: 'rgba(255,255,255,0.1)' }} />
-                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.2)', ...T }}>No orders yet</p>
+                <p className="font-black text-sm uppercase" style={{ color: 'rgba(255,255,255,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>No orders yet</p>
               </div>
-            ) : orders.map(order => {
+            ) : orders.map(function(order) {
               var sc = STATUS_COLOR[order.status] || STATUS_COLOR.pending;
               return (
                 <div key={order.id} className="p-4 rounded-xl"
@@ -488,29 +516,29 @@ export default function MerchStorePage() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <p className="font-black text-sm text-white" style={T}>{order.item_name}</p>
-                      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>
-                        {order.buyer_name} {order.size ? `· ${order.size}` : ''} · Qty {order.quantity || 1}
+                      <p className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                        {order.buyer_name} {order.size ? '· ' + order.size : ''} · Qty {order.quantity || 1}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="font-black text-base" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${order.total_usd && order.total_usd.toFixed(2)}</p>
-                      <p className="text-[10px]" style={{ color: GREEN, ...T }}>+${order.creator_payout && order.creator_payout.toFixed(2)} yours</p>
+                      <p className="text-[10px]" style={{ color: GREEN, fontFamily: 'Barlow Condensed, sans-serif' }}>+${order.creator_payout && order.creator_payout.toFixed(2)} yours</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase"
-                      style={{ background: sc.bg, border: `1px solid ${sc.border}`, color: sc.color, ...T }}>
+                      style={{ background: sc.bg, border: '1px solid ' + sc.border, color: sc.color, fontFamily: 'Barlow Condensed, sans-serif' }}>
                       {order.status}
                     </span>
                     {order.ordered_during_stream && (
                       <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase"
-                        style={{ background: CRIMSON, color: GOLD, ...T }}>Live Order</span>
+                        style={{ background: CRIMSON, color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>Live Order</span>
                     )}
                     <NativeSelect value={order.status}
-                      onChange={val => updateOrderMutation.mutate({ id: order.id, status: val })}
+                      onChange={function(val) { updateOrderMutation.mutate({ id: order.id, status: val }); }}
                       className="ml-auto text-[11px] rounded-lg px-2 py-1 outline-none"
                       style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}
-                      options={['pending','confirmed','shipped','delivered','cancelled'].map(s => ({value: s, label: s.charAt(0).toUpperCase() + s.slice(1)}))} />
+                      options={['pending','confirmed','shipped','delivered','cancelled'].map(function(s) { return {value: s, label: s.charAt(0).toUpperCase() + s.slice(1)}; })} />
                   </div>
                 </div>
               );
@@ -528,14 +556,14 @@ export default function MerchStorePage() {
       {/* Product Sheet */}
       <AnimatePresence>
         {selected && (
-          <ProductSheet item={selected} user={user} onClose={() => setSelected(null)} />
+          <ProductSheet item={selected} user={user} onClose={function() { setSelected(null); }} />
         )}
       </AnimatePresence>
 
       {/* Add Item Modal */}
       <AnimatePresence>
         {showAdd && isOwnStore && (
-          <AddItemModal creatorId={targetCreatorId} onClose={() => setShowAdd(false)} />
+          <AddItemModal creatorId={targetCreatorId} onClose={function() { setShowAdd(false); }} />
         )}
       </AnimatePresence>
       <SwanyBotWidget />
