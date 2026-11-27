@@ -275,11 +275,13 @@ var CATEGORIES = [
   'Comedy', 'News', 'Creative', 'Travel', 'Tech', 'Spiritual', 'Health',
 ];
 
-function FormatCard({ fmt, onSelect }) {
+function FormatCard(props) {
+  var fmt = props.fmt;
+  var onSelect = props.onSelect;
   return (
     <motion.button
       whileTap={{ scale: 0.97 }}
-      onClick={() => onSelect(fmt)}
+      onClick={function() { onSelect(fmt); }}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -288,8 +290,8 @@ function FormatCard({ fmt, onSelect }) {
         padding: '16px 18px',
         borderRadius: 16,
         background: 'rgba(7,7,15,0.9)',
-        border: `1px solid rgba(255,255,255,0.08)`,
-        borderLeft: `4px solid ${fmt.color}`,
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderLeft: '4px solid ' + fmt.color,
         cursor: 'pointer',
         textAlign: 'left',
         transition: 'border-color 0.2s, box-shadow 0.2s',
@@ -299,8 +301,8 @@ function FormatCard({ fmt, onSelect }) {
         width: 52,
         height: 52,
         borderRadius: 14,
-        background: `${fmt.color}18`,
-        border: `1px solid ${fmt.color}35`,
+        background: fmt.color + '18',
+        border: '1px solid ' + fmt.color + '35',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -317,19 +319,19 @@ function FormatCard({ fmt, onSelect }) {
           {fmt.subtitle}
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
-          {fmt.features.map(f => (
+          {fmt.features.map(function(f) { return (
             <span key={f} style={{
               fontSize: 11,
               fontWeight: 700,
               fontFamily: FONT,
               padding: '2px 7px',
               borderRadius: 999,
-              background: `${fmt.color}12`,
-              border: `1px solid ${fmt.color}28`,
-              color: `${fmt.color}CC`,
+              background: fmt.color + '12',
+              border: '1px solid ' + fmt.color + '28',
+              color: fmt.color + 'CC',
               letterSpacing: '0.04em',
             }}>{f}</span>
-          ))}
+          ); })}
         </div>
       </div>
       <ChevronRight style={{ width: 18, height: 18, color: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
@@ -344,40 +346,42 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
   var [camOn,      setCamOn]      = useState(false);
   var [micOn,      setMicOn]      = useState(true);
   var [error,      setError]      = useState(null);
-  var [videoId,    setVideoId]    = useState(() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } });
-  var [audioId,    setAudioId]    = useState(() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } });
+  var videoIdState = useState(function() { try { return localStorage.getItem('swl_pref_cam') || null; } catch(e) { return null; } });
+  var videoId = videoIdState[0]; var setVideoId = videoIdState[1];
+  var audioIdState = useState(function() { try { return localStorage.getItem('swl_pref_mic') || null; } catch(e) { return null; } });
+  var audioId = audioIdState[0]; var setAudioId = audioIdState[1];
   var [resolution, setResolution] = useState('720p');
   var [noiseSupp, setNoiseSupp] = useState(true);
   var [echoCan, setEchoCan] = useState(true);
   var { cameras } = useCameraDevices();
 
-  var start = useCallback(async (opts = {}) => {
+  var start = useCallback(async function(opts) {
+    if (!opts) opts = {};
     setError(null);
-    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    if (streamRef.current) streamRef.current.getTracks().forEach(function(t) { t.stop(); });
     try {
       var resPresets = { '360p': { width: 640, height: 360 }, '480p': { width: 854, height: 480 }, '720p': { width: 1280, height: 720 }, '1080p': { width: 1920, height: 1080 } };
       var res = resPresets[opts.resolution || resolution] || resPresets['720p'];
-      var s = await navigator.mediaDevices.getUserMedia({
-        video: { ...res, ...(opts.videoId || videoId ? { deviceId: { ideal: opts.videoId || videoId } } : {}) },
-        audio: { echoCancellation: true, noiseSuppression: true, ...(opts.audioId || audioId ? { deviceId: { ideal: opts.audioId || audioId } } : {}) },
-      });
+      var videoConstraints = Object.assign({}, res, (opts.videoId || videoId) ? { deviceId: { ideal: opts.videoId || videoId } } : {});
+      var audioConstraints = Object.assign({ echoCancellation: true, noiseSuppression: true }, (opts.audioId || audioId) ? { deviceId: { ideal: opts.audioId || audioId } } : {});
+      var s = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: audioConstraints });
       streamRef.current = s;
       setStream(s);
       setCamOn(true);
-      s.getAudioTracks().forEach(t => { t.enabled = micOn; });
+      s.getAudioTracks().forEach(function(t) { t.enabled = micOn; });
       if (videoRef.current) videoRef.current.srcObject = s;
       if (onStreamReady) onStreamReady(s);
-    } catch {
+    } catch(e) {
       setError('Camera/mic access denied — check browser permissions');
     }
   }, [onStreamReady, videoId, audioId, resolution, micOn]);
 
-  useEffect(() => { start(); return () => { if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); }; }, []);
-  useEffect(() => { if (startRef) startRef.current = start; }, [startRef, start]);
+  useEffect(function() { start(); return function() { if (streamRef.current) streamRef.current.getTracks().forEach(function(t) { t.stop(); }); }; }, []);
+  useEffect(function() { if (startRef) startRef.current = start; }, [startRef, start]);
 
   function toggleMic() {
     var next = !micOn;
-    if (streamRef.current) streamRef.current.getAudioTracks().forEach(t => { t.enabled = next; });
+    if (streamRef.current) streamRef.current.getAudioTracks().forEach(function(t) { t.enabled = next; });
     setMicOn(next);
     if (onMicChange) onMicChange(next);
   }
@@ -387,7 +391,7 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
   function handleResolutionChange(r) { setResolution(r); start({ resolution: r }); }
   function handleSwitchCamera() {
     if (cameras.length < 2) return;
-    var idx = cameras.findIndex(c => c.deviceId === videoId);
+    var idx = cameras.findIndex(function(c) { return c.deviceId === videoId; });
     var next = cameras[(idx + 1) % cameras.length];
     handleVideoChange(next.deviceId);
   }
@@ -411,12 +415,12 @@ function CameraPreview({ onStreamReady, onMicChange, startRef }) {
         <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 5, alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, background: camOn ? 'rgba(255,32,64,0.85)' : 'rgba(0,0,0,0.5)', fontSize: 11, fontWeight: 900, color: '#fff', fontFamily: FONT, letterSpacing: '0.08em' }}>
             {camOn && <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', display: 'inline-block' }} />}
-            {camOn ? `PREVIEW · ${resolution}` : 'NO SIGNAL'}
+            {camOn ? ('PREVIEW · ' + resolution) : 'NO SIGNAL'}
           </div>
         </div>
 
         <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', gap: 8 }}>
-          <button onClick={toggleMic} aria-label={micOn ? 'Mute microphone' : 'Unmute microphone'} style={{ width: 44, height: 44, borderRadius: '50%', background: micOn ? 'rgba(255,184,0,0.2)' : 'rgba(255,32,64,0.2)', border: `1px solid ${micOn ? 'rgba(255,184,0,0.4)' : 'rgba(255,32,64,0.4)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
+          <button onClick={toggleMic} aria-label={micOn ? 'Mute microphone' : 'Unmute microphone'} style={{ width: 44, height: 44, borderRadius: '50%', background: micOn ? 'rgba(255,184,0,0.2)' : 'rgba(255,32,64,0.2)', border: '1px solid ' + (micOn ? 'rgba(255,184,0,0.4)' : 'rgba(255,32,64,0.4)'), display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', userSelect: 'none' }}>
             {micOn ? <Mic style={{ width: 18, height: 18, color: GOLD }} /> : <MicOff style={{ width: 18, height: 18, color: '#FF2040' }} />}
           </button>
           {cameras.length > 1 && (
@@ -537,8 +541,8 @@ function Countdown({ onDone }) {
   var [count, setCount] = useState(3);
   useEffect(() => {
     if (count <= 0) { onDone(); return; }
-    var t = setTimeout(() => setCount(c => c - 1), 1000);
-    return () => clearTimeout(t);
+    var t = setTimeout(function() { setCount(function(c) { return c - 1; }); }, 1000);
+    return function() { clearTimeout(t); };
   }, [count, onDone]);
 
   return (
@@ -594,7 +598,8 @@ export default function GoLive() {
   var [launching,   setLaunching]   = useState(false);
   var [countdown,   setCountdown]   = useState(false);
   var [partyId,     setPartyId]     = useState(null);
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var userQuery = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
+  var user = userQuery.data || null;
   var { token: zegoToken } = useZegoToken({ roomId: partyId, userId: (user && user.id), enabled: !!partyId && !!(user && user.id) });
   var [titleSuggestions, setTitleSuggestions] = useState([]);
   var [suggestingTitles, setSuggestingTitles] = useState(false);
@@ -607,7 +612,7 @@ export default function GoLive() {
   var [elapsed,     setElapsed]     = useState(0);
   var [noiseSupp,   setNoiseSupp]   = useState(true);
   var [echoCan,     setEchoCan]     = useState(true);
-  var handleStreamReady = useCallback((s) => setLocalStream(s), []);
+  var handleStreamReady = useCallback(function(s) { setLocalStream(s); }, []);
   var cameraRetryRef = useRef(null);
   // cameras + handleVideoChange hoisted so PreJoinSettingsModal can access them
   var { cameras } = useCameraDevices();
