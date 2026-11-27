@@ -22,35 +22,39 @@ var BG = '#080B18';
 
 export default function WelcomePage() {
   var navigate = useNavigate();
-  var { data: user } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
-  var { data: activeRoom } = useQuery({
+  var user = userQuery.data || null;
+  var activeRoomQuery = useQuery({
     queryKey: ['activeRoom', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
+  var activeRoom = activeRoomQuery.data || null;
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var goalMetrics = useStreamGoalMetrics((user && user.id) || null, activeRoomId);
-  var { data: userCommunity } = useQuery({
+  var userCommunityQuery = useQuery({
     queryKey: ['userCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
+  var userCommunity = userCommunityQuery.data || null;
   var userCommunityId = (userCommunity && userCommunity.id) || null;
 
-  var { data: liveCount } = useQuery({
+  var liveCountQuery = useQuery({
     queryKey: ['welcomeLiveCount'],
-    queryFn: async () => {
+    queryFn: async function() {
       var rooms = await base44.entities.Room.filter({ status: 'live' });
       return (rooms && rooms.length) || 0;
     },
   });
+  var liveCount = liveCountQuery.data || null;
 
   // Redirect logged-in users to home
-  React.useEffect(() => {
+  React.useEffect(function() {
     if ((user && user.id)) {
       navigate('/Home');
     }
@@ -75,7 +79,7 @@ export default function WelcomePage() {
           </Link>
           <motion.button
             whileHover={{ scale: 1.05 }}
-            onClick={() => base44.auth.redirectToLogin()}
+            onClick={function() { base44.auth.redirectToLogin(); }}
             className="px-4 py-2 rounded-lg font-bold text-sm"
             style={{ background: G, color: '#000' }}
           >
@@ -88,11 +92,8 @@ export default function WelcomePage() {
       <main className="relative overflow-hidden" style={{ minHeight: '100vh' }}>
         {/* Background with gradient overlay */}
         <div className="absolute inset-0" style={{
-          background: `linear-gradient(180deg,
-            rgba(8, 11, 24, 0.95) 0%,
-            rgba(13, 6, 24, 0.85) 50%,
-            rgba(8, 11, 24, 0.95) 100%)`,
-          backgroundImage: `url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=2000&fit=crop')`,
+          background: 'linear-gradient(180deg, rgba(8, 11, 24, 0.95) 0%, rgba(13, 6, 24, 0.85) 50%, rgba(8, 11, 24, 0.95) 100%)',
+          backgroundImage: "url('https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=2000&fit=crop')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'fixed',
@@ -104,7 +105,7 @@ export default function WelcomePage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 px-4 py-2 rounded-full text-xs font-bold"
-            style={{ background: `${G}20`, border: `1px solid ${G}40`, color: G, fontFamily: 'Barlow Condensed, sans-serif' }}
+            style={{ background: G + '20', border: '1px solid ' + G + '40', color: G, fontFamily: 'Barlow Condensed, sans-serif' }}
           >
             🔴 LIVE — Open to All
           </motion.div>
@@ -132,7 +133,7 @@ export default function WelcomePage() {
             className="flex flex-col md:flex-row gap-4 mb-8"
           >
             <button
-              onClick={() => base44.auth.redirectToLogin()}
+              onClick={function() { base44.auth.redirectToLogin(); }}
               className="px-8 py-3 rounded-full font-black text-base md:text-lg flex items-center gap-2"
               style={{ background: G, color: '#000', border: 'none', cursor: 'pointer', fontFamily: 'Barlow Condensed, sans-serif' }}
             >
@@ -187,13 +188,13 @@ export default function WelcomePage() {
               { emoji: '⚡', label: 'INS Forge',          sub: 'AI Graphics' },
               { emoji: '🛡️', label: 'Guardian AI',       sub: 'Live Moderation' },
               { emoji: '📡', label: 'Multi-Platform',    sub: 'Stream Everywhere' },
-            ].map(f => (
+            ].map(function(f) { return (
               <div key={f.label} className="text-center p-3 rounded-xl" style={{ background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.1)' }}>
                 <div style={{ fontSize: 22, marginBottom: 4 }}>{f.emoji}</div>
                 <p className="text-xs font-black text-white" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>{f.label}</p>
                 <p className="text-[10px]" style={{ color: 'rgba(212,175,55,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>{f.sub}</p>
               </div>
-            ))}
+            ); })}
           </div>
           <div className="text-center">
             <Link to="/PlatformShowcase">
@@ -211,7 +212,7 @@ export default function WelcomePage() {
         <SpotlightBanner communityId={userCommunityId} isAdmin={false} />
         <ContentRecommendations userId={(user && user.id)} />
         <OnlineUsersGrid compact maxVisible={10} />
-        {!user && <OnboardingFlow onComplete={() => {}} />}
+        {!user && <OnboardingFlow onComplete={function() {}} />}
       </div>
 
       {/* Footer */}

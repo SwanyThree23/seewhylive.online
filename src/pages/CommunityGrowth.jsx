@@ -43,40 +43,50 @@ var TABS = [
 ];
 
 export default function CommunityGrowthPage() {
-  var [searchParams] = useSearchParams();
+  var searchParamsState = useSearchParams();
+  var searchParams = searchParamsState[0];
   var communityId = searchParams.get('id');
-  var [selectedChallenge, setSelectedChallenge] = useState(null);
-  var [activeTab, setActiveTab] = useState('challenges');
+  var selectedChallengeState = useState(null);
+  var selectedChallenge = selectedChallengeState[0];
+  var setSelectedChallenge = selectedChallengeState[1];
+  var activeTabState = useState('challenges');
+  var activeTab = activeTabState[0];
+  var setActiveTab = activeTabState[1];
 
-  var { data: user } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
+  var user = userQuery.data || null;
   var goalMetrics = useStreamGoalMetrics((user && user.id) || null, null);
 
-  var { data: community } = useQuery({
+  var communityQuery = useQuery({
     queryKey: ['community', communityId],
-    queryFn: () => base44.entities.Community.filter({ id: communityId }).then(c => c[0]),
+    queryFn: function() { return base44.entities.Community.filter({ id: communityId }).then(function(c) { return c[0]; }); },
     enabled: !!communityId,
   });
+  var community = communityQuery.data || null;
 
-  var { data: membership } = useQuery({
+  var membershipQuery = useQuery({
     queryKey: ['membership', communityId, (user && user.id)],
-    queryFn: () => base44.entities.CommunityMember.filter({ community_id: communityId, user_id: (user && user.id) }).then(m => m[0]),
+    queryFn: function() { return base44.entities.CommunityMember.filter({ community_id: communityId, user_id: (user && user.id) }).then(function(m) { return m[0]; }); },
     enabled: !!communityId && !!user,
   });
+  var membership = membershipQuery.data || null;
 
-  var { data: challenges = [] } = useQuery({
+  var challengesQuery = useQuery({
     queryKey: ['challenges', communityId],
-    queryFn: () => base44.entities.Challenge.filter({ community_id: communityId }, '-start_date'),
+    queryFn: function() { return base44.entities.Challenge.filter({ community_id: communityId }, '-start_date'); },
     enabled: !!communityId,
   });
+  var challenges = challengesQuery.data || [];
 
-  var { data: userParticipation = [] } = useQuery({
+  var userParticipationQuery = useQuery({
     queryKey: ['challengeParticipation', (user && user.id)],
-    queryFn: () => base44.entities.ChallengeParticipant.filter({ user_id: (user && user.id) }),
+    queryFn: function() { return base44.entities.ChallengeParticipant.filter({ user_id: (user && user.id) }); },
     enabled: !!user,
   });
+  var userParticipation = userParticipationQuery.data || [];
 
   var isAdmin = (membership && membership.role) === 'admin' || (membership && membership.role) === 'owner';
 
@@ -103,13 +113,13 @@ export default function CommunityGrowthPage() {
           </div>
           {/* Tab bar */}
           <div className="flex border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-            {TABS.map(tab => {
+            {TABS.map(function(tab) {
               var Icon = tab.icon;
               var active = activeTab === tab.id;
               return (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                <button key={tab.id} onClick={function() { setActiveTab(tab.id); }}
                   className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-[10px] font-black uppercase border-b-2 transition-all"
-                  style={{ ...T, color: active ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: active ? GOLD : 'transparent', background: active ? 'rgba(212,175,55,0.05)' : 'transparent' }}>
+                  style={{ fontFamily: 'Barlow Condensed, sans-serif', color: active ? GOLD : 'rgba(255,255,255,0.35)', borderBottomColor: active ? GOLD : 'transparent', background: active ? 'rgba(212,175,55,0.05)' : 'transparent' }}>
                   <Icon className="w-3.5 h-3.5" />{tab.label}
                 </button>
               );
@@ -128,16 +138,16 @@ export default function CommunityGrowthPage() {
                 <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Compete and earn rewards</p>
               </div>
               <div className="space-y-4">
-                {challenges.filter(c => c.status === 'active').map((challenge) => (
-                  <div key={challenge.id} onClick={() => setSelectedChallenge(challenge.id)} style={{ cursor: 'pointer' }}>
+                {challenges.filter(function(c) { return c.status === 'active'; }).map(function(challenge) { return (
+                  <div key={challenge.id} onClick={function() { setSelectedChallenge(challenge.id); }} style={{ cursor: 'pointer' }}>
                     <ChallengeCard
                       challenge={challenge}
-                      userParticipation={userParticipation.find(p => p.challenge_id === challenge.id)}
+                      userParticipation={userParticipation.find(function(p) { return p.challenge_id === challenge.id; })}
                       userId={(user && user.id)}
                     />
                   </div>
-                ))}
-                {challenges.filter(c => c.status === 'active').length === 0 && (
+                ); })}
+                {challenges.filter(function(c) { return c.status === 'active'; }).length === 0 && (
                   <div className="text-center py-12 rounded-2xl"
                     style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.08)' }}>
                     <Trophy className="w-10 h-10 mx-auto mb-2 opacity-20" style={{ color: GOLD }} />
@@ -146,13 +156,13 @@ export default function CommunityGrowthPage() {
                 )}
               </div>
 
-              {challenges.filter(c => c.status === 'upcoming').length > 0 && (
+              {challenges.filter(function(c) { return c.status === 'upcoming'; }).length > 0 && (
                 <div>
                   <h3 className="text-lg font-black text-white mb-3" style={T}>Coming Soon</h3>
                   <div className="space-y-4">
-                    {challenges.filter(c => c.status === 'upcoming').map((challenge) => (
+                    {challenges.filter(function(c) { return c.status === 'upcoming'; }).map(function(challenge) { return (
                       <ChallengeCard key={challenge.id} challenge={challenge} userId={(user && user.id)} />
-                    ))}
+                    ); })}
                   </div>
                 </div>
               )}
@@ -202,7 +212,7 @@ export default function CommunityGrowthPage() {
           <ContentRecommendations />
           <CollaborationMatcher />
           <SpotlightSection communityId={communityId || null} />
-          <CreatePollModal isOpen={false} onClose={() => {}} communityId={communityId || null} />
+          <CreatePollModal isOpen={false} onClose={function() {}} communityId={communityId || null} />
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 24, paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
