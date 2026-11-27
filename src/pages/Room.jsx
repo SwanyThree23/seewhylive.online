@@ -209,84 +209,100 @@ export default function RoomPage() {
   var roomId = urlParams.get('id');
   var queryClient = useQueryClient();
 
-  var [currentParticipant, setCurrentParticipant] = useState(null);
-  var [participants, setParticipants] = useState([]);
-  var [stages, setStages] = useState([]);
-  var [activeTab, setActiveTab] = useState('chat');
-  var [pinnedId, setPinnedId] = useState(null);
-  var [showWhiteboard, setShowWhiteboard] = useState(false);
-  var [showWatchParty, setShowWatchParty] = useState(false);
-  var [showPreflight, setShowPreflight] = useState(false);
-  var [showGreenRoomModal, setShowGreenRoomModal] = useState(false);
-  var [noiseSupp, setNoiseSupp] = useState(true);
-  var [echoCan, setEchoCan] = useState(true);
-  var [showActivitySidebar, setShowActivitySidebar] = useState(false);
-  var [showInviteSheet, setShowInviteSheet] = useState(false);
-  var [showPKBattleModal, setShowPKBattleModal] = useState(false);
-  var [showBreakoutRooms, setShowBreakoutRooms] = useState(false);
-  var [showShareModal, setShowShareModal] = useState(false);
-  var [showWebRTCConfig, setShowWebRTCConfig] = useState(false);
-  var [showSFUStage, setShowSFUStage] = useState(false);
-  var [showAuraPanelDrawer, setShowAuraPanelDrawer] = useState(false);
-  var [showCamSettings, setShowCamSettings] = useState(false);
-  var [showEvmux, setShowEvmux] = useState(false);
-  var [showClipCreator, setShowClipCreator] = useState(false);
-  var [pollTick, setPollTick] = useState(0);
-  var [raidTick, setRaidTick] = useState(0);
-  var [goalTick, setGoalTick] = useState(0);
-  var [reactEmoji, setReactEmoji] = useState(null);
-  var [showTippingModal, setShowTippingModal] = useState(false);
-  var [isSharing, setIsSharing] = useState(false);
+  var currentParticipantState = useState(null); var currentParticipant = currentParticipantState[0]; var setCurrentParticipant = currentParticipantState[1];
+  var participantsState = useState([]); var participants = participantsState[0]; var setParticipants = participantsState[1];
+  var stagesState = useState([]); var stages = stagesState[0]; var setStages = stagesState[1];
+  var activeTabState = useState('chat'); var activeTab = activeTabState[0]; var setActiveTab = activeTabState[1];
+  var pinnedIdState = useState(null); var pinnedId = pinnedIdState[0]; var setPinnedId = pinnedIdState[1];
+  var showWhiteboardState = useState(false); var showWhiteboard = showWhiteboardState[0]; var setShowWhiteboard = showWhiteboardState[1];
+  var showWatchPartyState = useState(false); var showWatchParty = showWatchPartyState[0]; var setShowWatchParty = showWatchPartyState[1];
+  var showPreflightState = useState(false); var showPreflight = showPreflightState[0]; var setShowPreflight = showPreflightState[1];
+  var showGreenRoomModalState = useState(false); var showGreenRoomModal = showGreenRoomModalState[0]; var setShowGreenRoomModal = showGreenRoomModalState[1];
+  var noiseSuppState = useState(true); var noiseSupp = noiseSuppState[0]; var setNoiseSupp = noiseSuppState[1];
+  var echoCanState = useState(true); var echoCan = echoCanState[0]; var setEchoCan = echoCanState[1];
+  var showActivitySidebarState = useState(false); var showActivitySidebar = showActivitySidebarState[0]; var setShowActivitySidebar = showActivitySidebarState[1];
+  var showInviteSheetState = useState(false); var showInviteSheet = showInviteSheetState[0]; var setShowInviteSheet = showInviteSheetState[1];
+  var showPKBattleModalState = useState(false); var showPKBattleModal = showPKBattleModalState[0]; var setShowPKBattleModal = showPKBattleModalState[1];
+  var showBreakoutRoomsState = useState(false); var showBreakoutRooms = showBreakoutRoomsState[0]; var setShowBreakoutRooms = showBreakoutRoomsState[1];
+  var showShareModalState = useState(false); var showShareModal = showShareModalState[0]; var setShowShareModal = showShareModalState[1];
+  var showWebRTCConfigState = useState(false); var showWebRTCConfig = showWebRTCConfigState[0]; var setShowWebRTCConfig = showWebRTCConfigState[1];
+  var showSFUStageState = useState(false); var showSFUStage = showSFUStageState[0]; var setShowSFUStage = showSFUStageState[1];
+  var showAuraPanelDrawerState = useState(false); var showAuraPanelDrawer = showAuraPanelDrawerState[0]; var setShowAuraPanelDrawer = showAuraPanelDrawerState[1];
+  var showCamSettingsState = useState(false); var showCamSettings = showCamSettingsState[0]; var setShowCamSettings = showCamSettingsState[1];
+  var showEvmuxState = useState(false); var showEvmux = showEvmuxState[0]; var setShowEvmux = showEvmuxState[1];
+  var showClipCreatorState = useState(false); var showClipCreator = showClipCreatorState[0]; var setShowClipCreator = showClipCreatorState[1];
+  var pollTickState = useState(0); var pollTick = pollTickState[0]; var setPollTick = pollTickState[1];
+  var raidTickState = useState(0); var raidTick = raidTickState[0]; var setRaidTick = raidTickState[1];
+  var goalTickState = useState(0); var goalTick = goalTickState[0]; var setGoalTick = goalTickState[1];
+  var reactEmojiState = useState(null); var reactEmoji = reactEmojiState[0]; var setReactEmoji = reactEmojiState[1];
+  var showTippingModalState = useState(false); var showTippingModal = showTippingModalState[0]; var setShowTippingModal = showTippingModalState[1];
+  var isSharingState = useState(false); var isSharing = isSharingState[0]; var setIsSharing = isSharingState[1];
   var screenStreamRef = useRef(null);
-  var handleStartShare = (stream) => { if (!stream) return; screenStreamRef.current = stream; var vt = stream.getVideoTracks()[0]; if (vt) vt.onended = () => { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
-  var handleStopShare = () => { if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); } screenStreamRef.current = null; setIsSharing(false); };
-  var [activeScene, setActiveScene] = useState('main');
-  var [selectedBitrate, setSelectedBitrate] = useState(3000);
-  var handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
-  var [isRecording, setIsRecording] = useState(false);
-  var [showSwanPanel, setShowSwanPanel] = useState(false);
-  var [showGiftShop, setShowGiftShop] = useState(false);
-  var [showWhisperPanel, setShowWhisperPanel] = useState(false);
-  var [showModerationAppeal, setShowModerationAppeal] = useState(false);
+  var handleStartShare = function(stream) { if (!stream) return; screenStreamRef.current = stream; var vt = stream.getVideoTracks()[0]; if (vt) vt.onended = function() { screenStreamRef.current = null; setIsSharing(false); }; setIsSharing(true); };
+  var handleStopShare = function() { if (screenStreamRef.current && screenStreamRef.current.getTracks) { screenStreamRef.current.getTracks().forEach(function(t) { t.stop(); }); } screenStreamRef.current = null; setIsSharing(false); };
+  var activeSceneState = useState('main'); var activeScene = activeSceneState[0]; var setActiveScene = activeSceneState[1];
+  var selectedBitrateState = useState(3000); var selectedBitrate = selectedBitrateState[0]; var setSelectedBitrate = selectedBitrateState[1];
+  var handleBitrateChange = function(b) { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
+  var isRecordingState = useState(false); var isRecording = isRecordingState[0]; var setIsRecording = isRecordingState[1];
+  var showSwanPanelState = useState(false); var showSwanPanel = showSwanPanelState[0]; var setShowSwanPanel = showSwanPanelState[1];
+  var showGiftShopState = useState(false); var showGiftShop = showGiftShopState[0]; var setShowGiftShop = showGiftShopState[1];
+  var showWhisperPanelState = useState(false); var showWhisperPanel = showWhisperPanelState[0]; var setShowWhisperPanel = showWhisperPanelState[1];
+  var showModerationAppealState = useState(false); var showModerationAppeal = showModerationAppealState[0]; var setShowModerationAppeal = showModerationAppealState[1];
   var recordingRef = useRef(null);
   var recordingStartRef = useRef(null);
 
-  var { data: user } = useQuery({
+  var userQuery = useQuery({
     queryKey: ['currentUser'],
-    queryFn: () => base44.auth.me(),
+    queryFn: function() { return base44.auth.me(); },
   });
+  var user = userQuery.data || null;
 
   // Real local camera/mic stream — seed device IDs from stored preferences
-  var prefCamRoom = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
-  var prefMicRoom = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
-  var [activeCamId, setActiveCamId] = useState(prefCamRoom);
-  var [activeMicId, setActiveMicId] = useState(prefMicRoom);
-  var { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamRoom, audioDeviceId: prefMicRoom });
-  var handleCamChange = (id) => { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch {} reacquireMedia({ videoDeviceId: id }); };
-  var handleMicChange = (id) => { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch {} reacquireMedia({ audioDeviceId: id }); };
+  var prefCamRoom = (function() { try { return localStorage.getItem('swl_pref_cam') || null; } catch(e) { return null; } })();
+  var prefMicRoom = (function() { try { return localStorage.getItem('swl_pref_mic') || null; } catch(e) { return null; } })();
+  var activeCamIdState = useState(prefCamRoom); var activeCamId = activeCamIdState[0]; var setActiveCamId = activeCamIdState[1];
+  var activeMicIdState = useState(prefMicRoom); var activeMicId = activeMicIdState[0]; var setActiveMicId = activeMicIdState[1];
+  var localMediaResult = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCamRoom, audioDeviceId: prefMicRoom });
+  var localStream = localMediaResult.localStream;
+  var audioEnabled = localMediaResult.audioEnabled;
+  var videoEnabled = localMediaResult.videoEnabled;
+  var toggleAudio = localMediaResult.toggleAudio;
+  var toggleVideo = localMediaResult.toggleVideo;
+  var mediaError = localMediaResult.error;
+  var reacquireMedia = localMediaResult.reacquire;
+  var handleCamChange = function(id) { setActiveCamId(id); try { localStorage.setItem('swl_pref_cam', id); } catch(e) {} reacquireMedia({ videoDeviceId: id }); };
+  var handleMicChange = function(id) { setActiveMicId(id); try { localStorage.setItem('swl_pref_mic', id); } catch(e) {} reacquireMedia({ audioDeviceId: id }); };
 
   // WebRTC peer mesh — must be declared before useRemoteSpeakingMap / activePc effect that depend on it
-  var { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(roomId, localStream);
+  var webRTCResult = useWebRTCPeers(roomId, localStream);
+  var remoteStreams = webRTCResult.remoteStreams;
+  var peerUserIds = webRTCResult.peerUserIds;
+  var announceJoin = webRTCResult.announceJoin;
+  var leaveRoom = webRTCResult.leaveRoom;
+  var peersRef = webRTCResult.peersRef;
 
   // Speaking detection + network quality
-  var { isSpeaking } = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  var autoSpeakResult = useAutoSpeakGate({ stream: localStream, enabled: !!localStream });
+  var isSpeaking = autoSpeakResult.isSpeaking;
   var remoteSpeakingIds = useRemoteSpeakingMap(remoteStreams, peerUserIds);
-  var speakingIds = isSpeaking && (user && user.id) ? { ...remoteSpeakingIds, [user.id]: true } : remoteSpeakingIds;
-  var [activePc, setActivePc] = useState(null);
-  useEffect(() => {
+  var speakingIds = (isSpeaking && (user && user.id)) ? Object.assign({}, remoteSpeakingIds, { [user.id]: true }) : remoteSpeakingIds;
+  var activePcState = useState(null); var activePc = activePcState[0]; var setActivePc = activePcState[1];
+  useEffect(function() {
     var entries = Array.from(((peersRef && peersRef.current) && peersRef.current.entries()) || []);
-    var connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    var connected = entries.find(function(pair) { return pair[1].pc.connectionState === 'connected'; });
     setActivePc(connected ? connected[1].pc : null);
-  }, [remoteStreams]);  
-  var { quality: netQuality, rtt: netRtt } = useConnectionQuality(activePc, 5000);
+  }, [remoteStreams]);
+  var connQualResult = useConnectionQuality(activePc, 5000);
+  var netQuality = connQualResult.quality;
+  var netRtt = connQualResult.rtt;
 
-  var [busViewerCount, setBusViewerCount] = useState(0);
-  var [tipTotal, setTipTotal] = useState(0);
-  var [peakViewers, setPeakViewers] = useState(0);
-  var [showViewerControls, setShowViewerControls] = useState(false);
-  var [showGlobalSearch, setShowGlobalSearch] = useState(false);
-  var [chatMessages, setChatMessages] = useState([]);
-  var [hypeLevel, setHypeLevel] = useState(0);
+  var busViewerCountState = useState(0); var busViewerCount = busViewerCountState[0]; var setBusViewerCount = busViewerCountState[1];
+  var tipTotalState = useState(0); var tipTotal = tipTotalState[0]; var setTipTotal = tipTotalState[1];
+  var peakViewersState = useState(0); var peakViewers = peakViewersState[0]; var setPeakViewers = peakViewersState[1];
+  var showViewerControlsState = useState(false); var showViewerControls = showViewerControlsState[0]; var setShowViewerControls = showViewerControlsState[1];
+  var showGlobalSearchState = useState(false); var showGlobalSearch = showGlobalSearchState[0]; var setShowGlobalSearch = showGlobalSearchState[1];
+  var chatMessagesState = useState([]); var chatMessages = chatMessagesState[0]; var setChatMessages = chatMessagesState[1];
+  var hypeLevelState = useState(0); var hypeLevel = hypeLevelState[0]; var setHypeLevel = hypeLevelState[1];
   // Derived from currentParticipant state — must be computed before hooks that use it
   var isHost = (currentParticipant && currentParticipant.role) === 'host';
   var isSpeaker = ['host', 'co-host', 'speaker'].includes((currentParticipant && currentParticipant.role));
@@ -295,18 +311,18 @@ export default function RoomPage() {
   var streamStartRef = useRef(Date.now());
 
   // Elapsed-seconds counter (starts when component mounts)
-  var [elapsed, setElapsed] = useState(0);
+  var elapsedState = useState(0); var elapsed = elapsedState[0]; var setElapsed = elapsedState[1];
   var elapsedTimerRef = useRef(null);
-  useEffect(() => {
-    elapsedTimerRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
-    return () => clearInterval(elapsedTimerRef.current);
+  useEffect(function() {
+    elapsedTimerRef.current = setInterval(function() { setElapsed(function(s) { return s + 1; }); }, 1000);
+    return function() { clearInterval(elapsedTimerRef.current); };
   }, []);
 
   // Push-to-talk (Space bar) — unmutes mic while held, remutes on release
-  var [pttActive, setPttActive] = useState(false);
+  var pttActiveState = useState(false); var pttActive = pttActiveState[0]; var setPttActive = pttActiveState[1];
   var pttWasEnabledRef = useRef(false);
-  useEffect(() => {
-    var onDown = (e) => {
+  useEffect(function() {
+    var onDown = function(e) {
       if (e.code !== 'Space' || e.repeat) return;
       var tag = e.target && e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
@@ -316,122 +332,129 @@ export default function RoomPage() {
         setPttActive(true);
       }
     };
-    var onUp = (e) => {
+    var onUp = function(e) {
       if (e.code !== 'Space' || !pttActive) return;
       toggleAudio();
       setPttActive(false);
     };
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
-    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
+    return function() { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
   }, [pttActive, audioEnabled, toggleAudio]);
 
   // M = toggle mic, V = toggle camera (when not in a text input)
-  useEffect(() => {
-    var onKey = (e) => {
+  useEffect(function() {
+    var onKey = function(e) {
       var tag = e.target && e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
       if (e.key === 'm' || e.key === 'M') toggleAudio();
       if (e.key === 'v' || e.key === 'V') toggleVideo();
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return function() { window.removeEventListener('keydown', onKey); };
   }, [toggleAudio, toggleVideo]);
 
   var announceJoinRef = useRef(announceJoin);
   var leaveRoomRef = useRef(leaveRoom);
-  useEffect(() => { announceJoinRef.current = announceJoin; }, [announceJoin]);
-  useEffect(() => { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
+  useEffect(function() { announceJoinRef.current = announceJoin; }, [announceJoin]);
+  useEffect(function() { leaveRoomRef.current = leaveRoom; }, [leaveRoom]);
   var announcedRef = useRef(false);
-  useEffect(() => {
+  useEffect(function() {
     if (!localStream || !(user && user.id) || announcedRef.current) return;
     announcedRef.current = true;
     if (announceJoinRef.current) announceJoinRef.current(user.id);
   }, [localStream, (user && user.id)]);
-  useEffect(() => { return function() { if (leaveRoomRef.current) leaveRoomRef.current(); }; }, []);
+  useEffect(function() { return function() { if (leaveRoomRef.current) leaveRoomRef.current(); }; }, []);
 
-  var { data: room, isLoading } = useQuery({
+  var roomQuery = useQuery({
     queryKey: ['room', roomId],
-    queryFn: () => base44.entities.Room.filter({ id: roomId }).then(r => r[0]),
+    queryFn: function() { return base44.entities.Room.filter({ id: roomId }).then(function(r) { return r[0]; }); },
     enabled: !!roomId,
   });
+  var room = roomQuery.data || null;
+  var isLoading = roomQuery.isLoading;
 
   // VOD recording — room must be loaded first to pass title/host_id
-  var { extractClipBlobUrl } = useVODRecording({ streamId: roomId || '', creatorId: (user && user.id) || '', title: (room && room.title) || 'Live Room', stream: localStream });
+  var vodResult = useVODRecording({ streamId: roomId || '', creatorId: (user && user.id) || '', title: (room && room.title) || 'Live Room', stream: localStream });
+  var extractClipBlobUrl = vodResult.extractClipBlobUrl;
   var subCount = useSubscriptionCount((room && room.host_id) || (user && user.id));
   useHighlightDetector({ partyId: roomId, roomId, isHost, user, messages: chatMessages, hypeLevel, elapsedSeconds: elapsed, getClipBlobUrl: extractClipBlobUrl });
   useVoiceAgentRuntime({ chatMessage: chatMessages[chatMessages.length - 1] || null });
 
   // ZEGO SFU token — used by LiveStage when showSFUStage is enabled
-  var { token: zegoToken } = useZegoToken({ roomId, userId: (user && user.id), enabled: showSFUStage && !!(user && user.id) });
+  var zegoTokenResult = useZegoToken({ roomId, userId: (user && user.id), enabled: showSFUStage && !!(user && user.id) });
+  var zegoToken = zegoTokenResult.token;
 
-  var { data: fetchedStages = [] } = useQuery({
+  var fetchedStagesQuery = useQuery({
     queryKey: ['stages', roomId],
-    queryFn: () => base44.entities.Stage.filter({ room_id: roomId }, 'order'),
+    queryFn: function() { return base44.entities.Stage.filter({ room_id: roomId }, 'order'); },
     enabled: !!roomId,
   });
+  var fetchedStages = fetchedStagesQuery.data || [];
 
-  var { data: fetchedParticipants = [] } = useQuery({
+  var fetchedParticipantsQuery = useQuery({
     queryKey: ['participants', roomId],
-    queryFn: () => base44.entities.Participant.filter({ room_id: roomId }),
+    queryFn: function() { return base44.entities.Participant.filter({ room_id: roomId }); },
     enabled: !!roomId,
   });
+  var fetchedParticipants = fetchedParticipantsQuery.data || [];
 
-  var { data: activePoll } = useQuery({
+  var activePollQuery = useQuery({
     queryKey: ['active-poll', roomId],
-    queryFn: () => base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Poll.filter({ room_id: roomId, status: 'active' }).then(function(r) { return r[0] || null; }); },
     enabled: !!roomId,
     refetchInterval: 5000,
   });
+  var activePoll = activePollQuery.data || null;
 
-  useEffect(() => {
+  useEffect(function() {
     setStages(fetchedStages);
   }, [fetchedStages]);
 
-  useEffect(() => {
+  useEffect(function() {
     setParticipants(fetchedParticipants);
     if (user) {
-      var myParticipant = fetchedParticipants.find(p => p.user_id === user.id);
+      var myParticipant = fetchedParticipants.find(function(p) { return p.user_id === user.id; });
       setCurrentParticipant(myParticipant);
     }
   }, [fetchedParticipants, user]);
 
   // Increment viewer count on join, decrement on leave
-  useEffect(() => {
+  useEffect(function() {
     if (!room || !user) return;
-    base44.entities.Room.update(room.id, { viewer_count: (room.viewer_count || 0) + 1 }).catch(() => {});
-    return () => {
-      base44.entities.Room.update(room.id, { viewer_count: Math.max(0, (room.viewer_count || 1) - 1) }).catch(() => {});
+    base44.entities.Room.update(room.id, { viewer_count: (room.viewer_count || 0) + 1 }).catch(function() {});
+    return function() {
+      base44.entities.Room.update(room.id, { viewer_count: Math.max(0, (room.viewer_count || 1) - 1) }).catch(function() {});
     };
   }, [(room && room.id), (user && user.id)]);
 
   // Real-time subscriptions
-  useEffect(() => {
+  useEffect(function() {
     if (!roomId) return;
 
-    var unsubParticipants = base44.entities.Participant.subscribe((event) => {
+    var unsubParticipants = base44.entities.Participant.subscribe(function(event) {
       if (event.data.room_id === roomId) {
         if (event.type === 'create') {
-          setParticipants(prev => [...prev, event.data]);
+          setParticipants(function(prev) { return prev.concat([event.data]); });
         } else if (event.type === 'update') {
-          setParticipants(prev => prev.map(p => p.id === event.id ? event.data : p));
+          setParticipants(function(prev) { return prev.map(function(p) { return p.id === event.id ? event.data : p; }); });
           if (event.data.user_id === (user && user.id)) {
             setCurrentParticipant(event.data);
           }
         } else if (event.type === 'delete') {
-          setParticipants(prev => prev.filter(p => p.id !== event.id));
+          setParticipants(function(prev) { return prev.filter(function(p) { return p.id !== event.id; }); });
         }
       }
     });
 
-    return () => {
+    return function() {
       unsubParticipants();
     };
   }, [roomId, user]);
 
   var joinRoomMutation = useMutation({
-    mutationFn: async () => {
-      var existingParticipant = participants.find(p => p.user_id === user.id);
+    mutationFn: async function() {
+      var existingParticipant = participants.find(function(p) { return p.user_id === user.id; });
       if (existingParticipant) {
         return existingParticipant;
       }
@@ -446,7 +469,7 @@ export default function RoomPage() {
         joined_at: new Date().toISOString(),
       });
     },
-    onSuccess: async (participant) => {
+    onSuccess: async function(participant) {
       setCurrentParticipant(participant);
       toast.success('Joined room successfully!');
       // Log activity
@@ -455,7 +478,7 @@ export default function RoomPage() {
         await base44.entities.Activity.create({
           user_id: me.id,
           type: 'room_joined',
-          title: `Joined room: ${room.title}`,
+          title: 'Joined room: ' + (room && room.title),
           entity_id: roomId,
           entity_type: 'Room',
           is_public: room.is_public,
@@ -475,52 +498,52 @@ export default function RoomPage() {
         }
       } catch (_) {}
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var leaveRoomMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async function() {
       if (currentParticipant) {
         await base44.entities.Participant.delete(currentParticipant.id);
       }
     },
-    onSuccess: () => {
+    onSuccess: function() {
       window.location.href = createPageUrl('Home');
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var updateParticipantMutation = useMutation({
-    mutationFn: async ({ id, updates }) => {
+    mutationFn: async function(args) { var id = args.id; var updates = args.updates;
       return await base44.entities.Participant.update(id, updates);
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var startRecordingMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async function() {
       var rec = await base44.entities.Recording.create({
         room_id: roomId,
         host_id: room.host_id,
         title: room.title,
         started_at: new Date().toISOString(),
         status: 'recording',
-        stream_url: `${window.location.origin}${createPageUrl('Room')}?id=${roomId}`,
+        stream_url: window.location.origin + createPageUrl('Room') + '?id=' + roomId,
         viewer_count: room.viewer_count || 0,
       });
       return rec;
     },
-    onSuccess: (rec) => {
+    onSuccess: function(rec) {
       recordingRef.current = rec.id;
       recordingStartRef.current = Date.now();
       setIsRecording(true);
       toast.success('Recording started');
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var stopRecordingMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async function() {
       if (!recordingRef.current) return;
       var duration = Math.floor((Date.now() - (recordingStartRef.current || Date.now())) / 1000);
       await base44.entities.Recording.update(recordingRef.current, {
@@ -529,38 +552,40 @@ export default function RoomPage() {
         duration_seconds: duration,
       });
     },
-    onSuccess: () => {
+    onSuccess: function() {
       setIsRecording(false);
       recordingRef.current = null;
       toast.success('Recording saved to Past Streams');
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var raiseHandMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async function() {
       return await base44.entities.Participant.update(currentParticipant.id, {
         hand_raised: !currentParticipant.hand_raised,
         hand_raised_at: !currentParticipant.hand_raised ? new Date().toISOString() : null,
       });
     },
-    onSuccess: () => {
+    onSuccess: function() {
       toast.success(currentParticipant.hand_raised ? 'Hand lowered' : 'Hand raised!');
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
-  useEffect(() => {
+  useEffect(function() {
     if (room && user && !currentParticipant) {
       joinRoomMutation.mutate();
     }
   }, [room, user]);
 
   // Moderation toasts — must be unconditional (before any early returns) to obey Rules of Hooks
-  var { toasts: modToasts, push: pushModToast } = useModerationToasts();
-  useEffect(() => {
+  var modToastsResult = useModerationToasts();
+  var modToasts = modToastsResult.toasts;
+  var pushModToast = modToastsResult.push;
+  useEffect(function() {
     if (!roomId) return;
-    var unsub = base44.entities.ChatModeration.subscribe((event) => {
+    var unsub = base44.entities.ChatModeration.subscribe(function(event) {
       if (event.type !== 'create') return;
       var d = event.data;
       if ((d && d.room_id) !== roomId || !(d && d.auto_detected)) return;
@@ -586,7 +611,7 @@ export default function RoomPage() {
         <div className="text-center">
           <h2 className="text-2xl font-black text-white mb-2" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Room not found</h2>
           <p className="mb-4 text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>This room doesn't exist or has been deleted</p>
-          <button onClick={() => window.location.href = createPageUrl('Home')}
+          <button onClick={function() { window.location.href = createPageUrl('Home'); }}
             className="px-5 py-2.5 rounded-xl font-black uppercase text-sm"
             style={{ background: '#800020', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Go Home
@@ -596,7 +621,7 @@ export default function RoomPage() {
     );
   }
 
-  var hostParticipant = participants.find(p => p.user_id === room.host_id);
+  var hostParticipant = participants.find(function(p) { return p.user_id === room.host_id; });
   var _speaker = participants.find(function(p) { return p.is_speaking; });
   var speakerName = _speaker && _speaker.user_name;
 
@@ -622,7 +647,7 @@ export default function RoomPage() {
       <div className="sticky top-0 z-50" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
         {/* Row 1: nav + title + badges + actions */}
         <div className="flex items-center gap-2 px-3 h-12">
-          <button onClick={() => leaveRoomMutation.mutate()}
+          <button onClick={function() { leaveRoomMutation.mutate(); }}
             className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
             style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
             <PhoneOff className="w-4 h-4" />
@@ -639,9 +664,9 @@ export default function RoomPage() {
             style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.25)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
             SeeWhy LIVE
           </span>
-          <ShareButtons url={`${window.location.origin}${createPageUrl('Room')}?id=${roomId}`} title={(room && room.title)} />
+          <ShareButtons url={window.location.origin + createPageUrl('Room') + '?id=' + roomId} title={(room && room.title)} />
           <button
-            onClick={() => setShowWatchParty(!showWatchParty)}
+            onClick={function() { setShowWatchParty(!showWatchParty); }}
             title={showWatchParty ? 'Close Watch Party' : 'Start Watch Party'}
             className="flex items-center gap-1 px-2 h-8 rounded-xl font-black text-[11px] uppercase transition-all"
             style={{
@@ -652,7 +677,7 @@ export default function RoomPage() {
             }}>
             📺 Watch
           </button>
-          <button onClick={() => setShowWhiteboard(!showWhiteboard)}
+          <button onClick={function() { setShowWhiteboard(!showWhiteboard); }}
             className="w-8 h-8 rounded-xl flex items-center justify-center"
             style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
             <Share2 className="w-4 h-4" />
@@ -662,14 +687,14 @@ export default function RoomPage() {
               <GreenroomWaitlistPanel roomId={roomId} currentUser={user} />
               <RaidPanelButton room={room} currentUser={user} isHost={isHost} />
               <button
-                onClick={() => { if (isRecording) stopRecordingMutation.mutate(); else startRecordingMutation.mutate(); }}
+                onClick={function() { if (isRecording) stopRecordingMutation.mutate(); else startRecordingMutation.mutate(); }}
                 disabled={startRecordingMutation.isPending || stopRecordingMutation.isPending}
                 className="w-8 h-8 rounded-xl flex items-center justify-center"
                 style={{ background: isRecording ? 'rgba(192,57,43,0.15)' : 'rgba(255,255,255,0.06)', color: isRecording ? '#C0392B' : 'rgba(255,255,255,0.4)' }}>
                 {isRecording ? <StopCircle className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
               </button>
               <button
-                onClick={async () => {
+                onClick={async function() {
                   try {
                     if (isRecording) await stopRecordingMutation.mutateAsync();
                     await base44.entities.Room.update(room.id, { status: 'ended', ended_at: new Date().toISOString() });
@@ -712,23 +737,23 @@ export default function RoomPage() {
           {isHost && (
             <div className="flex items-center gap-1 ml-auto">
               <button
-                onClick={() => setShowSFUStage(v => !v)}
+                onClick={function() { setShowSFUStage(function(v) { return !v; }); }}
                 className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[11px]"
                 style={{
                   background: showSFUStage ? 'rgba(212,175,55,0.18)' : 'rgba(212,175,55,0.08)',
-                  border: `1px solid ${showSFUStage ? 'rgba(212,175,55,0.5)' : 'rgba(212,175,55,0.2)'}`,
+                  border: '1px solid ' + (showSFUStage ? 'rgba(212,175,55,0.5)' : 'rgba(212,175,55,0.2)'),
                   color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif'
                 }}
               >
                 ⚡ SFU
               </button>
-              <Link to={`/ControlRoom?room_id=${roomId}`}>
+              <Link to={'/ControlRoom?room_id=' + roomId}>
                 <button className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[11px]"
                   style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   📡 Ctrl
                 </button>
               </Link>
-              <Link to={`/ModerationDashboard?room_id=${roomId}`}>
+              <Link to={'/ModerationDashboard?room_id=' + roomId}>
                 <button className="flex items-center gap-1 px-2 py-0.5 rounded-lg font-black uppercase text-[11px]"
                   style={{ background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', color: '#D4AF37', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   🛡 Mod
@@ -753,7 +778,7 @@ export default function RoomPage() {
                     <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 900, letterSpacing: 1, color: '#D4AF37', textTransform: 'uppercase' }}>
                       ⚡ SFU Stage (ZEGOCLOUD)
                     </span>
-                    <button onClick={() => setShowSFUStage(false)} style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    <button onClick={function() { setShowSFUStage(false); }} style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer' }}>
                       ✕ Close
                     </button>
                   </div>
@@ -772,23 +797,23 @@ export default function RoomPage() {
                 <Tabs defaultValue={(stages[0] && stages[0].id)} className="space-y-4">
                   {stages.length > 1 && (
                     <TabsList>
-                      {stages.map(stage => (
+                      {stages.map(function(stage) { return (
                         <TabsTrigger key={stage.id} value={stage.id}>
                           {stage.name}
                         </TabsTrigger>
-                      ))}
+                      ); })}
                     </TabsList>
                   )}
 
-                  {stages.map(stage => (
+                  {stages.map(function(stage) { return (
                     <TabsContent key={stage.id} value={stage.id}>
                       <StageView
                         stage={stage}
                         participants={participants}
                         currentUserId={(user && user.id)}
-                        onUpdateParticipant={(id, updates) =>
-                          updateParticipantMutation.mutate({ id, updates })
-                        }
+                        onUpdateParticipant={function(id, updates) {
+                          updateParticipantMutation.mutate({ id: id, updates: updates });
+                        }}
                         localStream={localStream}
                         localAudioEnabled={audioEnabled}
                         localVideoEnabled={videoEnabled}
@@ -798,7 +823,7 @@ export default function RoomPage() {
                         peerUserIds={peerUserIds}
                       />
                     </TabsContent>
-                  ))}
+                  ); })}
                 </Tabs>
               ) : (
                 <div className="text-center py-12">
@@ -851,7 +876,7 @@ export default function RoomPage() {
                       size="lg"
                       variant={audioEnabled ? "default" : "destructive"}
                       className="w-16 h-16 rounded-full"
-                      onClick={() => {
+                      onClick={function() {
                         toggleAudio();
                         updateParticipantMutation.mutate({
                           id: currentParticipant.id,
@@ -867,7 +892,7 @@ export default function RoomPage() {
                       size="lg"
                       variant={videoEnabled ? "default" : "outline"}
                       className="w-16 h-16 rounded-full"
-                      onClick={() => {
+                      onClick={function() {
                         toggleVideo();
                         updateParticipantMutation.mutate({
                           id: currentParticipant.id,
@@ -884,7 +909,7 @@ export default function RoomPage() {
                         size="lg"
                         variant={currentParticipant.hand_raised ? "default" : "outline"}
                         className="w-16 h-16 rounded-full"
-                        onClick={() => raiseHandMutation.mutate()}
+                        onClick={function() { raiseHandMutation.mutate(); }}
                       >
                         <Hand className="w-6 h-6" />
                       </Button>
@@ -926,19 +951,19 @@ export default function RoomPage() {
                   currentUser={user}
                   roomId={roomId}
                   communityId={room.community_id}
-                  onUpdateParticipant={(id, updates) => 
-                    updateParticipantMutation.mutate({ id, updates })
-                  }
-                  onInviteToStage={(participant) => {
+                  onUpdateParticipant={function(id, updates) {
+                    updateParticipantMutation.mutate({ id: id, updates: updates });
+                  }}
+                  onInviteToStage={function(participant) {
                     updateParticipantMutation.mutate({
                       id: participant.id,
-                      updates: { 
+                      updates: {
                         role: 'speaker',
                         stage_id: (stages[0] && stages[0].id),
                         hand_raised: false
                       }
                     });
-                    toast.success(`Invited ${participant.user_name} to stage`);
+                    toast.success('Invited ' + participant.user_name + ' to stage');
                   }}
                 />
               </TabsContent>
@@ -1000,10 +1025,10 @@ export default function RoomPage() {
       {user && <ZEGOConfigPanel user={user} />}
       {roomId && <RealtimeLeaderboard roomId={roomId} creatorId={(room && room.host_id) || (user && user.id)} />}
       {roomId && <LiveTranscription isLive={true} roomId={roomId} stream={localStream} speaker={(user && user.full_name)} />}
-      {showViewerControls && roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={() => setShowViewerControls(false)} />}
+      {showViewerControls && roomId && <ViewerControlsPanel roomId={roomId} currentUser={user} onClose={function() { setShowViewerControls(false); }} />}
       {roomId && (user && user.id) && <VirtualCurrencyTips roomId={roomId} creatorId={(room && room.host_id) || (user && user.id)} currentUser={user} isHost={isHost} />}
       {roomId && <GoldenWall roomId={roomId} />}
-      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={(user && user.id)} onOpenPanel={() => setShowSwanPanel(true)} />}
+      {isHost && roomId && <SwanDirectorHUD roomId={roomId} hostId={(user && user.id)} onOpenPanel={function() { setShowSwanPanel(true); }} />}
       {roomId && <PKBattleInterface roomId={roomId} />}
       {roomId && <CoStreamPanel roomId={roomId} />}
       {isHost && roomId && <CollaborativeWhiteboard roomId={roomId} />}
@@ -1012,7 +1037,7 @@ export default function RoomPage() {
       {roomId && <RewardShop creatorId={(room && room.host_id) || (user && user.id)} roomId={roomId} currentUser={user} />}
       {!isHost && (user && user.id) && <ViewerLoyaltyCard userId={user.id} creatorId={(room && room.host_id) || (user && user.id)} compact={true} />}
       {roomId && <GreenroomQueue roomId={roomId} isHost={isHost} />}
-      {isHost && <StreamingPresets onApply={(p) => reacquireMedia({ resolution: p.resolution })} />}
+      {isHost && <StreamingPresets onApply={function(p) { reacquireMedia({ resolution: p.resolution }); }} />}
       {roomId && <EmbedPlayer roomId={roomId} creatorName={(user && user.full_name) || ''} streamTitle={(room && room.title) || 'Live Stream'} viewerCount={participants.length} />}
       <LiveTranslationWidget chatMessage={(chatMessages[chatMessages.length - 1] && chatMessages[chatMessages.length - 1].content) || null} onTranslation={function() {}} />
       {isHost && (user && user.id) && <RecordingManager userId={user.id} />}
@@ -1022,18 +1047,18 @@ export default function RoomPage() {
       {roomId && <InteractivePollWidget roomId={roomId} isHost={isHost} />}
       {isHost && <StreamMetadataEditor initialTitle={(room && room.title) || 'Live Stream'} initialCategory={'entertainment'} />}
       {isHost && <StreamerMonetizationCenter />}
-      {!isHost && showGiftShop && roomId && <AnimatedGiftShop recipientId={(room && room.host_id) || (user && user.id)} roomId={roomId} onClose={() => setShowGiftShop(false)} />}
+      {!isHost && showGiftShop && roomId && <AnimatedGiftShop recipientId={(room && room.host_id) || (user && user.id)} roomId={roomId} onClose={function() { setShowGiftShop(false); }} />}
       {isHost && (user && user.id) && <VirtualGoodsStore userId={user.id} />}
       {isHost && <SoundAlertsManager creatorId={(room && room.host_id) || (user && user.id)} />}
-      <ShareToSocial content={{ title: (room && room.title) || 'Live Stream on SeeWhy LIVE', url: `${window.location.origin}${createPageUrl('Room')}?id=${roomId}` }} />
+      <ShareToSocial content={{ title: (room && room.title) || 'Live Stream on SeeWhy LIVE', url: window.location.origin + createPageUrl('Room') + '?id=' + roomId }} />
       {isHost && roomId && (user && user.id) && <VideoShortRecorder roomId={roomId} creatorId={user.id} />}
       {isHost && <BroadcastAnalyticsDashboard streamSession={room || null} isLive={roomId != null} />}
       {isHost && roomId && <AutomatedHighlightReels streamSession={{room_id: roomId}} />}
       {roomId && <PerformanceDashboard roomId={roomId} sessionId={roomId} />}
       <StreamHealthDashboard isLive={roomId != null} />
-      {!isHost && roomId && <QuickTip recipientId={(room && room.host_id) || (user && user.id)} recipientName={''} onTipSent={(amount) => setTipTotal(t => t + Math.floor(amount || 0))} />}
-      {isHost && <LowerThirdsBanner onBannerChange={(b) => { if (roomId) base44.entities.Room.update(roomId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
-      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) screenStreamRef.current || navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(st => handleStartShare(st)).catch(() => {}); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
+      {!isHost && roomId && <QuickTip recipientId={(room && room.host_id) || (user && user.id)} recipientName={''} onTipSent={function(amount) { setTipTotal(function(t) { return t + Math.floor(amount || 0); }); }} />}
+      {isHost && <LowerThirdsBanner onBannerChange={function(b) { if (roomId) base44.entities.Room.update(roomId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(function() {}); }} />}
+      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={function(s) { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !isSharing) screenStreamRef.current || navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(function(st) { handleStartShare(st); }).catch(function() {}); else if (s === 'camera' && isSharing) handleStopShare(); }} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
       {isHost && roomId && <RaidPanelButton room={room} currentUser={user} isHost={isHost} triggerOpen={raidTick} />}
@@ -1042,43 +1067,43 @@ export default function RoomPage() {
       {isHost && roomId && <AIStreamSummary roomId={roomId} isHost={isHost} streamTitle={(room && room.title) || ''} viewerCount={participants.length} elapsedSeconds={elapsed} />}
       {isHost && <ChatModeration collapsed={true} />}
       <BrandChyron />
-      {!isHost && showWhisperPanel && roomId && (user && user.id) && <WhisperPanel roomId={roomId} currentUser={user} recipientId={(room && room.host_id) || (user && user.id)} recipientName={''} onClose={() => setShowWhisperPanel(false)} />}
+      {!isHost && showWhisperPanel && roomId && (user && user.id) && <WhisperPanel roomId={roomId} currentUser={user} recipientId={(room && room.host_id) || (user && user.id)} recipientName={''} onClose={function() { setShowWhisperPanel(false); }} />}
       <HostAlertCenter />
       {roomId && <AICopilotSidebar roomId={roomId} isHost={isHost} viewerCount={participants.length} />}
       {isHost && roomId && <EnhancedPollingSystem roomId={roomId} hostId={(room && room.host_id) || (user && user.id)} isHost={isHost} />}
       {roomId && (user && user.id) && <SuperChatBar roomId={roomId} currentUser={user} recipientId={(room && room.host_id) || (user && user.id)} recipientName={''} />}
-      {(user && user.id) && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
+      {(user && user.id) && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={function() {}} />}
       {isHost && <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={(user && user.full_name) || ''} isHost={isHost} isSpeaking={isSpeaking} />}
       {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={!audioEnabled} isVideoOff={!videoEnabled} onMicToggle={toggleAudio} onVideoToggle={toggleVideo} />}
       {isHost && roomId && <PipCameraTile localStream={localStream} videoEnabled={videoEnabled} roomId={roomId} tipTotal={tipTotal} />}
-      {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={() => setShowCamSettings(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={handleCamChange} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />}
+      {isHost && <PreJoinSettingsModal open={showCamSettings} onClose={function() { setShowCamSettings(false); }} stream={localStream} devices={{ cameras: [] }} onCameraChange={handleCamChange} onResolutionChange={function(res) { reacquireMedia({ resolution: res }); }} />}
       {isHost && <LiveCaptionOverlay stream={localStream} />}
       {isHost && <CameraDeviceSelector compact currentVideoId={activeCamId} currentAudioId={activeMicId} onVideoChange={handleCamChange} onAudioChange={handleMicChange} />}
       {isHost && <AudioPanel micMuted={!audioEnabled} onMicToggle={toggleAudio} participants={participants} />}
-      {isHost && <EvmuxWebSource isActive={showEvmux} onClose={() => setShowEvmux(false)} />}
+      {isHost && <EvmuxWebSource isActive={showEvmux} onClose={function() { setShowEvmux(false); }} />}
       {roomId && <LivePollOverlay roomId={roomId} currentUser={user} isHost={isHost} position={'bottom-left'} />}
       {isHost && <StripeConnectButton creatorId={(room && room.host_id) || (user && user.id)} />}
       {!isHost && (user && user.id) && <StripeSubscribeButton creatorId={(room && room.host_id) || (user && user.id)} creatorName={''} currentUserId={user.id} />}
       {<SubscriptionTiers communityId={null} userId={(user && user.id)} />}
       {room && <WatchPartyAnalytics party={room} members={participants} pollCount={0} reactionCount={0} />}
-      {roomId && (user && user.id) && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={(user && user.full_name) || ''} onJoined={() => toast.success('Joined stream successfully!')} />}
-      {roomId && <PaymentMethodSelector creatorId={(room && room.host_id) || (user && user.id)} roomId={roomId} onPaymentComplete={() => toast.success('Payment complete!')} />}
+      {roomId && (user && user.id) && <ZEGOGuestJoin roomId={roomId} userId={user.id} userName={(user && user.full_name) || ''} onJoined={function() { toast.success('Joined stream successfully!'); }} />}
+      {roomId && <PaymentMethodSelector creatorId={(room && room.host_id) || (user && user.id)} roomId={roomId} onPaymentComplete={function() { toast.success('Payment complete!'); }} />}
       {isHost && <CreatorTierManager creatorId={(room && room.host_id) || (user && user.id)} />}
       {(user && user.id) && <TierBadge tier={null} size={'sm'} showName={false} />}
       {(user && user.id) && <LoyaltyBadge userId={user.id} creatorId={(room && room.host_id) || (user && user.id)} />}
       {roomId && isHost && <GuestInviteGenerator roomId={roomId} isHost={isHost} />}
-      {roomId && <GuestGrid participants={participants} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={(user && user.id)} speakingIds={speakingIds} />}
-      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
-      <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { if (isHost && roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(() => {}); }} />
+      {roomId && <GuestGrid participants={participants} isHost={isHost} onInvite={function() { navigator.clipboard.writeText(window.location.href).then(function() { toast.success('Invite link copied!'); }).catch(function() {}); }} hostId={(user && user.id)} speakingIds={speakingIds} />}
+      {isHost && roomId && <EnhancedRoomControls isHost={isHost} roomData={room} micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={function(s) { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
+      <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={function(url) { if (isHost && roomId) base44.entities.Room.update(roomId, { video_url: url }).catch(function() {}); }} />
       <YouTubeDiscovery />
-      <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
-      {showGlobalSearch && <GlobalSearch onClose={() => setShowGlobalSearch(false)} />}
-      {roomId && !isHost && (room && room.ppv_price) > 0 && <PayPerViewGate roomId={roomId} ppvPrice={room.ppv_price} currentUserId={(user && user.id)} onPurchase={() => toast.success('Content unlocked!')} />}
-      <PaywallGate isHost={isHost} streamTitle={(room && room.title) || ''} onUnlock={() => {}} isUnlocked={true} />
+      <ActivitySidebar isOpen={showActivitySidebar} onClose={function() { setShowActivitySidebar(false); }} />
+      {showGlobalSearch && <GlobalSearch onClose={function() { setShowGlobalSearch(false); }} />}
+      {roomId && !isHost && (room && room.ppv_price) > 0 && <PayPerViewGate roomId={roomId} ppvPrice={room.ppv_price} currentUserId={(user && user.id)} onPurchase={function() { toast.success('Content unlocked!'); }} />}
+      <PaywallGate isHost={isHost} streamTitle={(room && room.title) || ''} onUnlock={function() {}} isUnlocked={true} />
       {roomId && <SubscriptionGate creatorId={(room && room.host_id) || (user && user.id)} roomId={roomId} />}
-      {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={() => setShowModerationAppeal(false)} />}
+      {showModerationAppeal && roomId && <ModerationAppealPanel flagId={null} messageId={null} roomId={roomId} onClose={function() { setShowModerationAppeal(false); }} />}
       {isHost && (user && user.id) && <GuestDestinationsPanel participantUserId={user.id} guestName={(user && user.full_name) || ''} />}
-      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => toast.success('Permissions updated')} />}
+      {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={function() { toast.success('Permissions updated'); }} />}
       {isHost && roomId && <MultiStreamConfig roomId={roomId} isHost={isHost} />}
       {roomId && <VdoNinjaGuestLink roomId={roomId} />}
       <WebRTCSetupBanner error={mediaError} audioEnabled={audioEnabled} videoEnabled={videoEnabled} onRetry={reacquireMedia} />
@@ -1086,16 +1111,16 @@ export default function RoomPage() {
       {isHost && <PKBattleSoundboard battleId={roomId} isBattleActive={roomId != null} />}
       <PanelMusicPlayer />
       {isHost && roomId && <PollLaunchBar roomId={roomId} hostId={(user && user.id)} activePoll={activePoll} isHost={isHost} />}
-      {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={() => { if (isHost && roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} />}
+      {room && <PreStreamCountdown room={room} currentUser={user} onGoLive={function() { if (isHost && roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(function() {}); }} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {roomId && <StreamChatbot roomId={roomId} isHost={isHost} elapsedSeconds={elapsed} hostName={(user && user.full_name) || ''} room={room} />}
-      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor((msg && msg.tip_amount) || 0))} onMessageReceived={msg => { if ((msg && msg.content)) setChatMessages(prev => [...prev, msg]); }} />}
+      {roomId && <StreamEventBus roomId={roomId} isHost={isHost} sessionId={roomId} onViewerUpdate={setBusViewerCount} onTipReceived={function(msg) { setTipTotal(function(t) { return t + Math.floor((msg && msg.tip_amount) || 0); }); }} onMessageReceived={function(msg) { if ((msg && msg.content)) setChatMessages(function(prev) { return prev.concat([msg]); }); }} />}
       {roomId && <TippingOverlay roomId={roomId} creatorId={(room && room.host_id) || (user && user.id)} isVisible={true} />}
-      {!isHost && roomId && (room && room.host_id) && <TippingModal isOpen={showTippingModal} onClose={() => setShowTippingModal(false)} recipient={{ id: room.host_id }} roomId={roomId} />}
+      {!isHost && roomId && (room && room.host_id) && <TippingModal isOpen={showTippingModal} onClose={function() { setShowTippingModal(false); }} recipient={{ id: room.host_id }} roomId={roomId} />}
       {roomId && <UnifiedChat roomId={roomId} currentUser={user} isHost={isHost} />}
-      {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={() => toast.success('AI persona configured!')} />}
+      {isHost && roomId && <AIPersonaCustomizer roomId={roomId} sessionId={roomId} onCustomized={function() { toast.success('AI persona configured!'); }} />}
       {isHost && <AudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} />}
-      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
+      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={toggleAudio} onAudioSettingsChange={function(s) { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
       {isHost && <ScreenSharePanel isSharing={isSharing} onStartShare={handleStartShare} onStopShare={handleStopShare} />}
       {roomId && <AuraEmotionDisplay roomId={roomId} sessionId={roomId} auraPersona={'hype'} />}
       {roomId && <BattleScoreboard roomId={roomId} />}
@@ -1104,7 +1129,7 @@ export default function RoomPage() {
       {isHost && roomId && <GuestConnector roomId={roomId} roomName={''} />}
       {roomId && <InteractivePollingSystem roomId={roomId} isHost={isHost} currentUser={user} />}
       {roomId && <LeaderboardPanel roomId={roomId} />}
-      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={(emoji) => setReactEmoji({ emoji, ts: Date.now() })} onQuickTip={() => !isHost && setShowTippingModal(true)} onWebSource={isHost ? () => setShowEvmux(true) : undefined} onClip={isHost ? () => setShowClipCreator(true) : undefined} onPoll={isHost ? () => setPollTick(t => t + 1) : undefined} onRaid={isHost ? () => setRaidTick(t => t + 1) : undefined} onGoal={isHost ? () => setGoalTick(t => t + 1) : undefined} roomId={roomId} />}
+      {roomId && <MobileStreamControls micMuted={!audioEnabled} onMicToggle={toggleAudio} onReact={function(emoji) { setReactEmoji({ emoji: emoji, ts: Date.now() }); }} onQuickTip={function() { if (!isHost) setShowTippingModal(true); }} onWebSource={isHost ? function() { setShowEvmux(true); } : undefined} onClip={isHost ? function() { setShowClipCreator(true); } : undefined} onPoll={isHost ? function() { setPollTick(function(t) { return t + 1; }); } : undefined} onRaid={isHost ? function() { setRaidTick(function(t) { return t + 1; }); } : undefined} onGoal={isHost ? function() { setGoalTick(function(t) { return t + 1; }); } : undefined} roomId={roomId} />}
       {(user && user.id) && <PointsNotification userId={user.id} />}
       {roomId && (user && user.id) && <EngagementBadgesDisplay roomId={roomId} userId={user.id} creatorId={(room && room.host_id) || (user && user.id)} />}
       {roomId && <ChatOverlay roomId={roomId} isVisible={true} />}
@@ -1124,14 +1149,14 @@ export default function RoomPage() {
       {isHost && roomId && (user && user.id) && <StreamHighlightCapture roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && roomId && <QuickPollLauncher roomId={roomId} hostId={(user && user.id)} isHost={isHost} triggerOpen={pollTick} />}
       {!isHost && roomId && (room && room.host_id) && <GiftTray roomId={roomId} currentUser={user} recipientId={room.host_id} />}
-      {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={(b) => { if ((room && room.id)) base44.entities.Room.update(room.id, b).catch(() => {}); }} isHost={isHost} />}
+      {isHost && room && <RoomBrandingEditor roomData={room} onBrandingChange={function(b) { if ((room && room.id)) base44.entities.Room.update(room.id, b).catch(function() {}); }} isHost={isHost} />}
       <BackgroundCustomizer />
-      <InviteSheet isOpen={showInviteSheet} onClose={() => setShowInviteSheet(false)} roomId={roomId} roomTitle={(room && room.title) || ''} isHost={isHost} isCoHost={false} />
+      <InviteSheet isOpen={showInviteSheet} onClose={function() { setShowInviteSheet(false); }} roomId={roomId} roomTitle={(room && room.title) || ''} isHost={isHost} isCoHost={false} />
       <AuraPanel roomId={roomId} isHost={isHost} streamTitle={(room && room.title) || ''} viewerCount={participants.length} isLive={(room && room.status) === 'live'} userTier="free" />
       {isHost && <GuestControls
         participants={participants}
-        onMuteGuest={(id) => updateParticipantMutation.mutate({ id, updates: { is_audio_enabled: false } })}
-        onRemoveGuest={(id) => updateParticipantMutation.mutate({ id, updates: { is_active: false } })}
+        onMuteGuest={function(id) { updateParticipantMutation.mutate({ id: id, updates: { is_audio_enabled: false } }); }}
+        onRemoveGuest={function(id) { updateParticipantMutation.mutate({ id: id, updates: { is_active: false } }); }}
       />}
       {isHost && roomId && <StreamAnalyticsDashboard roomId={roomId} isHost={isHost} isLive={(room && room.status) === 'live'} />}
       {isHost && roomId && <AggregatedChat roomId={roomId} currentUser={user} isHost={isHost} onMessagesChange={setChatMessages} />}
@@ -1144,17 +1169,17 @@ export default function RoomPage() {
       {isHost && roomId && <AIModeration roomId={roomId} isHost={isHost} />}
       {!isHost && roomId && user && <LoveTap roomId={roomId} user={user} creatorId={(room && room.host_id) || (user && user.id)} creatorName={''} />}
       {roomId && <PKBattle roomId={roomId} isHost={isHost} hostName={(user && user.full_name) || ''} viewerCount={participants.length} />}
-      {roomId && <PKBattleModal isOpen={showPKBattleModal} onClose={() => setShowPKBattleModal(false)} roomId={roomId} isHost={isHost} currentUser={user} hostName={(user && user.full_name) || ''} />}
-      {roomId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={roomId} roomTitle={(room && room.title) || ''} currentUser={user} />}
-      <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} url={`${window.location.origin}${createPageUrl('Room')}?id=${roomId}`} title={(room && room.title) || ''} />
-      <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} onApply={() => setShowWebRTCConfig(false)} currentConfig={{}} />
+      {roomId && <PKBattleModal isOpen={showPKBattleModal} onClose={function() { setShowPKBattleModal(false); }} roomId={roomId} isHost={isHost} currentUser={user} hostName={(user && user.full_name) || ''} />}
+      {roomId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={function() { setShowBreakoutRooms(false); }} roomId={roomId} roomTitle={(room && room.title) || ''} currentUser={user} />}
+      <ShareModal isOpen={showShareModal} onClose={function() { setShowShareModal(false); }} url={window.location.origin + createPageUrl('Room') + '?id=' + roomId} title={(room && room.title) || ''} />
+      <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={function() { setShowWebRTCConfig(false); }} onApply={function() { setShowWebRTCConfig(false); }} currentConfig={{}} />
       {isHost && roomId && <CoStreamHub roomId={roomId} isHost={isHost} isCoHost={false} currentUser={user} compact={false} speakingIds={speakingIds} />}
-      {isHost && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => { setShowGreenRoomModal(false); if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
-      {isHost && room && user && <GreenRoomPreflight isOpen={showPreflight} onClose={() => setShowPreflight(false)} onGoLive={() => { if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(() => {}); }} party={room} user={user} />}
+      {isHost && <GreenRoomModal isOpen={showGreenRoomModal} onClose={function() { setShowGreenRoomModal(false); }} onReady={function() { setShowGreenRoomModal(false); if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(function() {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
+      {isHost && room && user && <GreenRoomPreflight isOpen={showPreflight} onClose={function() { setShowPreflight(false); }} onGoLive={function() { if (roomId) base44.entities.Room.update(roomId, { status: 'live' }).catch(function() {}); }} party={room} user={user} />}
       {isHost && (user && user.id) && <OverlayThemeBuilder creatorId={(room && room.host_id) || (user && user.id)} />}
-      {isHost && roomId && (user && user.id) && showClipCreator && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={(room && room.title) || ''} onClose={() => setShowClipCreator(false)} />}
-      {isHost && roomId && showAuraPanelDrawer && <AuraPanelDrawer roomId={roomId} hostId={(room && room.host_id) || (user && user.id)} onClose={() => setShowAuraPanelDrawer(false)} />}
-      {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={(room && room.host_id) || (user && user.id)} onClose={() => setShowSwanPanel(false)} />}
+      {isHost && roomId && (user && user.id) && showClipCreator && <ClipCreatorSheet roomId={roomId} sessionId={roomId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={(room && room.title) || ''} onClose={function() { setShowClipCreator(false); }} />}
+      {isHost && roomId && showAuraPanelDrawer && <AuraPanelDrawer roomId={roomId} hostId={(room && room.host_id) || (user && user.id)} onClose={function() { setShowAuraPanelDrawer(false); }} />}
+      {showSwanPanel && roomId && <SwanDirectorPanel roomId={roomId} hostId={(room && room.host_id) || (user && user.id)} onClose={function() { setShowSwanPanel(false); }} />}
       {roomId && user && <RoomReactionOverlay roomId={roomId} currentUser={user} triggerReact={reactEmoji} />}
     </div>
   );
