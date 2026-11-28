@@ -1015,21 +1015,20 @@ export default function BroadcastStudio() {
     setAiMusicGenerating(true);
     try {
       var result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an AI music producer. Generate a background music track description for a live stream.
-Genre/Style: ${aiMusicGenre || 'Chill'}
-Prompt: "${prompt}"
-Members on stage: ${members.length}
-
-Respond with JSON only:
-{
-  "title": "track title (catchy, 3-5 words)",
-  "genre": "genre name",
-  "mood": "mood descriptor",
-  "bpm": number between 70-140,
-  "key": "musical key (e.g. C major)",
-  "description": "2-sentence vivid description of the sound",
-  "tags": ["tag1","tag2","tag3"]
-}`
+        prompt: 'You are an AI music producer. Generate a background music track description for a live stream.\n' +
+          'Genre/Style: ' + (aiMusicGenre || 'Chill') + '\n' +
+          'Prompt: "' + prompt + '"\n' +
+          'Members on stage: ' + members.length + '\n\n' +
+          'Respond with JSON only:\n' +
+          '{\n' +
+          '  "title": "track title (catchy, 3-5 words)",\n' +
+          '  "genre": "genre name",\n' +
+          '  "mood": "mood descriptor",\n' +
+          '  "bpm": number between 70-140,\n' +
+          '  "key": "musical key (e.g. C major)",\n' +
+          '  "description": "2-sentence vivid description of the sound",\n' +
+          '  "tags": ["tag1","tag2","tag3"]\n' +
+          '}'
       });
       var data = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
       setAiMusicTrack(data);
@@ -1056,11 +1055,10 @@ Respond with JSON only:
     try {
       var snippet = chatMessages.slice(-20).map(function(m) { return m.content; }).join('\n');
       var result = await base44.integrations.Core.InvokeLLM({
-        prompt: `Analyze the vibe of this live stream chat and suggest a music genre.
-Chat messages:
-${snippet}
-
-Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill|Hype|Jazz|EDM|Soul", "mood": "one sentence mood description", "energy": "low|medium|high"}`
+        prompt: 'Analyze the vibe of this live stream chat and suggest a music genre.\n' +
+          'Chat messages:\n' +
+          snippet + '\n\n' +
+          'Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill|Hype|Jazz|EDM|Soul", "mood": "one sentence mood description", "energy": "low|medium|high"}'
       });
       var data = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
       setAiMusicGenre(data.genre);
