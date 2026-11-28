@@ -631,6 +631,7 @@ app.use('/api/guest-auth', require('./routes/guestAuth'));
 app.use('/api/rtmp', require('./rtmpFanoutRoutes'));
 app.use('/api/invites', inviteRoutes);
 app.use('/api/rooms', panelRoomRoutes);
+app.use('/api/panel-tips', require('./routes/panelTips'));
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/vod', vodRoutes);
 app.use('/api/media', mediaRoutes);

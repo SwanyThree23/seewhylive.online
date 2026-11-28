@@ -208,20 +208,23 @@ async function handleStripeWebhook(rawBody, signature) {
   if (event.type === 'payment_intent.succeeded') {
     var pi = event.data.object;
     var now = Math.floor(Date.now() / 1000);
-    try {
-      db.prepare(`
-        UPDATE ppv_unlocks
-        SET status = 'succeeded', completed_at = ?
-        WHERE payment_intent_id = ?
-      `).run(now, pi.id);
-    } catch (dbErr) {
-      logger.error('[stripe] Webhook DB update failed', { piId: pi.id, err: dbErr.message });
+    var piService = (pi.metadata && pi.metadata.service) || '';
+    if (piService !== 'seewhy-panel-tip') {
+      try {
+        db.prepare(`
+          UPDATE ppv_unlocks
+          SET status = 'succeeded', completed_at = ?
+          WHERE payment_intent_id = ?
+        `).run(now, pi.id);
+      } catch (dbErr) {
+        logger.error('[stripe] Webhook DB update failed', { piId: pi.id, err: dbErr.message });
+      }
     }
     var pending = _pendingGiftCallbacks.get(pi.id);
     if (pending) {
       _pendingGiftCallbacks.delete(pi.id);
       try { pending.cb(); } catch (cbErr) {
-        logger.error('[stripe] Gift commit callback failed', { piId: pi.id, err: cbErr.message });
+        logger.error('[stripe] Gift/tip commit callback failed', { piId: pi.id, err: cbErr.message });
       }
     }
   }
@@ -402,6 +405,42 @@ function registerPaymentCallback(paymentIntentId, cb) {
   _pendingGiftCallbacks.set(String(paymentIntentId), { cb: cb, expiresAt: Date.now() + _GIFT_CB_TTL_MS });
 }
 
+async function createPanelTipIntent(streamId, senderId, senderName, amountCents, creatorStripeAccountId) {
+  var stripe = getStripe();
+  var amt = Math.floor(amountCents);
+  var creatorCents = Math.floor(amt * CREATOR_SPLIT);
+  var platformCents = amt - creatorCents;
+
+  var paymentIntent;
+  try {
+    var piOptions = {
+      amount: amt,
+      currency: 'usd',
+      metadata: {
+        streamId: streamId,
+        senderId: senderId,
+        senderName: senderName,
+        service: 'seewhy-panel-tip',
+      },
+    };
+    if (creatorStripeAccountId) {
+      piOptions.application_fee_amount = platformCents;
+      piOptions.transfer_data = { destination: creatorStripeAccountId };
+    }
+    paymentIntent = await stripe.paymentIntents.create(piOptions);
+  } catch (err) {
+    throw new Error('Stripe panel tip PaymentIntent creation failed: ' + err.message);
+  }
+
+  return {
+    clientSecret: paymentIntent.client_secret,
+    paymentIntentId: paymentIntent.id,
+    amountCents: amt,
+    creatorCents: creatorCents,
+    platformCents: platformCents,
+  };
+}
+
 module.exports = {
   createPPVPaymentIntent: createPPVPaymentIntent,
   getStripe: getStripe,
@@ -410,4 +449,5 @@ module.exports = {
   createConnectAccount: createConnectAccount,
   createGiftCharge: createGiftCharge,
   registerPaymentCallback: registerPaymentCallback,
+  createPanelTipIntent: createPanelTipIntent,
 };
