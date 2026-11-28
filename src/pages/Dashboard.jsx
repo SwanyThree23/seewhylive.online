@@ -60,7 +60,6 @@ import ShopDashboard from '../components/merch/ShopDashboard';
 var GOLD = '#D4AF37';
 var BURGUNDY = '#800020';
 var CREAM = '#F5E6D3';
-var T = { fontFamily: 'Barlow Condensed, sans-serif' };
 
 var TABS = [
   { id: 'overview',     label: '📊 Overview',     icon: BarChart2 },
@@ -71,26 +70,29 @@ var TABS = [
   { id: 'settings',    label: '⚙ Settings',      icon: Settings },
 ];
 
-function Card({ children, className = '', style = {} }) {
+function Card({ children, className, style }) {
+  if (className === undefined) className = '';
+  if (style === undefined) style = {};
   return (
-    <div className={`rounded-xl ${className}`}
+    <div className={'rounded-xl ' + className}
       style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.12)', ...style }}>
       {children}
     </div>
   );
 }
 
-function StatTile({ label, value, sub, color = GOLD, icon: Icon }) {
+function StatTile({ label, value, sub, color, icon: Icon }) {
+  if (color === undefined) color = GOLD;
   return (
     <Card>
       <div className="p-4 flex items-start justify-between gap-2">
         <div>
-          <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: 'rgba(245,230,211,0.35)', ...T }}>{label}</p>
-          <p className="text-2xl font-black leading-none" style={{ color, fontFamily: 'Orbitron, monospace' }}>{value}</p>
+          <p className="text-[11px] uppercase tracking-widest mb-1" style={{ color: 'rgba(245,230,211,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>{label}</p>
+          <p className="text-2xl font-black leading-none" style={{ color: color, fontFamily: 'Orbitron, monospace' }}>{value}</p>
           {sub && <p className="text-[11px] mt-1" style={{ color: 'rgba(245,230,211,0.3)' }}>{sub}</p>}
         </div>
-        {Icon && <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${color}15`, border: `1px solid ${color}25` }}>
-          <Icon className="w-4 h-4" style={{ color }} />
+        {Icon && <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: color + '15', border: '1px solid ' + color + '25' }}>
+          <Icon className="w-4 h-4" style={{ color: color }} />
         </div>}
       </div>
     </Card>
@@ -116,7 +118,7 @@ function QuickStartCard() {
         <X className="w-3.5 h-3.5" />
       </button>
       <div className="p-4 pb-4">
-        <p className="font-black text-sm uppercase mb-0.5" style={{ color: GOLD, ...T }}>Quick Start</p>
+        <p className="font-black text-sm uppercase mb-0.5" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>Quick Start</p>
         <p className="text-[11px] mb-4" style={{ color: CREAM + '55' }}>Welcome! Here are your first steps as a creator.</p>
         <div className="grid grid-cols-3 gap-2">
           {[
@@ -128,7 +130,7 @@ function QuickStartCard() {
               <Link key={tile.label} to={tile.href}>
                 <div className="rounded-xl p-3 text-center cursor-pointer" style={{ background: tile.bg, border: '1px solid rgba(212,175,55,0.22)' }}>
                   <div className="text-2xl mb-1">{tile.emoji}</div>
-                  <p className="text-[10px] font-black uppercase leading-tight" style={{ color: GOLD, ...T }}>{tile.label}</p>
+                  <p className="text-[10px] font-black uppercase leading-tight" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>{tile.label}</p>
                 </div>
               </Link>
             );
@@ -143,54 +145,54 @@ function QuickStartCard() {
 function OverviewTab({ user }) {
   var { data: payout } = useQuery({
     queryKey: ['db-payout', (user && user.id)],
-    queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: (user && user.id) }).then(r => r[0]),
+    queryFn: function() { return base44.entities.CreatorPayout.filter({ creator_id: (user && user.id) }).then(function(r) { return r[0]; }); },
     enabled: !!(user && user.id),
   });
   var { data: profile } = useQuery({
     queryKey: ['db-profile', (user && user.id)],
-    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: (user && user.id) }).then(r => r[0]),
+    queryFn: function() { return base44.entities.CreatorProfile.filter({ user_id: (user && user.id) }).then(function(r) { return r[0]; }); },
     enabled: !!(user && user.id),
   });
   var { data: liveRooms = [] } = useQuery({
     queryKey: ['db-live'],
-    queryFn: () => base44.entities.Room.filter({ status: 'live' }),
+    queryFn: function() { return base44.entities.Room.filter({ status: 'live' }); },
     refetchInterval: 10000,
   });
   var { data: txns = [] } = useQuery({
     queryKey: ['db-txns7', (user && user.id)],
-    queryFn: () => base44.entities.Transaction.filter({ recipient_id: (user && user.id) }, '-created_date', 100),
+    queryFn: function() { return base44.entities.Transaction.filter({ recipient_id: (user && user.id) }, '-created_date', 100); },
     enabled: !!(user && user.id),
   });
   var { data: activities = [] } = useQuery({
     queryKey: ['db-activities', (user && user.id)],
-    queryFn: () => base44.entities.Activity.filter({ user_id: (user && user.id) }, '-created_date', 10),
+    queryFn: function() { return base44.entities.Activity.filter({ user_id: (user && user.id) }, '-created_date', 10); },
     enabled: !!(user && user.id),
   });
 
   // Last 7 days chart
-  var days = Array.from({ length: 7 }, (_, i) => {
+  var days = Array.from({ length: 7 }, function(_, i) {
     var d = new Date(); d.setDate(d.getDate() - (6 - i));
     var label = d.toLocaleDateString('en', { weekday: 'short' });
-    var total = txns.filter(t => {
+    var total = txns.filter(function(t) {
       var td = new Date(t.created_date);
       return td.toDateString() === d.toDateString();
-    }).reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
-    return { label, total };
+    }).reduce(function(s, t) { return s + (t.creator_payout || t.creator_amount || 0); }, 0);
+    return { label: label, total: total };
   });
 
   return (
     <div className="space-y-5">
       <QuickStartCard />
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatTile label="Pending Balance" value={`$${Math.floor((payout && payout.pending_balance) || 0)}`} icon={DollarSign} color={GOLD} />
+        <StatTile label="Pending Balance" value={'$' + Math.floor((payout && payout.pending_balance) || 0)} icon={DollarSign} color={GOLD} />
         <StatTile label="Subscribers" value={((profile && profile.subscriber_count) || 0).toLocaleString()} icon={Users} color="#C9A84C" />
-        <StatTile label="Hours Streamed" value={`${Math.floor((profile && profile.total_hours_streamed) || 0)}h`} icon={Clock} color="#D4AF37" />
+        <StatTile label="Hours Streamed" value={Math.floor((profile && profile.total_hours_streamed) || 0) + 'h'} icon={Clock} color="#D4AF37" />
         <StatTile label="Live Rooms" value={liveRooms.length} icon={Radio} color="#C0392B" sub="right now" />
       </div>
 
       <Card>
         <div className="px-4 pt-4 pb-2">
-          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: CREAM + '50', ...T }}>Revenue — Last 7 Days</p>
+          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>Revenue — Last 7 Days</p>
         </div>
         <div className="px-4 pb-4" style={{ height: 180 }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -198,7 +200,7 @@ function OverviewTab({ user }) {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="label" tick={{ fill: 'rgba(245,230,211,0.4)', fontSize: 10 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: 'rgba(245,230,211,0.3)', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
+              <Tooltip contentStyle={{ background: 'rgba(8,11,24,0.9)', border: '1px solid ' + GOLD + '30', color: CREAM }} />
               <Bar dataKey="total" fill={GOLD} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -207,18 +209,20 @@ function OverviewTab({ user }) {
 
       <Card>
         <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Recent Activity</p>
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>Recent Activity</p>
         </div>
         <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
           {activities.length === 0
             ? <p className="text-center py-8 text-[11px]" style={{ color: CREAM + '30' }}>No recent activity</p>
-            : activities.map(a => (
-              <div key={a.id} className="flex items-center gap-3 px-4 py-2.5">
-                <div className="w-2 h-2 rounded-full shrink-0" style={{ background: GOLD }} />
-                <p className="text-[11px] flex-1" style={{ color: CREAM + '70' }}>{a.title}</p>
-                <span className="text-[11px]" style={{ color: CREAM + '30' }}>{new Date(a.created_date).toLocaleDateString()}</span>
-              </div>
-            ))}
+            : activities.map(function(a) {
+              return (
+                <div key={a.id} className="flex items-center gap-3 px-4 py-2.5">
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: GOLD }} />
+                  <p className="text-[11px] flex-1" style={{ color: CREAM + '70' }}>{a.title}</p>
+                  <span className="text-[11px]" style={{ color: CREAM + '30' }}>{new Date(a.created_date).toLocaleDateString()}</span>
+                </div>
+              );
+            })}
         </div>
       </Card>
 
@@ -238,24 +242,26 @@ function OverviewTab({ user }) {
       <div className="flex flex-wrap gap-2">
         {[
           { label: '📡 Go Live', href: createPageUrl('GoLive'), color: BURGUNDY },
-          { label: '📅 Schedule Stream', href: createPageUrl('StreamScheduler'), color: `rgba(212,175,55,0.15)` },
-          { label: '✍ Create Post', href: createPageUrl('Communities'), color: `rgba(201,168,76,0.1)` },
+          { label: '📅 Schedule Stream', href: createPageUrl('StreamScheduler'), color: 'rgba(212,175,55,0.15)' },
+          { label: '✍ Create Post', href: createPageUrl('Communities'), color: 'rgba(201,168,76,0.1)' },
           { label: '🤖 Joyce AI', href: createPageUrl('JoyceAI'), color: 'rgba(212,175,55,0.08)' },
           { label: '🛡️ Guardian AI', href: createPageUrl('GuardianAI'), color: 'rgba(192,57,43,0.08)' },
           { label: '⚡ INS Forge', href: createPageUrl('INSForge'), color: 'rgba(212,175,55,0.08)' },
-        ].map(q => (
-          <Link key={q.label} to={q.href}>
-            <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
-              style={{ background: q.color, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
-              {q.label}
-            </button>
-          </Link>
-        ))}
+        ].map(function(q) {
+          return (
+            <Link key={q.label} to={q.href}>
+              <button className="px-4 py-2 rounded-xl font-black uppercase text-[10px]"
+                style={{ background: q.color, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {q.label}
+              </button>
+            </Link>
+          );
+        })}
       </div>
 
       {/* Creator Studios */}
       <div className="rounded-2xl p-4" style={{ border: '1px solid rgba(123,45,139,0.22)', background: 'rgba(13,6,24,0.5)' }}>
-        <p className="text-[11px] font-black uppercase tracking-widest mb-3" style={{ color: 'rgba(176,102,204,0.7)', ...T }}>Creator Studios</p>
+        <p className="text-[11px] font-black uppercase tracking-widest mb-3" style={{ color: 'rgba(176,102,204,0.7)', fontFamily: 'Barlow Condensed, sans-serif' }}>Creator Studios</p>
         <div className="grid grid-cols-3 gap-2 mb-3">
           {[
             { emoji: '🎬', label: 'Micro Drama', sub: 'Episode creator', href: 'EpisodeCreatorStudio', color: '#7B2D8B' },
@@ -266,15 +272,15 @@ function OverviewTab({ user }) {
               <Link key={s.href} to={createPageUrl(s.href)} style={{ textDecoration: 'none' }}>
                 <div className="rounded-xl p-3 cursor-pointer" style={{ border: '1px solid rgba(123,45,139,0.18)', background: 'rgba(255,255,255,0.03)' }}>
                   <div className="text-xl mb-1">{s.emoji}</div>
-                  <div className="text-[11px] font-black uppercase" style={{ color: s.color, ...T, letterSpacing: '0.06em' }}>{s.label}</div>
-                  <div className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)', ...T }}>{s.sub}</div>
+                  <div className="text-[11px] font-black uppercase" style={{ color: s.color, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em' }}>{s.label}</div>
+                  <div className="text-[10px] mt-0.5" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{s.sub}</div>
                 </div>
               </Link>
             );
           })}
         </div>
         <Link to={createPageUrl('EpisodeCreatorStudio')} style={{ textDecoration: 'none' }}>
-          <div className="rounded-xl px-3 py-2 text-center text-[11px] font-black uppercase" style={{ background: 'rgba(123,45,139,0.1)', border: '1px solid rgba(123,45,139,0.3)', color: '#B066CC', ...T, letterSpacing: '0.08em', cursor: 'pointer' }}>
+          <div className="rounded-xl px-3 py-2 text-center text-[11px] font-black uppercase" style={{ background: 'rgba(123,45,139,0.1)', border: '1px solid rgba(123,45,139,0.3)', color: '#B066CC', fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.08em', cursor: 'pointer' }}>
             🎬 Launch Episode Creator Studio →
           </div>
         </Link>
@@ -287,39 +293,41 @@ function OverviewTab({ user }) {
 function AnalyticsTab({ user }) {
   var { data: roomAnalytics = [] } = useQuery({
     queryKey: ['db-roomanalytics', (user && user.id)],
-    queryFn: () => base44.entities.RoomAnalytics.filter({ host_id: (user && user.id) }, '-created_date', 20),
+    queryFn: function() { return base44.entities.RoomAnalytics.filter({ host_id: (user && user.id) }, '-created_date', 20); },
     enabled: !!(user && user.id),
   });
   var { data: follows = [] } = useQuery({
     queryKey: ['db-follows', (user && user.id)],
-    queryFn: () => base44.entities.Follow.filter({ following_id: (user && user.id) }, '-created_date', 50),
+    queryFn: function() { return base44.entities.Follow.filter({ following_id: (user && user.id) }, '-created_date', 50); },
     enabled: !!(user && user.id),
   });
   var { data: messages = [] } = useQuery({
     queryKey: ['db-msgs', (user && user.id)],
-    queryFn: () => base44.entities.Message.filter({ user_id: (user && user.id) }),
+    queryFn: function() { return base44.entities.Message.filter({ user_id: (user && user.id) }); },
     enabled: !!(user && user.id),
   });
   var { data: destinations = [] } = useQuery({
     queryKey: ['db-rtmp', (user && user.id)],
-    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: (user && user.id) }),
+    queryFn: function() { return base44.entities.RTMPDestination.filter({ creator_id: (user && user.id) }); },
     enabled: !!(user && user.id),
   });
 
-  var peakViewers = roomAnalytics.reduce((m, r) => Math.max(m, r.peak_viewers || 0), 0);
+  var peakViewers = roomAnalytics.reduce(function(m, r) { return Math.max(m, r.peak_viewers || 0); }, 0);
   var avgWatch = roomAnalytics.length
-    ? Math.round(roomAnalytics.reduce((s, r) => s + (r.average_watch_time || 0), 0) / roomAnalytics.length)
+    ? Math.round(roomAnalytics.reduce(function(s, r) { return s + (r.average_watch_time || 0); }, 0) / roomAnalytics.length)
     : 0;
-  var totalTips = roomAnalytics.reduce((s, r) => s + (r.total_tips || 0), 0);
+  var totalTips = roomAnalytics.reduce(function(s, r) { return s + (r.total_tips || 0); }, 0);
   var engagementRate = roomAnalytics.length
     ? ((messages.length / Math.max(1, peakViewers)) * 100).toFixed(1) : '0.0';
 
-  var sortedRooms = [...roomAnalytics].sort((a, b) => (b.peak_viewers || 0) - (a.peak_viewers || 0)).slice(0, 5);
+  var sortedRooms = roomAnalytics.slice().sort(function(a, b) { return (b.peak_viewers || 0) - (a.peak_viewers || 0); }).slice(0, 5);
 
-  var platformData = destinations.map(d => ({
-    name: d.platform || d.label || 'Custom',
-    viewers: d.viewer_count || 0,
-  }));
+  var platformData = destinations.map(function(d) {
+    return {
+      name: d.platform || d.label || 'Custom',
+      viewers: d.viewer_count || 0,
+    };
+  });
 
   var COLORS = [GOLD, '#C9A84C', '#D4AF37', '#C0392B', '#6DBF7E'];
 
@@ -327,39 +335,43 @@ function AnalyticsTab({ user }) {
     <div className="space-y-5">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <StatTile label="Peak Viewers" value={peakViewers.toLocaleString()} icon={Eye} color={GOLD} />
-        <StatTile label="Avg Watch Time" value={`${avgWatch}m`} icon={Clock} color="#C9A84C" />
+        <StatTile label="Avg Watch Time" value={avgWatch + 'm'} icon={Clock} color="#C9A84C" />
         <StatTile label="New Followers" value={follows.length} icon={Users} color="#6DBF7E" />
         <StatTile label="Chat Messages" value={messages.length} icon={MessageSquare} color="#D4AF37" />
-        <StatTile label="Engagement" value={`${engagementRate}%`} icon={Heart} color="#C0392B" />
-        <StatTile label="Tips Earned" value={`$${Math.floor(totalTips)}`} icon={DollarSign} color={GOLD} />
+        <StatTile label="Engagement" value={engagementRate + '%'} icon={Heart} color="#C0392B" />
+        <StatTile label="Tips Earned" value={'$' + Math.floor(totalTips)} icon={DollarSign} color={GOLD} />
       </div>
 
       {/* Top Streams table */}
       <Card>
         <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Top Performing Streams</p>
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>Top Performing Streams</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-[10px]">
             <thead>
               <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                {['Title','Date','Peak Viewers','Tips','Duration'].map(h => (
-                  <th key={h} className="px-4 py-2 text-left font-black uppercase tracking-wider" style={{ color: CREAM + '40', ...T }}>{h}</th>
-                ))}
+                {['Title','Date','Peak Viewers','Tips','Duration'].map(function(h) {
+                  return (
+                    <th key={h} className="px-4 py-2 text-left font-black uppercase tracking-wider" style={{ color: CREAM + '40', fontFamily: 'Barlow Condensed, sans-serif' }}>{h}</th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
               {sortedRooms.length === 0
                 ? <tr><td colSpan={5} className="px-4 py-6 text-center" style={{ color: CREAM + '30' }}>No data yet</td></tr>
-                : sortedRooms.map(r => (
-                  <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <td className="px-4 py-2" style={{ color: CREAM + '80' }}>{(r.room_id && r.room_id.slice(0,8)) || '—'}</td>
-                    <td className="px-4 py-2" style={{ color: CREAM + '40' }}>{new Date(r.created_date).toLocaleDateString()}</td>
-                    <td className="px-4 py-2 font-black" style={{ color: GOLD }}>{r.peak_viewers || 0}</td>
-                    <td className="px-4 py-2" style={{ color: '#6DBF7E' }}>${Math.floor(r.total_tips || 0)}</td>
-                    <td className="px-4 py-2" style={{ color: CREAM + '50' }}>{Math.floor((r.average_watch_time || 0))}m</td>
-                  </tr>
-                ))}
+                : sortedRooms.map(function(r) {
+                  return (
+                    <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <td className="px-4 py-2" style={{ color: CREAM + '80' }}>{(r.room_id && r.room_id.slice(0,8)) || '—'}</td>
+                      <td className="px-4 py-2" style={{ color: CREAM + '40' }}>{new Date(r.created_date).toLocaleDateString()}</td>
+                      <td className="px-4 py-2 font-black" style={{ color: GOLD }}>{r.peak_viewers || 0}</td>
+                      <td className="px-4 py-2" style={{ color: '#6DBF7E' }}>${Math.floor(r.total_tips || 0)}</td>
+                      <td className="px-4 py-2" style={{ color: CREAM + '50' }}>{Math.floor((r.average_watch_time || 0))}m</td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </div>
@@ -369,18 +381,20 @@ function AnalyticsTab({ user }) {
       {platformData.length > 0 && (
         <Card>
           <div className="px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Platform Breakdown</p>
+            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>Platform Breakdown</p>
           </div>
           <div className="p-4 space-y-2">
-            {platformData.map((p, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <span className="text-[10px] w-20 shrink-0" style={{ color: CREAM + '60' }}>{p.name}</span>
-                <div className="flex-1 h-4 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                  <div className="h-full rounded-full" style={{ width: `${Math.min(100,(p.viewers/300)*100)}%`, background: COLORS[i % COLORS.length] }} />
+            {platformData.map(function(p, i) {
+              return (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="text-[10px] w-20 shrink-0" style={{ color: CREAM + '60' }}>{p.name}</span>
+                  <div className="flex-1 h-4 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                    <div className="h-full rounded-full" style={{ width: Math.min(100,(p.viewers/300)*100) + '%', background: COLORS[i % COLORS.length] }} />
+                  </div>
+                  <span className="text-[11px] w-12 text-right" style={{ color: CREAM + '50' }}>{p.viewers}</span>
                 </div>
-                <span className="text-[11px] w-12 text-right" style={{ color: CREAM + '50' }}>{p.viewers}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
       )}
@@ -428,18 +442,18 @@ function ContentTab({ user }) {
 
   var { data: vods = [] } = useQuery({
     queryKey: ['db-vods', (user && user.id)],
-    queryFn: () => base44.entities.VODVideo.filter({ creator_id: (user && user.id) }, '-created_date', 50),
+    queryFn: function() { return base44.entities.VODVideo.filter({ creator_id: (user && user.id) }, '-created_date', 50); },
     enabled: !!(user && user.id),
   });
   var { data: highlights = [] } = useQuery({
     queryKey: ['db-highlights', (user && user.id)],
-    queryFn: () => base44.entities.StreamHighlight.filter({ creator_id: (user && user.id) }, '-created_date', 10),
+    queryFn: function() { return base44.entities.StreamHighlight.filter({ creator_id: (user && user.id) }, '-created_date', 10); },
     enabled: !!(user && user.id),
   });
 
   var createMut = useMutation({
-    mutationFn: () => base44.entities.VODVideo.create({ ...form, creator_id: (user && user.id), views: 0 }),
-    onSuccess: (vod) => {
+    mutationFn: function() { return base44.entities.VODVideo.create({ ...form, creator_id: (user && user.id), views: 0 }); },
+    onSuccess: function(vod) {
       qc.invalidateQueries({ queryKey: ['db-vods'] });
       setShowCreate(false);
       toast.success('VOD created!');
@@ -447,31 +461,31 @@ function ContentTab({ user }) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'clip_created',
-          title: `Uploaded VOD: ${(vod && vod.title) || 'Video'}`,
-        }).catch(() => {});
+          title: 'Uploaded VOD: ' + ((vod && vod.title) || 'Video'),
+        }).catch(function() {});
       }
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
   var updateMut = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.VODVideo.update(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['db-vods'] }); setEditVod(null); toast.success('Updated!'); },
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(params) { return base44.entities.VODVideo.update(params.id, params.data); },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['db-vods'] }); setEditVod(null); toast.success('Updated!'); },
+    onError: function() { toast.error('Action failed.'); },
   });
   var deleteMut = useMutation({
-    mutationFn: (id) => base44.entities.VODVideo.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['db-vods'] }),
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(id) { return base44.entities.VODVideo.delete(id); },
+    onSuccess: function() { return qc.invalidateQueries({ queryKey: ['db-vods'] }); },
+    onError: function() { toast.error('Action failed.'); },
   });
 
-  var filtered = vods.filter(v => {
+  var filtered = vods.filter(function(v) {
     if (filter === 'published') return v.status === 'published';
     if (filter === 'draft') return v.status === 'draft';
     if (filter === 'clips') return v.is_clipped;
     return true;
   });
-  if (sort === 'views') filtered = [...filtered].sort((a, b) => (b.views || 0) - (a.views || 0));
-  if (sort === 'longest') filtered = [...filtered].sort((a, b) => (b.duration_seconds || 0) - (a.duration_seconds || 0));
+  if (sort === 'views') filtered = filtered.slice().sort(function(a, b) { return (b.views || 0) - (a.views || 0); });
+  if (sort === 'longest') filtered = filtered.slice().sort(function(a, b) { return (b.duration_seconds || 0) - (a.duration_seconds || 0); });
 
   var statusColors = { published: '#6DBF7E', draft: 'rgba(255,255,255,0.3)', unlisted: GOLD };
 
@@ -479,94 +493,102 @@ function ContentTab({ user }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex gap-1.5">
-          {['all','published','draft','clips'].map(f => (
-            <button key={f} onClick={() => setFilter(f)}
-              className="px-3 py-1.5 rounded-lg font-black uppercase text-[11px]"
-              style={{ background: filter===f ? `${GOLD}20` : 'rgba(255,255,255,0.04)', color: filter===f ? GOLD : CREAM+'50', border: filter===f ? `1px solid ${GOLD}40` : '1px solid rgba(255,255,255,0.08)', ...T }}>
-              {f}
-            </button>
-          ))}
+          {['all','published','draft','clips'].map(function(f) {
+            return (
+              <button key={f} onClick={function() { setFilter(f); }}
+                className="px-3 py-1.5 rounded-lg font-black uppercase text-[11px]"
+                style={{ background: filter===f ? GOLD + '20' : 'rgba(255,255,255,0.04)', color: filter===f ? GOLD : CREAM+'50', border: filter===f ? '1px solid ' + GOLD + '40' : '1px solid rgba(255,255,255,0.08)', fontFamily: 'Barlow Condensed, sans-serif' }}>
+                {f}
+              </button>
+            );
+          })}
         </div>
         <div className="flex items-center gap-2">
           <div className="flex gap-1">
-            {[{v:'newest',l:'Newest'},{v:'views',l:'Views'},{v:'longest',l:'Longest'}].map(opt => (
-              <button key={opt.v} onClick={() => setSort(opt.v)}
-                className="text-[10px] px-2 py-1 rounded-lg font-black uppercase"
-                style={{ background: sort===opt.v ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${sort===opt.v ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: sort===opt.v ? GOLD : CREAM, fontFamily: 'Barlow Condensed, sans-serif' }}>
-                {opt.l}
-              </button>
-            ))}
+            {[{v:'newest',l:'Newest'},{v:'views',l:'Views'},{v:'longest',l:'Longest'}].map(function(opt) {
+              return (
+                <button key={opt.v} onClick={function() { setSort(opt.v); }}
+                  className="text-[10px] px-2 py-1 rounded-lg font-black uppercase"
+                  style={{ background: sort===opt.v ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: '1px solid ' + (sort===opt.v ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'), color: sort===opt.v ? GOLD : CREAM, fontFamily: 'Barlow Condensed, sans-serif' }}>
+                  {opt.l}
+                </button>
+              );
+            })}
           </div>
-          <button onClick={() => setShowCreate(true)}
+          <button onClick={function() { setShowCreate(true); }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black uppercase text-[10px]"
-            style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
+            style={{ background: BURGUNDY, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <Plus className="w-3 h-3" /> Upload
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-        {filtered.map(v => (
-          <Card key={v.id}>
-            <div className="aspect-video relative overflow-hidden rounded-t-xl bg-black">
-              {v.thumbnail_url
-                ? <img src={v.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                : <div className="w-full h-full flex items-center justify-center">
-                    <Video className="w-6 h-6" style={{ color: GOLD + '40' }} />
-                  </div>}
-              <span className="absolute top-1.5 right-1.5 text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
-                style={{ background: `${statusColors[v.status] || CREAM}20`, color: statusColors[v.status] || CREAM, border: `1px solid ${statusColors[v.status] || CREAM}30` }}>
-                {v.status}
-              </span>
-            </div>
-            <div className="p-2.5 space-y-1">
-              <p className="text-[10px] font-bold text-white leading-tight line-clamp-1">{v.title}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-[11px]" style={{ color: CREAM + '40' }}>{(v.views || 0).toLocaleString()} views</span>
-                <div className="flex gap-1">
-                  <button onClick={() => setEditVod(v)}
-                    className="w-5 h-5 flex items-center justify-center rounded"
-                    style={{ background: `${GOLD}15`, color: GOLD }}>
-                    <Edit className="w-2.5 h-2.5" />
-                  </button>
-                  <button onClick={() => deleteMut.mutate(v.id)}
-                    className="w-5 h-5 flex items-center justify-center rounded"
-                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444' }}>
-                    <Trash2 className="w-2.5 h-2.5" />
-                  </button>
+        {filtered.map(function(v) {
+          return (
+            <Card key={v.id}>
+              <div className="aspect-video relative overflow-hidden rounded-t-xl bg-black">
+                {v.thumbnail_url
+                  ? <img src={v.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                  : <div className="w-full h-full flex items-center justify-center">
+                      <Video className="w-6 h-6" style={{ color: GOLD + '40' }} />
+                    </div>}
+                <span className="absolute top-1.5 right-1.5 text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
+                  style={{ background: (statusColors[v.status] || CREAM) + '20', color: statusColors[v.status] || CREAM, border: '1px solid ' + (statusColors[v.status] || CREAM) + '30' }}>
+                  {v.status}
+                </span>
+              </div>
+              <div className="p-2.5 space-y-1">
+                <p className="text-[10px] font-bold text-white leading-tight line-clamp-1">{v.title}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px]" style={{ color: CREAM + '40' }}>{(v.views || 0).toLocaleString()} views</span>
+                  <div className="flex gap-1">
+                    <button onClick={function() { setEditVod(v); }}
+                      className="w-5 h-5 flex items-center justify-center rounded"
+                      style={{ background: GOLD + '15', color: GOLD }}>
+                      <Edit className="w-2.5 h-2.5" />
+                    </button>
+                    <button onClick={function() { deleteMut.mutate(v.id); }}
+                      className="w-5 h-5 flex items-center justify-center rounded"
+                      style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444' }}>
+                      <Trash2 className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
         {filtered.length === 0 && <p className="col-span-4 text-center py-10 text-[11px]" style={{ color: CREAM + '30' }}>No content yet</p>}
       </div>
 
       {/* Highlights */}
       {highlights.length > 0 && (
         <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '40', ...T }}>AI Highlights</p>
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '40', fontFamily: 'Barlow Condensed, sans-serif' }}>AI Highlights</p>
           <div className="space-y-1.5">
-            {highlights.slice(0, 5).map(h => (
-              <Card key={h.id}>
-                <div className="flex items-center gap-3 p-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                    style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}30` }}>
-                    <Play className="w-3.5 h-3.5" style={{ color: GOLD }} />
+            {highlights.slice(0, 5).map(function(h) {
+              return (
+                <Card key={h.id}>
+                  <div className="flex items-center gap-3 p-3">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: GOLD + '15', border: '1px solid ' + GOLD + '30' }}>
+                      <Play className="w-3.5 h-3.5" style={{ color: GOLD }} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold text-white">{h.title || 'Stream Highlight'}</p>
+                      <p className="text-[11px]" style={{ color: CREAM + '40' }}>
+                        {h.highlight_type} · {Math.floor((h.start_time||0)/60)}:{String((h.start_time||0)%60).padStart(2,'0')}
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-black px-1.5 py-0.5 rounded"
+                      style={{ background: GOLD + '15', color: GOLD }}>
+                      {Math.round((h.ai_confidence || 0) * 100)}%
+                    </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold text-white">{h.title || 'Stream Highlight'}</p>
-                    <p className="text-[11px]" style={{ color: CREAM + '40' }}>
-                      {h.highlight_type} · {Math.floor((h.start_time||0)/60)}:{String((h.start_time||0)%60).padStart(2,'0')}
-                    </p>
-                  </div>
-                  <span className="text-[11px] font-black px-1.5 py-0.5 rounded"
-                    style={{ background: `${GOLD}15`, color: GOLD }}>
-                    {Math.round((h.ai_confidence || 0) * 100)}%
-                  </span>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
@@ -577,45 +599,49 @@ function ContentTab({ user }) {
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.7)' }}
-              onClick={() => { setShowCreate(false); setEditVod(null); }} />
+              onClick={function() { setShowCreate(false); setEditVod(null); }} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md rounded-2xl p-5 space-y-3"
-              style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
               <div className="flex items-center justify-between">
-                <span className="font-black uppercase text-sm" style={{ color: GOLD, ...T }}>{editVod ? 'Edit VOD' : 'Upload VOD'}</span>
-                <button onClick={() => { setShowCreate(false); setEditVod(null); }}><X className="w-4 h-4 text-white/40" /></button>
+                <span className="font-black uppercase text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>{editVod ? 'Edit VOD' : 'Upload VOD'}</span>
+                <button onClick={function() { setShowCreate(false); setEditVod(null); }}><X className="w-4 h-4 text-white/40" /></button>
               </div>
               {[
                 { field: 'title', placeholder: 'Title' },
                 { field: 'video_url', placeholder: 'Video URL' },
                 { field: 'description', placeholder: 'Description' },
-              ].map(({ field, placeholder }) => (
-                <input key={field} placeholder={placeholder}
-                  value={(editVod ? editVod : form)[field] || ''}
-                  onChange={e => editVod ? setEditVod(v => ({ ...v, [field]: e.target.value })) : setForm(f => ({ ...f, [field]: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
-              ))}
+              ].map(function(item) {
+                var field = item.field;
+                var placeholder = item.placeholder;
+                return (
+                  <input key={field} placeholder={placeholder}
+                    value={(editVod ? editVod : form)[field] || ''}
+                    onChange={function(e) { if (editVod) { setEditVod(function(v) { return {...v, [field]: e.target.value}; }); } else { setForm(function(f) { return {...f, [field]: e.target.value}; }); } }}
+                    className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                );
+              })}
               <div className="flex flex-wrap gap-1.5">
-                {['draft','published','unlisted'].map(s => {
+                {['draft','published','unlisted'].map(function(s) {
                   var cur = (editVod ? editVod : form).status;
-                  return <button key={s} onClick={() => editVod ? setEditVod(v => ({...v, status: s})) : setForm(f => ({...f, status: s}))}
+                  return <button key={s} onClick={function() { if (editVod) { setEditVod(function(v) { return {...v, status: s}; }); } else { setForm(function(f) { return {...f, status: s}; }); } }}
                     className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
-                    style={{ background: cur===s ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${cur===s ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: cur===s ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>{s}</button>;
+                    style={{ background: cur===s ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: '1px solid ' + (cur===s ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'), color: cur===s ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>{s}</button>;
                 })}
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {['gaming','music','education','talk','other'].map(c => {
+                {['gaming','music','education','talk','other'].map(function(c) {
                   var cur = (editVod ? editVod : form).category;
-                  return <button key={c} onClick={() => editVod ? setEditVod(v => ({...v, category: c})) : setForm(f => ({...f, category: c}))}
+                  return <button key={c} onClick={function() { if (editVod) { setEditVod(function(v) { return {...v, category: c}; }); } else { setForm(function(f) { return {...f, category: c}; }); } }}
                     className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
-                    style={{ background: cur===c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${cur===c ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: cur===c ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>{c}</button>;
+                    style={{ background: cur===c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: '1px solid ' + (cur===c ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'), color: cur===c ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>{c}</button>;
                 })}
               </div>
               <button
-                onClick={() => editVod ? updateMut.mutate({ id: editVod.id, data: editVod }) : createMut.mutate()}
+                onClick={function() { if (editVod) { updateMut.mutate({ id: editVod.id, data: editVod }); } else { createMut.mutate(); } }}
                 className="w-full py-2.5 rounded-xl font-black uppercase text-[11px]"
-                style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
+                style={{ background: BURGUNDY, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 {editVod ? 'Save Changes' : 'Create VOD'}
               </button>
             </motion.div>
@@ -642,34 +668,36 @@ function CommunityTab({ user }) {
 
   var { data: communities = [] } = useQuery({
     queryKey: ['db-communities', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }); },
     enabled: !!(user && user.id),
   });
-  useEffect(() => { if (communities.length && !selectedCommunity) setSelectedCommunity(communities[0] && communities[0].id); }, [communities]);
+  useEffect(function() { if (communities.length && !selectedCommunity) setSelectedCommunity(communities[0] && communities[0].id); }, [communities]);
 
   var { data: polls = [] } = useQuery({
     queryKey: ['db-polls', selectedCommunity],
-    queryFn: () => base44.entities.Poll.filter({ community_id: selectedCommunity }),
+    queryFn: function() { return base44.entities.Poll.filter({ community_id: selectedCommunity }); },
     enabled: !!selectedCommunity,
     refetchInterval: 5000,
   });
   var { data: challenges = [] } = useQuery({
     queryKey: ['db-challenges', selectedCommunity],
-    queryFn: () => base44.entities.Challenge.filter({ community_id: selectedCommunity }),
+    queryFn: function() { return base44.entities.Challenge.filter({ community_id: selectedCommunity }); },
     enabled: !!selectedCommunity,
   });
 
   var createPollMut = useMutation({
-    mutationFn: () => base44.entities.Poll.create({
-      community_id: selectedCommunity,
-      creator_id: (user && user.id),
-      question: pollForm.question,
-      options: pollForm.options.filter(Boolean).map(o => ({ text: o, votes: 0 })),
-      ends_at: pollForm.ends_at || new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-      status: 'active',
-      total_votes: 0,
-    }),
-    onSuccess: (poll) => {
+    mutationFn: function() {
+      return base44.entities.Poll.create({
+        community_id: selectedCommunity,
+        creator_id: (user && user.id),
+        question: pollForm.question,
+        options: pollForm.options.filter(Boolean).map(function(o) { return { text: o, votes: 0 }; }),
+        ends_at: pollForm.ends_at || new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        status: 'active',
+        total_votes: 0,
+      });
+    },
+    onSuccess: function(poll) {
       qc.invalidateQueries({ queryKey: ['db-polls'] });
       setShowPollForm(false);
       toast.success('Poll created!');
@@ -677,17 +705,17 @@ function CommunityTab({ user }) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'milestone',
-          title: `Created poll: ${(poll && poll.question) || 'Community Poll'}`,
-        }).catch(() => {});
+          title: 'Created poll: ' + ((poll && poll.question) || 'Community Poll'),
+        }).catch(function() {});
       }
     },
-    onError: () => toast.error('Action failed.'),
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var endPollMut = useMutation({
-    mutationFn: (id) => base44.entities.Poll.update(id, { status: 'ended' }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['db-polls'] }),
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(id) { return base44.entities.Poll.update(id, { status: 'ended' }); },
+    onSuccess: function() { return qc.invalidateQueries({ queryKey: ['db-polls'] }); },
+    onError: function() { toast.error('Action failed.'); },
   });
 
   return (
@@ -697,13 +725,15 @@ function CommunityTab({ user }) {
         <div className="flex-1 flex flex-wrap gap-1.5">
           {communities.length === 0
             ? <span className="text-[11px] px-3 py-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>No communities yet</span>
-            : communities.map(c => (
-              <button key={c.id} onClick={() => setSelectedCommunity(c.id)}
-                className="px-3 py-1.5 rounded-xl text-[11px] font-black"
-                style={{ background: selectedCommunity===c.id ? 'rgba(212,175,55,0.15)' : 'rgba(8,11,24,0.9)', border: `1px solid ${selectedCommunity===c.id ? 'rgba(212,175,55,0.4)' : 'rgba(212,175,55,0.2)'}`, color: selectedCommunity===c.id ? GOLD : CREAM, fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
-                {c.name}
-              </button>
-            ))
+            : communities.map(function(c) {
+              return (
+                <button key={c.id} onClick={function() { setSelectedCommunity(c.id); }}
+                  className="px-3 py-1.5 rounded-xl text-[11px] font-black"
+                  style={{ background: selectedCommunity===c.id ? 'rgba(212,175,55,0.15)' : 'rgba(8,11,24,0.9)', border: '1px solid ' + (selectedCommunity===c.id ? 'rgba(212,175,55,0.4)' : 'rgba(212,175,55,0.2)'), color: selectedCommunity===c.id ? GOLD : CREAM, fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
+                  {c.name}
+                </button>
+              );
+            })
           }
         </div>
       </div>
@@ -719,18 +749,20 @@ function CommunityTab({ user }) {
       {/* Polls section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-[11px] font-black uppercase" style={{ color: CREAM + '60', ...T }}>Active Polls</p>
-          <button onClick={() => setShowPollForm(true)}
+          <p className="text-[11px] font-black uppercase" style={{ color: CREAM + '60', fontFamily: 'Barlow Condensed, sans-serif' }}>Active Polls</p>
+          <button onClick={function() { setShowPollForm(true); }}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg font-black uppercase text-[11px]"
-            style={{ background: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD}30`, ...T }}>
+            style={{ background: GOLD + '15', color: GOLD, border: '1px solid ' + GOLD + '30', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <Plus className="w-3 h-3" /> Poll
           </button>
         </div>
 
-        {polls.filter(p => p.status === 'active').map(poll => (
-          <PollCard key={`pc-${poll.id}`} poll={poll} />
-        ))}
-        {polls.filter(p => p.status === 'active').map(poll => {
+        {polls.filter(function(p) { return p.status === 'active'; }).map(function(poll) {
+          return (
+            <PollCard key={'pc-' + poll.id} poll={poll} />
+          );
+        })}
+        {polls.filter(function(p) { return p.status === 'active'; }).map(function(poll) {
           var opts = Array.isArray(poll.options) ? poll.options : [];
           var total = poll.total_votes || 1;
           return (
@@ -738,12 +770,12 @@ function CommunityTab({ user }) {
               <div className="p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-bold text-[12px] text-white">{poll.question}</p>
-                  <button onClick={() => endPollMut.mutate(poll.id)}
+                  <button onClick={function() { endPollMut.mutate(poll.id); }}
                     className="text-[11px] px-2 py-1 rounded font-black uppercase shrink-0"
-                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', ...T }}>End</button>
+                    style={{ background: 'rgba(255,68,68,0.1)', color: '#FF4444', fontFamily: 'Barlow Condensed, sans-serif' }}>End</button>
                 </div>
                 <div className="space-y-1.5">
-                  {opts.map((o, i) => {
+                  {opts.map(function(o, i) {
                     var label = typeof o === 'object' ? o.text : o;
                     var votes = typeof o === 'object' ? (o.votes || 0) : 0;
                     var pct = Math.round((votes / total) * 100);
@@ -751,10 +783,10 @@ function CommunityTab({ user }) {
                       <div key={i} className="space-y-0.5">
                         <div className="flex justify-between text-[11px]">
                           <span style={{ color: CREAM + '70' }}>{label}</span>
-                          <span style={{ color: GOLD, ...T }}>{pct}%</span>
+                          <span style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>{pct}%</span>
                         </div>
                         <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-                          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: GOLD }} />
+                          <div className="h-full rounded-full" style={{ width: pct + '%', background: GOLD }} />
                         </div>
                       </div>
                     );
@@ -765,15 +797,15 @@ function CommunityTab({ user }) {
             </Card>
           );
         })}
-        {polls.filter(p => p.status === 'active').length === 0 && (
+        {polls.filter(function(p) { return p.status === 'active'; }).length === 0 && (
           <p className="text-center py-4 text-[11px]" style={{ color: CREAM + '25' }}>No active polls</p>
         )}
       </div>
 
       {/* Challenges section */}
       <div className="space-y-3">
-        <p className="text-[11px] font-black uppercase" style={{ color: CREAM + '60', ...T }}>Challenges</p>
-        {challenges.map(c => {
+        <p className="text-[11px] font-black uppercase" style={{ color: CREAM + '60', fontFamily: 'Barlow Condensed, sans-serif' }}>Challenges</p>
+        {challenges.map(function(c) {
           var progress = c.goal_value > 0 ? Math.min(100, Math.round((c.participant_count || 0) / c.goal_value * 100)) : 0;
           return (
             <Card key={c.id}>
@@ -781,7 +813,7 @@ function CommunityTab({ user }) {
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-bold text-[11px] text-white">{c.title}</p>
                   <span className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
-                    style={{ background: `${GOLD}15`, color: GOLD, ...T }}>{c.challenge_type}</span>
+                    style={{ background: GOLD + '15', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>{c.challenge_type}</span>
                 </div>
                 <div className="space-y-0.5">
                   <div className="flex justify-between text-[11px]">
@@ -789,7 +821,7 @@ function CommunityTab({ user }) {
                     <span style={{ color: GOLD }}>{progress}%</span>
                   </div>
                   <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${progress}%`, background: GOLD }} />
+                    <div className="h-full rounded-full" style={{ width: progress + '%', background: GOLD }} />
                   </div>
                 </div>
               </div>
@@ -804,26 +836,28 @@ function CommunityTab({ user }) {
         {showPollForm && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={() => setShowPollForm(false)} />
+              className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={function() { setShowPollForm(false); }} />
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm rounded-2xl p-5 space-y-3"
-              style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(212,175,55,0.2)` }}>
+              style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.2)' }}>
               <div className="flex items-center justify-between">
-                <span className="font-black uppercase" style={{ color: GOLD, ...T }}>Create Poll</span>
-                <button onClick={() => setShowPollForm(false)}><X className="w-4 h-4 text-white/40" /></button>
+                <span className="font-black uppercase" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>Create Poll</span>
+                <button onClick={function() { setShowPollForm(false); }}><X className="w-4 h-4 text-white/40" /></button>
               </div>
-              <input placeholder="Question" value={pollForm.question} onChange={e => setPollForm(f => ({ ...f, question: e.target.value }))}
+              <input placeholder="Question" value={pollForm.question} onChange={function(e) { setPollForm(function(f) { return {...f, question: e.target.value}; }); }}
                 className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
-              {pollForm.options.map((o, i) => (
-                <input key={i} placeholder={`Option ${i+1}`} value={o} onChange={e => setPollForm(f => ({ ...f, options: f.options.map((x,j) => j===i?e.target.value:x) }))}
-                  className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
-              ))}
-              {pollForm.options.length < 6 && <button onClick={() => setPollForm(f => ({ ...f, options: [...f.options, ''] }))} className="text-[11px] font-black" style={{ color: GOLD, ...T }}>+ Add Option</button>}
-              <button onClick={() => createPollMut.mutate()} disabled={!pollForm.question}
+              {pollForm.options.map(function(o, i) {
+                return (
+                  <input key={i} placeholder={'Option ' + (i+1)} value={o} onChange={function(e) { setPollForm(function(f) { return {...f, options: f.options.map(function(x, j) { return j===i ? e.target.value : x; })}; }); }}
+                    className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }} />
+                );
+              })}
+              {pollForm.options.length < 6 && <button onClick={function() { setPollForm(function(f) { return {...f, options: f.options.concat([''])}; }); }} className="text-[11px] font-black" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>+ Add Option</button>}
+              <button onClick={function() { createPollMut.mutate(); }} disabled={!pollForm.question}
                 className="w-full py-2.5 rounded-xl font-black uppercase text-[11px]"
-                style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>Create Poll</button>
+                style={{ background: BURGUNDY, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Create Poll</button>
             </motion.div>
           </>
         )}
@@ -836,46 +870,46 @@ function CommunityTab({ user }) {
 function MonetizationTab({ user }) {
   var { data: tiers = [] } = useQuery({
     queryKey: ['db-tiers', (user && user.id)],
-    queryFn: () => base44.entities.SubscriptionTier.filter({ creator_id: (user && user.id) }),
+    queryFn: function() { return base44.entities.SubscriptionTier.filter({ creator_id: (user && user.id) }); },
     enabled: !!(user && user.id),
   });
   var { data: payout } = useQuery({
     queryKey: ['db-payout', (user && user.id)],
-    queryFn: () => base44.entities.CreatorPayout.filter({ creator_id: (user && user.id) }).then(r => r[0]),
+    queryFn: function() { return base44.entities.CreatorPayout.filter({ creator_id: (user && user.id) }).then(function(r) { return r[0]; }); },
     enabled: !!(user && user.id),
   });
   var { data: txns = [] } = useQuery({
     queryKey: ['db-txns', (user && user.id)],
-    queryFn: () => base44.entities.Transaction.filter({ recipient_id: (user && user.id) }, '-created_date', 100),
+    queryFn: function() { return base44.entities.Transaction.filter({ recipient_id: (user && user.id) }, '-created_date', 100); },
     enabled: !!(user && user.id),
   });
   var { data: goals = [] } = useQuery({
     queryKey: ['db-goals', (user && user.id)],
-    queryFn: () => base44.entities.StreamerGoal.filter({ creator_id: (user && user.id) }),
+    queryFn: function() { return base44.entities.StreamerGoal.filter({ creator_id: (user && user.id) }); },
     enabled: !!(user && user.id),
   });
   var { data: dashCommunity } = useQuery({
     queryKey: ['dashCommunity-mt', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
   var dashCommunityId = (dashCommunity && dashCommunity.id) || null;
   var { data: dashActiveRoom } = useQuery({
     queryKey: ['dashActiveRoom-mt', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: (user && user.id), status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
   var dashActiveRoomId = (dashActiveRoom && dashActiveRoom.id) || null;
   var qc = useQueryClient();
   var toggleTierMut = useMutation({
-    mutationFn: ({ id, is_active }) => base44.entities.SubscriptionTier.update(id, { is_active }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['db-tiers'] }),
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(params) { return base44.entities.SubscriptionTier.update(params.id, { is_active: params.is_active }); },
+    onSuccess: function() { return qc.invalidateQueries({ queryKey: ['db-tiers'] }); },
+    onError: function() { toast.error('Action failed.'); },
   });
 
-  var tipTotal = txns.filter(t => t.type === 'tip').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
-  var subTotal = txns.filter(t => t.type === 'subscription').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
-  var giftTotal = txns.filter(t => t.type === 'virtual_good').reduce((s, t) => s + (t.creator_payout || t.creator_amount || 0), 0);
+  var tipTotal = txns.filter(function(t) { return t.type === 'tip'; }).reduce(function(s, t) { return s + (t.creator_payout || t.creator_amount || 0); }, 0);
+  var subTotal = txns.filter(function(t) { return t.type === 'subscription'; }).reduce(function(s, t) { return s + (t.creator_payout || t.creator_amount || 0); }, 0);
+  var giftTotal = txns.filter(function(t) { return t.type === 'virtual_good'; }).reduce(function(s, t) { return s + (t.creator_payout || t.creator_amount || 0); }, 0);
   var total = tipTotal + subTotal + giftTotal;
   var creatorShare = Math.floor(total * 90) / 100;
   var platformShare = total - creatorShare;
@@ -884,37 +918,41 @@ function MonetizationTab({ user }) {
     { name: 'Tips', value: tipTotal, color: GOLD },
     { name: 'Subs', value: subTotal, color: '#C9A84C' },
     { name: 'Gifts', value: giftTotal, color: '#D4AF37' },
-  ].filter(d => d.value > 0);
+  ].filter(function(d) { return d.value > 0; });
 
   return (
     <div className="space-y-5">
       {/* Subscription Tiers */}
       <div className="space-y-3">
-        <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Subscription Tiers</p>
+        <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>Subscription Tiers</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {tiers.map(tier => (
-            <Card key={tier.id}>
-              <div className="p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="font-black text-sm" style={{ color: tier.color || GOLD }}>{tier.name}</p>
-                  <button onClick={() => toggleTierMut.mutate({ id: tier.id, is_active: !tier.is_active })}
-                    className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
-                    style={{ background: tier.is_active ? 'rgba(109,191,126,0.1)' : 'rgba(255,255,255,0.06)', color: tier.is_active ? '#6DBF7E' : CREAM + '40' }}>
-                    {tier.is_active ? 'ACTIVE' : 'INACTIVE'}
-                  </button>
+          {tiers.map(function(tier) {
+            return (
+              <Card key={tier.id}>
+                <div className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="font-black text-sm" style={{ color: tier.color || GOLD }}>{tier.name}</p>
+                    <button onClick={function() { toggleTierMut.mutate({ id: tier.id, is_active: !tier.is_active }); }}
+                      className="text-[7px] font-black uppercase px-1.5 py-0.5 rounded"
+                      style={{ background: tier.is_active ? 'rgba(109,191,126,0.1)' : 'rgba(255,255,255,0.06)', color: tier.is_active ? '#6DBF7E' : CREAM + '40' }}>
+                      {tier.is_active ? 'ACTIVE' : 'INACTIVE'}
+                    </button>
+                  </div>
+                  <p className="text-2xl font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${tier.price}<span className="text-[10px]">/mo</span></p>
+                  <p className="text-[11px]" style={{ color: CREAM + '40' }}>{tier.subscriber_count || 0} subscribers</p>
+                  <div className="space-y-0.5">
+                    {(tier.benefits || []).slice(0, 3).map(function(b, i) {
+                      return (
+                        <p key={i} className="text-[11px] flex items-center gap-1" style={{ color: CREAM + '60' }}>
+                          <span style={{ color: GOLD }}>✓</span> {b}
+                        </p>
+                      );
+                    })}
+                  </div>
                 </div>
-                <p className="text-2xl font-black" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>${tier.price}<span className="text-[10px]">/mo</span></p>
-                <p className="text-[11px]" style={{ color: CREAM + '40' }}>{tier.subscriber_count || 0} subscribers</p>
-                <div className="space-y-0.5">
-                  {(tier.benefits || []).slice(0, 3).map((b, i) => (
-                    <p key={i} className="text-[11px] flex items-center gap-1" style={{ color: CREAM + '60' }}>
-                      <span style={{ color: GOLD }}>✓</span> {b}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
           {tiers.length === 0 && <p className="text-[11px]" style={{ color: CREAM + '30' }}>No tiers yet — create them in Creator Subscriptions</p>}
         </div>
       </div>
@@ -922,7 +960,7 @@ function MonetizationTab({ user }) {
       {/* Payout */}
       <Card>
         <div className="p-4 space-y-3">
-          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Payout Status</p>
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>Payout Status</p>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <p className="text-[11px]" style={{ color: CREAM + '40' }}>Pending Balance</p>
@@ -935,7 +973,7 @@ function MonetizationTab({ user }) {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-[11px] px-1.5 py-0.5 rounded font-black uppercase"
-              style={{ background: (payout && payout.stripe_connected) ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: (payout && payout.stripe_connected) ? '#6DBF7E' : '#FF4444', ...T }}>
+              style={{ background: (payout && payout.stripe_connected) ? 'rgba(109,191,126,0.12)' : 'rgba(255,68,68,0.12)', color: (payout && payout.stripe_connected) ? '#6DBF7E' : '#FF4444', fontFamily: 'Barlow Condensed, sans-serif' }}>
               {(payout && payout.stripe_connected) ? '● Stripe Connected' : '● Setup Stripe'}
             </span>
             {(payout && payout.last_payout_at) && <span className="text-[11px]" style={{ color: CREAM + '30' }}>Last: {new Date(payout.last_payout_at).toLocaleDateString()}</span>}
@@ -947,15 +985,15 @@ function MonetizationTab({ user }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <div className="p-4 space-y-3">
-            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Revenue Breakdown</p>
+            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>Revenue Breakdown</p>
             {pieData.length > 0 ? (
               <div style={{ height: 140 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie data={pieData} cx="50%" cy="50%" innerRadius={30} outerRadius={55} dataKey="value">
-                      {pieData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                      {pieData.map(function(d, i) { return <Cell key={i} fill={d.color} />; })}
                     </Pie>
-                    <Tooltip contentStyle={{ background: 'rgba(8,11,24,0.9)', border: `1px solid ${GOLD}30`, color: CREAM }} />
+                    <Tooltip contentStyle={{ background: 'rgba(8,11,24,0.9)', border: '1px solid ' + GOLD + '30', color: CREAM }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -964,7 +1002,7 @@ function MonetizationTab({ user }) {
         </Card>
         <Card>
           <div className="p-4 space-y-3">
-            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>90/10 Creator Split</p>
+            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>90/10 Creator Split</p>
             <div>
               <div className="flex items-center justify-between text-[11px] mb-1">
                 <span style={{ color: '#6DBF7E' }}>Creator 90%</span>
@@ -990,8 +1028,8 @@ function MonetizationTab({ user }) {
       {/* Streamer Goals */}
       {goals.length > 0 && (
         <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Streamer Goals</p>
-          {goals.map(g => {
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>Streamer Goals</p>
+          {goals.map(function(g) {
             var progress = g.target_amount > 0 ? Math.min(100, Math.round((g.current_amount || 0) / g.target_amount * 100)) : 0;
             return (
               <Card key={g.id}>
@@ -1001,10 +1039,10 @@ function MonetizationTab({ user }) {
                     <span className="font-black" style={{ color: GOLD }}>{g.current_amount || 0} / {g.target_amount}</span>
                   </div>
                   <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.07)' }}>
-                    <div className="h-full rounded-full" style={{ width: `${progress}%`, background: g.color || GOLD }} />
+                    <div className="h-full rounded-full" style={{ width: progress + '%', background: g.color || GOLD }} />
                   </div>
                   <span className="text-[7px] px-1.5 py-0.5 rounded font-black uppercase"
-                    style={{ background: g.status === 'completed' ? 'rgba(109,191,126,0.12)' : `${GOLD}12`, color: g.status === 'completed' ? '#6DBF7E' : GOLD, ...T }}>
+                    style={{ background: g.status === 'completed' ? 'rgba(109,191,126,0.12)' : GOLD + '12', color: g.status === 'completed' ? '#6DBF7E' : GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
                     {g.status}
                   </span>
                 </div>
@@ -1045,7 +1083,7 @@ function MonetizationTab({ user }) {
       )}
 
       {/* Direct payments modal */}
-      <DirectPayments isOpen={false} onClose={() => {}} creatorName={(user && user.full_name) || ''} />
+      <DirectPayments isOpen={false} onClose={function() {}} creatorName={(user && user.full_name) || ''} />
 
       {/* Deep links to monetization pages */}
       <div className="flex flex-wrap gap-3 pt-2">
@@ -1054,14 +1092,16 @@ function MonetizationTab({ user }) {
           { label: '⭐ Subscriptions',       href: 'CreatorSubscriptions' },
           { label: '🎛 Widgets',             href: 'MonetizationWidgets' },
           { label: '📊 Revenue Analytics',  href: 'Analytics'           },
-        ].map(item => (
-          <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
-            <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl"
-              style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
-              {item.label}
-            </span>
-          </Link>
-        ))}
+        ].map(function(item) {
+          return (
+            <Link key={item.href} to={createPageUrl(item.href)} style={{ textDecoration: 'none' }}>
+              <span className="font-black uppercase text-[10px] px-3 py-1.5 rounded-xl"
+                style={{ background: 'rgba(212,175,55,0.07)', border: '1px solid rgba(212,175,55,0.2)', color: GOLD, fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.06em', display: 'block', cursor: 'pointer' }}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
@@ -1077,52 +1117,56 @@ function SettingsTab({ user }) {
 
   var { data: creatorProfile } = useQuery({
     queryKey: ['db-cprofile', (user && user.id)],
-    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: (user && user.id) }).then(r => r[0]),
+    queryFn: function() { return base44.entities.CreatorProfile.filter({ user_id: (user && user.id) }).then(function(r) { return r[0]; }); },
     enabled: !!(user && user.id),
   });
   var { data: destinations = [] } = useQuery({
     queryKey: ['db-rtmp', (user && user.id)],
-    queryFn: () => base44.entities.RTMPDestination.filter({ creator_id: (user && user.id) }),
+    queryFn: function() { return base44.entities.RTMPDestination.filter({ creator_id: (user && user.id) }); },
     enabled: !!(user && user.id),
   });
   var { data: userPref } = useQuery({
     queryKey: ['db-userpref', (user && user.id)],
-    queryFn: () => base44.entities.UserPreference.filter({ user_id: (user && user.id) }).then(r => r[0]),
+    queryFn: function() { return base44.entities.UserPreference.filter({ user_id: (user && user.id) }).then(function(r) { return r[0]; }); },
     enabled: !!(user && user.id),
   });
 
-  useEffect(() => {
+  useEffect(function() {
     if (creatorProfile) {
       setProfile({ display_name: creatorProfile.display_name || '', bio: creatorProfile.bio || '', category: creatorProfile.category || 'other', avatar_url: creatorProfile.avatar_url || '', social_links: creatorProfile.social_links || {} });
       setSchedule(creatorProfile.stream_schedule || []);
     }
   }, [creatorProfile]);
-  useEffect(() => { if (destinations) setRtmpDests(destinations); }, [destinations]);
-  useEffect(() => { if (userPref) setPrefs(userPref.notification_preferences || {}); }, [userPref]);
+  useEffect(function() { if (destinations) setRtmpDests(destinations); }, [destinations]);
+  useEffect(function() { if (userPref) setPrefs(userPref.notification_preferences || {}); }, [userPref]);
 
   var saveProfile = useMutation({
-    mutationFn: () => (creatorProfile && creatorProfile.id)
-      ? base44.entities.CreatorProfile.update(creatorProfile.id, { ...profile, stream_schedule: schedule })
-      : base44.entities.CreatorProfile.create({ user_id: (user && user.id), ...profile, stream_schedule: schedule }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['db-cprofile'] }); toast.success('Profile saved!'); },
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function() {
+      return (creatorProfile && creatorProfile.id)
+        ? base44.entities.CreatorProfile.update(creatorProfile.id, { ...profile, stream_schedule: schedule })
+        : base44.entities.CreatorProfile.create({ user_id: (user && user.id), ...profile, stream_schedule: schedule });
+    },
+    onSuccess: function() { qc.invalidateQueries({ queryKey: ['db-cprofile'] }); toast.success('Profile saved!'); },
+    onError: function() { toast.error('Action failed.'); },
   });
   var savePrefs = useMutation({
-    mutationFn: () => (userPref && userPref.id)
-      ? base44.entities.UserPreference.update(userPref.id, { notification_preferences: prefs })
-      : base44.entities.UserPreference.create({ user_id: (user && user.id), notification_preferences: prefs }),
-    onSuccess: () => toast.success('Preferences saved!'),
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function() {
+      return (userPref && userPref.id)
+        ? base44.entities.UserPreference.update(userPref.id, { notification_preferences: prefs })
+        : base44.entities.UserPreference.create({ user_id: (user && user.id), notification_preferences: prefs });
+    },
+    onSuccess: function() { toast.success('Preferences saved!'); },
+    onError: function() { toast.error('Action failed.'); },
   });
   var toggleDest = useMutation({
-    mutationFn: ({ id, is_enabled }) => base44.entities.RTMPDestination.update(id, { is_enabled }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['db-rtmp'] }),
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(params) { return base44.entities.RTMPDestination.update(params.id, { is_enabled: params.is_enabled }); },
+    onSuccess: function() { return qc.invalidateQueries({ queryKey: ['db-rtmp'] }); },
+    onError: function() { toast.error('Action failed.'); },
   });
   var deleteDest = useMutation({
-    mutationFn: (id) => base44.entities.RTMPDestination.delete(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['db-rtmp'] }),
-    onError: () => toast.error('Action failed.'),
+    mutationFn: function(id) { return base44.entities.RTMPDestination.delete(id); },
+    onSuccess: function() { return qc.invalidateQueries({ queryKey: ['db-rtmp'] }); },
+    onError: function() { toast.error('Action failed.'); },
   });
 
   var SOCIAL_FIELDS = ['twitter','instagram','tiktok','youtube','discord','website'];
@@ -1134,45 +1178,51 @@ function SettingsTab({ user }) {
       {/* Profile */}
       <Card>
         <div className="p-4 space-y-3">
-          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Profile Settings</p>
-          {['display_name','bio','avatar_url'].map(field => (
-            <div key={field}>
-              <label className="text-[11px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>{field.replace('_',' ')}</label>
-              {field === 'bio'
-                ? <textarea value={profile[field]} onChange={e => setProfile(p => ({ ...p, [field]: e.target.value }))} rows={3}
-                    className="w-full px-3 py-2 rounded-lg text-[11px] outline-none resize-none"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }} />
-                : <input value={profile[field]} onChange={e => setProfile(p => ({ ...p, [field]: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }} />}
-            </div>
-          ))}
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>Profile Settings</p>
+          {['display_name','bio','avatar_url'].map(function(field) {
+            return (
+              <div key={field}>
+                <label className="text-[11px] uppercase font-black block mb-1" style={{ color: CREAM + '35', fontFamily: 'Barlow Condensed, sans-serif' }}>{field.replace('_',' ')}</label>
+                {field === 'bio'
+                  ? <textarea value={profile[field]} onChange={function(e) { setProfile(function(p) { return {...p, [field]: e.target.value}; }); }} rows={3}
+                      className="w-full px-3 py-2 rounded-lg text-[11px] outline-none resize-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }} />
+                  : <input value={profile[field]} onChange={function(e) { setProfile(function(p) { return {...p, [field]: e.target.value}; }); }}
+                      className="w-full px-3 py-2 rounded-lg text-[11px] outline-none"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: CREAM }} />}
+              </div>
+            );
+          })}
           <div>
-            <label className="text-[11px] uppercase font-black block mb-1" style={{ color: CREAM + '35', ...T }}>Category</label>
+            <label className="text-[11px] uppercase font-black block mb-1" style={{ color: CREAM + '35', fontFamily: 'Barlow Condensed, sans-serif' }}>Category</label>
             <div className="flex flex-wrap gap-1.5">
-              {['gaming','music','education','talk','fitness','cooking','art','tech','other'].map(c => (
-                <button key={c} onClick={() => setProfile(p => ({ ...p, category: c }))}
-                  className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
-                  style={{ background: profile.category===c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${profile.category===c ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'}`, color: profile.category===c ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
-                  {c}
-                </button>
-              ))}
+              {['gaming','music','education','talk','fitness','cooking','art','tech','other'].map(function(c) {
+                return (
+                  <button key={c} onClick={function() { setProfile(function(p) { return {...p, category: c}; }); }}
+                    className="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase"
+                    style={{ background: profile.category===c ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.06)', border: '1px solid ' + (profile.category===c ? 'rgba(212,175,55,0.4)' : 'rgba(255,255,255,0.1)'), color: profile.category===c ? GOLD : 'rgba(255,255,255,0.5)', fontFamily: 'Barlow Condensed, sans-serif', cursor: 'pointer' }}>
+                    {c}
+                  </button>
+                );
+              })}
             </div>
           </div>
           <div>
-            <label className="text-[11px] uppercase font-black block mb-2" style={{ color: CREAM + '35', ...T }}>Social Links</label>
+            <label className="text-[11px] uppercase font-black block mb-2" style={{ color: CREAM + '35', fontFamily: 'Barlow Condensed, sans-serif' }}>Social Links</label>
             <div className="grid grid-cols-2 gap-2">
-              {SOCIAL_FIELDS.map(s => (
-                <input key={s} placeholder={s} value={(profile.social_links && profile.social_links[s]) || ''}
-                  onChange={e => setProfile(p => ({ ...p, social_links: { ...p.social_links, [s]: e.target.value } }))}
-                  className="px-2 py-1.5 rounded-lg text-[10px] outline-none"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: CREAM }} />
-              ))}
+              {SOCIAL_FIELDS.map(function(s) {
+                return (
+                  <input key={s} placeholder={s} value={(profile.social_links && profile.social_links[s]) || ''}
+                    onChange={function(e) { setProfile(function(p) { return {...p, social_links: {...p.social_links, [s]: e.target.value}}; }); }}
+                    className="px-2 py-1.5 rounded-lg text-[10px] outline-none"
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: CREAM }} />
+                );
+              })}
             </div>
           </div>
-          <button onClick={() => saveProfile.mutate()}
+          <button onClick={function() { saveProfile.mutate(); }}
             className="px-5 py-2 rounded-xl font-black uppercase text-[10px]"
-            style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.3)`, ...T }}>
+            style={{ background: BURGUNDY, color: GOLD, border: '1px solid rgba(212,175,55,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Save Profile
           </button>
         </div>
@@ -1181,34 +1231,34 @@ function SettingsTab({ user }) {
       {/* Stream Schedule */}
       <Card>
         <div className="p-4 space-y-3">
-          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Stream Schedule</p>
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>Stream Schedule</p>
           <div className="space-y-1.5">
-            {DAYS.map((day, i) => {
-              var slot = schedule.find(s => s.day === day) || {};
+            {DAYS.map(function(day, i) {
+              var slot = schedule.find(function(s) { return s.day === day; }) || {};
               return (
                 <div key={day} className="flex items-center gap-2">
-                  <span className="text-[11px] w-8 font-black" style={{ color: CREAM + '50', ...T }}>{day}</span>
-                  <input type="time" value={slot.time || ''} onChange={e => setSchedule(prev => {
-                    var next = prev.filter(s => s.day !== day);
-                    if (e.target.value) next.push({ day, time: e.target.value, title: slot.title || '' });
+                  <span className="text-[11px] w-8 font-black" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>{day}</span>
+                  <input type="time" value={slot.time || ''} onChange={function(e) { setSchedule(function(prev) {
+                    var next = prev.filter(function(s) { return s.day !== day; });
+                    if (e.target.value) next.push({ day: day, time: e.target.value, title: slot.title || '' });
                     return next;
-                  })}
+                  }); }}
                     className="px-2 py-1 rounded text-[10px] outline-none"
                     style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: CREAM }} />
-                  <input placeholder="Stream title" value={slot.title || ''} onChange={e => setSchedule(prev => {
-                    var next = prev.filter(s => s.day !== day);
-                    if (slot.time) next.push({ day, time: slot.time, title: e.target.value });
+                  <input placeholder="Stream title" value={slot.title || ''} onChange={function(e) { setSchedule(function(prev) {
+                    var next = prev.filter(function(s) { return s.day !== day; });
+                    if (slot.time) next.push({ day: day, time: slot.time, title: e.target.value });
                     return next;
-                  })}
+                  }); }}
                     className="flex-1 px-2 py-1 rounded text-[10px] outline-none"
                     style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', color: CREAM }} />
                 </div>
               );
             })}
           </div>
-          <button onClick={() => saveProfile.mutate()}
+          <button onClick={function() { saveProfile.mutate(); }}
             className="px-5 py-2 rounded-xl font-black uppercase text-[10px]"
-            style={{ background: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD}30`, ...T }}>
+            style={{ background: GOLD + '15', color: GOLD, border: '1px solid ' + GOLD + '30', fontFamily: 'Barlow Condensed, sans-serif' }}>
             Save Schedule
           </button>
         </div>
@@ -1217,20 +1267,22 @@ function SettingsTab({ user }) {
       {/* Notification Preferences */}
       <Card>
         <div className="p-4 space-y-3">
-          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>Notifications</p>
+          <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>Notifications</p>
           <div className="space-y-2">
-            {NOTIF_KEYS.map(k => (
-              <div key={k} className="flex items-center justify-between">
-                <span className="text-[11px] capitalize" style={{ color: CREAM + '70' }}>{k.replace('_',' ')}</span>
-                <button onClick={() => { var n = { ...prefs, [k]: !prefs[k] }; setPrefs(n); savePrefs.mutate(); }}
-                  className="w-10 h-5 rounded-full relative transition-all"
-                  style={{ background: prefs[k] ? GOLD : 'rgba(255,255,255,0.1)' }}>
-                  <motion.div animate={{ x: prefs[k] ? 20 : 2 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                    className="absolute top-0.5 w-4 h-4 rounded-full"
-                    style={{ background: prefs[k] ? '#000' : 'rgba(255,255,255,0.4)' }} />
-                </button>
-              </div>
-            ))}
+            {NOTIF_KEYS.map(function(k) {
+              return (
+                <div key={k} className="flex items-center justify-between">
+                  <span className="text-[11px] capitalize" style={{ color: CREAM + '70' }}>{k.replace('_',' ')}</span>
+                  <button onClick={function() { var n = {...prefs, [k]: !prefs[k]}; setPrefs(n); savePrefs.mutate(); }}
+                    className="w-10 h-5 rounded-full relative transition-all"
+                    style={{ background: prefs[k] ? GOLD : 'rgba(255,255,255,0.1)' }}>
+                    <motion.div animate={{ x: prefs[k] ? 20 : 2 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                      className="absolute top-0.5 w-4 h-4 rounded-full"
+                      style={{ background: prefs[k] ? '#000' : 'rgba(255,255,255,0.4)' }} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
       </Card>
@@ -1239,33 +1291,35 @@ function SettingsTab({ user }) {
       <Card>
         <div className="p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', ...T }}>RTMP Destinations</p>
+            <p className="text-[10px] font-black uppercase" style={{ color: CREAM + '50', fontFamily: 'Barlow Condensed, sans-serif' }}>RTMP Destinations</p>
             <Link to={createPageUrl('StreamInfra')}>
               <button className="text-[11px] font-black uppercase px-2 py-1 rounded"
-                style={{ background: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD}25`, ...T }}>
+                style={{ background: GOLD + '15', color: GOLD, border: '1px solid ' + GOLD + '25', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 Manage in Stream Setup
               </button>
             </Link>
           </div>
-          {destinations.map(d => (
-            <div key={d.id} className="flex items-center gap-3 p-2.5 rounded-lg"
-              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <div className="flex-1">
-                <p className="text-[10px] font-bold text-white">{d.label || d.platform}</p>
-                <p className="text-[11px]" style={{ color: CREAM + '35' }}>{(d.rtmp_url && d.rtmp_url.slice(0, 30))}…</p>
+          {destinations.map(function(d) {
+            return (
+              <div key={d.id} className="flex items-center gap-3 p-2.5 rounded-lg"
+                style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <div className="flex-1">
+                  <p className="text-[10px] font-bold text-white">{d.label || d.platform}</p>
+                  <p className="text-[11px]" style={{ color: CREAM + '35' }}>{(d.rtmp_url && d.rtmp_url.slice(0, 30))}…</p>
+                </div>
+                <button onClick={function() { toggleDest.mutate({ id: d.id, is_enabled: !d.is_enabled }); }}
+                  className="w-9 h-5 rounded-full relative shrink-0"
+                  style={{ background: d.is_enabled ? GOLD : 'rgba(255,255,255,0.1)' }}>
+                  <motion.div animate={{ x: d.is_enabled ? 16 : 2 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    className="absolute top-0.5 w-4 h-4 rounded-full"
+                    style={{ background: d.is_enabled ? '#000' : 'rgba(255,255,255,0.4)' }} />
+                </button>
+                <button onClick={function() { deleteDest.mutate(d.id); }}>
+                  <Trash2 className="w-3.5 h-3.5 text-white/20 hover:text-[#C0392B] transition-colors" />
+                </button>
               </div>
-              <button onClick={() => toggleDest.mutate({ id: d.id, is_enabled: !d.is_enabled })}
-                className="w-9 h-5 rounded-full relative shrink-0"
-                style={{ background: d.is_enabled ? GOLD : 'rgba(255,255,255,0.1)' }}>
-                <motion.div animate={{ x: d.is_enabled ? 16 : 2 }} transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                  className="absolute top-0.5 w-4 h-4 rounded-full"
-                  style={{ background: d.is_enabled ? '#000' : 'rgba(255,255,255,0.4)' }} />
-              </button>
-              <button onClick={() => deleteDest.mutate(d.id)}>
-                <Trash2 className="w-3.5 h-3.5 text-white/20 hover:text-[#C0392B] transition-colors" />
-              </button>
-            </div>
-          ))}
+            );
+          })}
           {destinations.length === 0 && <p className="text-[10px]" style={{ color: CREAM + '25' }}>No destinations configured</p>}
         </div>
       </Card>
@@ -1276,11 +1330,11 @@ function SettingsTab({ user }) {
       {/* Overlay Builder link */}
       <Link to="/OverlayBuilder">
         <div className="flex items-center justify-between p-4 rounded-xl cursor-pointer"
-          style={{ background: 'rgba(8,11,24,0.9)', border: `1px solid rgba(212,175,55,0.15)` }}>
+          style={{ background: 'rgba(8,11,24,0.9)', border: '1px solid rgba(212,175,55,0.15)' }}>
           <div className="flex items-center gap-2">
             <Layers className="w-5 h-5" style={{ color: GOLD }} />
             <div>
-              <p className="font-black text-sm" style={{ color: GOLD, ...T }}>OBS Overlay Builder</p>
+              <p className="font-black text-sm" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>OBS Overlay Builder</p>
               <p className="text-[11px]" style={{ color: CREAM + '40' }}>Design and export custom stream overlays</p>
             </div>
           </div>
@@ -1298,22 +1352,22 @@ export default function DashboardPage() {
   var [showOnboarding, setShowOnboarding] = useState(false);
   var [showTierEditor, setShowTierEditor] = useState(false);
   var [editingTier, setEditingTier] = useState(null);
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
   var { data: activeRoom } = useQuery({
     queryKey: ['dashboard-active-room', (user && user.id)],
-    queryFn: () => base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Room.filter({ host_id: user.id, status: 'live' }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
     refetchInterval: 30000,
   });
   var activeRoomId = (activeRoom && activeRoom.id) || null;
   var { data: profile } = useQuery({
     queryKey: ['db-profile', (user && user.id)],
-    queryFn: () => base44.entities.CreatorProfile.filter({ user_id: (user && user.id) }).then(r => r[0]),
+    queryFn: function() { return base44.entities.CreatorProfile.filter({ user_id: (user && user.id) }).then(function(r) { return r[0]; }); },
     enabled: !!(user && user.id),
   });
   var { data: dashCommunity } = useQuery({
     queryKey: ['dashCommunity', (user && user.id)],
-    queryFn: () => base44.entities.Community.filter({ owner_id: (user && user.id) }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Community.filter({ owner_id: (user && user.id) }).then(function(r) { return r[0] || null; }); },
     enabled: !!(user && user.id),
   });
   var dashCommunityId = (dashCommunity && dashCommunity.id) || null;
@@ -1321,7 +1375,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen" style={{ background: '#080B18' }}>
       {/* Header */}
-      <div className="sticky top-0 z-30 px-4 md:px-8 py-4" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: `1px solid rgba(212,175,55,0.12)`, backdropFilter: 'blur(12px)' }}>
+      <div className="sticky top-0 z-30 px-4 md:px-8 py-4" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.12)', backdropFilter: 'blur(12px)' }}>
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -1335,12 +1389,12 @@ export default function DashboardPage() {
                 <h1 className="font-black text-lg uppercase leading-none" style={{ color: GOLD, fontFamily: 'Orbitron, monospace' }}>
                   {(profile && profile.display_name) || (user && user.full_name) || 'Creator Dashboard'}
                 </h1>
-                <p className="text-[11px] mt-0.5" style={{ color: CREAM + '40', ...T }}>SeeWhy LIVE Creator Studio</p>
+                <p className="text-[11px] mt-0.5" style={{ color: CREAM + '40', fontFamily: 'Barlow Condensed, sans-serif' }}>SeeWhy LIVE Creator Studio</p>
               </div>
             </div>
             <Link to={createPageUrl('LiveRoom')}>
               <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-black uppercase text-[11px]"
-                style={{ background: BURGUNDY, color: GOLD, border: `1px solid rgba(212,175,55,0.4)`, boxShadow: `0 0 16px rgba(128,0,32,0.4)`, ...T }}>
+                style={{ background: BURGUNDY, color: GOLD, border: '1px solid rgba(212,175,55,0.4)', boxShadow: '0 0 16px rgba(128,0,32,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 <Radio className="w-3.5 h-3.5" /> GO LIVE
               </button>
             </Link>
@@ -1348,18 +1402,20 @@ export default function DashboardPage() {
 
           {/* Tabs */}
           <div className="flex overflow-x-auto scrollbar-hide gap-0">
-            {TABS.map(t => (
-              <button key={t.id} onClick={() => setActiveTab(t.id)}
-                className="flex items-center gap-1.5 px-4 py-2.5 shrink-0 font-black uppercase text-[11px] transition-all border-b-2"
-                style={{
-                  ...T,
-                  color: activeTab === t.id ? GOLD : CREAM + '35',
-                  background: activeTab === t.id ? `rgba(212,175,55,0.07)` : 'transparent',
-                  borderBottomColor: activeTab === t.id ? GOLD : 'transparent',
-                }}>
-                {t.label}
-              </button>
-            ))}
+            {TABS.map(function(t) {
+              return (
+                <button key={t.id} onClick={function() { setActiveTab(t.id); }}
+                  className="flex items-center gap-1.5 px-4 py-2.5 shrink-0 font-black uppercase text-[11px] transition-all border-b-2"
+                  style={{
+                    fontFamily: 'Barlow Condensed, sans-serif',
+                    color: activeTab === t.id ? GOLD : CREAM + '35',
+                    background: activeTab === t.id ? 'rgba(212,175,55,0.07)' : 'transparent',
+                    borderBottomColor: activeTab === t.id ? GOLD : 'transparent',
+                  }}>
+                  {t.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -1383,10 +1439,10 @@ export default function DashboardPage() {
       {(user && user.id) && <ShopDashboard creatorId={user.id} />}
       {(user && user.id) && <SubscriptionCard tier={'basic'} price={4.99} benefits={[]} communityId={null} creatorId={(user && user.id)} isSubscribed={false} />}
       {(user && user.id) && <TierSubscribeCard tier={null} currentSub={null} userId={user.id} creatorId={(user && user.id)} isHighlighted={false} />}
-      <TierEditor open={showTierEditor} onClose={() => { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
+      <TierEditor open={showTierEditor} onClose={function() { setShowTierEditor(false); setEditingTier(null); }} creatorId={(user && user.id)} existing={editingTier} />
       <RewardShopEditor creatorId={(user && user.id)} />
-      <QuickActionPanel isOpen={showQuickAction} onClose={() => setShowQuickAction(false)} />
-      <OnboardingFlow isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
+      <QuickActionPanel isOpen={showQuickAction} onClose={function() { setShowQuickAction(false); }} />
+      <OnboardingFlow isOpen={showOnboarding} onClose={function() { setShowOnboarding(false); }} />
       <SwanyBotWidget />
       <CollaborationMatcher />
       <ContentRecommendations />
