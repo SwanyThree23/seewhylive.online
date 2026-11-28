@@ -64,25 +64,25 @@ router.post('/:streamId', requireAuth, async function(req, res) {
       message: message,
     };
 
-    // onConfirmed fires when Stripe webhook confirms payment
+    // onConfirmed fires when Stripe webhook confirms payment.
+    // Capture all values into tipData so req/res are not held alive.
     var onConfirmed = function() {
-      // Insert tip record into Postgres
       var tipId = crypto.randomUUID();
-      var creatorCents = Math.floor(amountCents * CREATOR_SPLIT);
-      var platformCents = amountCents - creatorCents;
+      var creatorCents = Math.floor(tipData.amountCents * CREATOR_SPLIT);
+      var platformCents = tipData.amountCents - creatorCents;
       db.query(
         'INSERT INTO panel_tips (id, stream_id, tenant_id, sender_id, sender_name, amount_cents, creator_cents, platform_cents, message, stripe_payment_intent_id, status) ' +
         'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) ON CONFLICT DO NOTHING',
-        [tipId, streamId, req.tenantId, senderId, senderName, amountCents, creatorCents, platformCents, message || null, tipData._piId, 'confirmed']
+        [tipId, tipData.streamId, tipData.tenantId, tipData.senderId, tipData.senderName, tipData.amountCents, creatorCents, platformCents, tipData.message || null, tipData._piId, 'confirmed']
       ).catch(function(err) {
         logger.error('[panelTips] DB insert failed', { err: err.message });
       });
       // Emit real-time tip alert to everyone in the room
       if (io) {
-        io.to(streamId).emit('panel:tip-alert', {
-          senderName: senderName,
-          amountCents: amountCents,
-          message: message,
+        io.to(tipData.streamId).emit('panel:tip-alert', {
+          senderName: tipData.senderName,
+          amountCents: tipData.amountCents,
+          message: tipData.message,
           ts: Date.now(),
         });
       }
