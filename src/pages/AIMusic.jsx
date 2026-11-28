@@ -79,24 +79,24 @@ var STYLE_CATEGORIES = [
 // ── Genre → color mapping for album art (earth-tone palette only) ────────────
 function tagColor(tags) {
   var map = {
-    'trap':     `linear-gradient(135deg, #1a0000, ${CRIMSON})`,
-    'lo-fi':    `linear-gradient(135deg, #1a1000, ${GOLD})`,
-    'gospel':   `linear-gradient(135deg, #1a0a00, #E8A030)`,
-    'afrobeats':`linear-gradient(135deg, #120800, #8B4513)`,
-    'edm':      `linear-gradient(135deg, #0d0a00, ${AMBER})`,
-    'hip-hop':  `linear-gradient(135deg, #1a1000, ${GOLD})`,
-    'r&b':      `linear-gradient(135deg, #1a0000, ${ROSE})`,
-    'jazz':     `linear-gradient(135deg, #0d0800, #C9A84C)`,
-    'ambient':  `linear-gradient(135deg, #0a0d00, #8A7A62)`,
-    'house':    `linear-gradient(135deg, #1a0400, ${AMBER})`,
-    'drill':    `linear-gradient(135deg, #1a0000, #A01010)`,
-    'pop':      `linear-gradient(135deg, #1a0008, ${ROSE})`,
+    'trap':     'linear-gradient(135deg, #1a0000, ' + CRIMSON + ')',
+    'lo-fi':    'linear-gradient(135deg, #1a1000, ' + GOLD + ')',
+    'gospel':   'linear-gradient(135deg, #1a0a00, #E8A030)',
+    'afrobeats':'linear-gradient(135deg, #120800, #8B4513)',
+    'edm':      'linear-gradient(135deg, #0d0a00, ' + AMBER + ')',
+    'hip-hop':  'linear-gradient(135deg, #1a1000, ' + GOLD + ')',
+    'r&b':      'linear-gradient(135deg, #1a0000, ' + ROSE + ')',
+    'jazz':     'linear-gradient(135deg, #0d0800, #C9A84C)',
+    'ambient':  'linear-gradient(135deg, #0a0d00, #8A7A62)',
+    'house':    'linear-gradient(135deg, #1a0400, ' + AMBER + ')',
+    'drill':    'linear-gradient(135deg, #1a0000, #A01010)',
+    'pop':      'linear-gradient(135deg, #1a0008, ' + ROSE + ')',
   };
   for (var t of (tags || [])) {
     var k = t.toLowerCase();
     if (map[k]) return map[k];
   }
-  return `linear-gradient(135deg, #100d00, ${CRIMSON})`;
+  return 'linear-gradient(135deg, #100d00, ' + CRIMSON + ')';
 }
 
 // ── Trending styles data ──────────────────────────────────────────────────────
@@ -151,11 +151,11 @@ var GEN_STEPS = [
 // ── WaveformVisualizer ────────────────────────────────────────────────────────
 function WaveformVisualizer({ playing, color = GOLD, bars = 28, height = 36 }) {
   var heights = useRef(
-    Array.from({ length: bars }, () => 4 + Math.random() * 24)
+    Array.from({ length: bars }, function() { return 4 + Math.random() * 24; })
   );
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 2, height }}>
-      {Array.from({ length: bars }).map((_, i) => (
+      {Array.from({ length: bars }).map(function(_, i) { return (
         <motion.div
           key={i}
           animate={playing ? { height: [4, heights.current[i], 4] } : { height: 4 }}
@@ -166,7 +166,7 @@ function WaveformVisualizer({ playing, color = GOLD, bars = 28, height = 36 }) {
           }
           style={{ width: 3, borderRadius: 2, background: color, opacity: 0.75 + (i % 3) * 0.08, flexShrink: 0 }}
         />
-      ))}
+      ); })}
     </div>
   );
 }
@@ -183,7 +183,7 @@ function StyleChip({ label, color, active, onClick, onRemove }) {
         gap: 4,
         padding: '5px 11px',
         borderRadius: 999,
-        border: `1px solid ${active ? color + 'aa' : 'rgba(255,255,255,0.12)'}`,
+        border: '1px solid ' + (active ? color + 'aa' : 'rgba(255,255,255,0.12)'),
         background: active ? color + '22' : 'rgba(255,255,255,0.04)',
         color: active ? color : 'rgba(255,255,255,0.5)',
         fontSize: 12,
@@ -197,7 +197,7 @@ function StyleChip({ label, color, active, onClick, onRemove }) {
     >
       {label}
       {active && onRemove && (
-        <X size={10} style={{ marginLeft: 2, opacity: 0.7 }} onClick={(e) => { e.stopPropagation(); onRemove(); }} />
+        <X size={10} style={{ marginLeft: 2, opacity: 0.7 }} onClick={function(e) { e.stopPropagation(); onRemove(); }} />
       )}
     </motion.button>
   );
@@ -210,36 +210,39 @@ function MiniScrubber({ isPlaying, duration }) {
 
   var rafRef = useRef(null);
   var startRef = useRef(null);
-  var [totalSecs] = useState(() => {
-    var [m, s] = (duration || '2:00').split(':').map(Number);
+  var [totalSecs] = useState(function() {
+    var parts = (duration || '2:00').split(':').map(Number);
+    var m = parts[0]; var s = parts[1];
     return m * 60 + (s || 0);
   });
 
-  useEffect(() => {
+  useEffect(function() {
     if (!isPlaying) { cancelAnimationFrame(rafRef.current); return; }
     startRef.current = Date.now() - progress * totalSecs * 10;
-    var tick = () => {
+    var tick = function() {
       var elapsed = (Date.now() - startRef.current) / 1000;
       var pct = Math.min(1, elapsed / totalSecs);
       setProgress(pct);
       if (pct < 1) rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
+    return function() { cancelAnimationFrame(rafRef.current); };
   }, [isPlaying]);
 
-  var fmtTime = (p) => {
+  var fmtTime = function(p) {
     var s = Math.floor(p * totalSecs);
-    return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
+    var mins = Math.floor(s / 60);
+    var secs = (s % 60).toString().padStart(2, '0');
+    return mins + ':' + secs;
   };
 
   return (
     <div style={{ padding: '0 16px 12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.3)', minWidth: 28 }}>{fmtTime(progress)}</span>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.3)', minWidth: 28 }}>{fmtTime(progress)}</span>
         <div
           style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.08)', borderRadius: 2, cursor: 'pointer', position: 'relative' }}
-          onClick={(e) => {
+          onClick={function(e) {
             var rect = e.currentTarget.getBoundingClientRect();
             var p = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
             setProgress(p);
@@ -247,11 +250,11 @@ function MiniScrubber({ isPlaying, duration }) {
           }}
         >
           <motion.div
-            style={{ height: '100%', background: `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`, borderRadius: 2, width: `${progress * 100}%` }}
+            style={{ height: '100%', background: 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')', borderRadius: 2, width: (progress * 100) + '%' }}
           />
-          <div style={{ position: 'absolute', top: '50%', left: `${progress * 100}%`, transform: 'translate(-50%, -50%)', width: 8, height: 8, borderRadius: '50%', background: GOLD, opacity: isPlaying ? 1 : 0.5 }} />
+          <div style={{ position: 'absolute', top: '50%', left: (progress * 100) + '%', transform: 'translate(-50%, -50%)', width: 8, height: 8, borderRadius: '50%', background: GOLD, opacity: isPlaying ? 1 : 0.5 }} />
         </div>
-        <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.3)', minWidth: 28, textAlign: 'right' }}>{fmtTime(1)}</span>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.3)', minWidth: 28, textAlign: 'right' }}>{fmtTime(1)}</span>
       </div>
     </div>
   );
@@ -267,13 +270,13 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
   var menuRef = useRef(null);
 
   // close menu on outside click
-  useEffect(() => {
+  useEffect(function() {
     if (!menuOpen) return;
     function handler(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
     }
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    return function() { document.removeEventListener('mousedown', handler); };
   }, [menuOpen]);
 
   var artGradient = tagColor(track.tags);
@@ -286,8 +289,8 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
       style={{
         borderRadius: 16,
         background: BG2,
-        border: `1px solid ${isPlaying ? GOLD + '50' : 'rgba(212,175,55,0.1)'}`,
-        boxShadow: isPlaying ? `0 0 24px ${GOLD}18` : 'none',
+        border: '1px solid ' + (isPlaying ? GOLD + '50' : 'rgba(212,175,55,0.1)'),
+        boxShadow: isPlaying ? '0 0 24px ' + GOLD + '18' : 'none',
         overflow: 'hidden',
         transition: 'border-color 0.2s, box-shadow 0.2s',
       }}
@@ -342,14 +345,14 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
         {/* Info */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
-            <span style={{ ...T, color: '#fff', fontSize: 15, fontWeight: 800, letterSpacing: '0.02em' }}>
+            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', fontSize: 15, fontWeight: 800, letterSpacing: '0.02em' }}>
               {track.title}
             </span>
             {track.streamReady && (
               <span style={{
-                ...T, fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
+                fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
                 padding: '2px 7px', borderRadius: 999,
-                background: GREEN + '22', border: `1px solid ${GREEN}55`, color: GREEN,
+                background: GREEN + '22', border: '1px solid ' + GREEN + '55', color: GREEN,
                 textTransform: 'uppercase',
               }}>
                 Stream Ready
@@ -358,19 +361,19 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
           </div>
           {/* Tags */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 6 }}>
-            {track.tags.map(tag => (
+            {track.tags.map(function(tag) { return (
               <span key={tag} style={{
-                ...T, fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
+                fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, fontWeight: 700, letterSpacing: '0.05em',
                 padding: '2px 8px', borderRadius: 999,
                 background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)',
                 color: GOLD, textTransform: 'uppercase',
               }}>
                 {tag}
               </span>
-            ))}
+            ); })}
           </div>
           {/* Duration */}
-          <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.04em' }}>
+          <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.04em' }}>
             {track.duration}
           </span>
         </div>
@@ -391,7 +394,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
               fill={track.liked ? PINK : 'none'}
               color={track.liked ? PINK : 'rgba(255,255,255,0.35)'}
             />
-            <span style={{ ...T, fontSize: 10, color: track.liked ? PINK : 'rgba(255,255,255,0.3)' }}>
+            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: track.liked ? PINK : 'rgba(255,255,255,0.3)' }}>
               {track.likeCount}
             </span>
           </motion.button>
@@ -400,7 +403,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
           <div style={{ position: 'relative' }} ref={menuRef}>
             <motion.button
               whileTap={{ scale: 0.85 }}
-              onClick={() => setMenuOpen(o => !o)}
+              onClick={function() { setMenuOpen(function(o) { return !o; }); }}
               style={{
                 background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: 8, width: 30, height: 30,
@@ -424,11 +427,11 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
                   }}
                 >
                   {[
-                    { label: 'Remix', icon: RefreshCw, color: AMBER, action: () => { onRemix(); setMenuOpen(false); } },
-                    { label: 'Continue', icon: ChevronRight, color: ROSE, action: () => { onContinue(); setMenuOpen(false); } },
-                    { label: 'Download', icon: Download, color: GOLD, action: () => setMenuOpen(false) },
-                    { label: 'Delete', icon: X, color: PINK, action: () => { onDelete(); setMenuOpen(false); } },
-                  ].map(item => (
+                    { label: 'Remix', icon: RefreshCw, color: AMBER, action: function() { onRemix(); setMenuOpen(false); } },
+                    { label: 'Continue', icon: ChevronRight, color: ROSE, action: function() { onContinue(); setMenuOpen(false); } },
+                    { label: 'Download', icon: Download, color: GOLD, action: function() { setMenuOpen(false); } },
+                    { label: 'Delete', icon: X, color: PINK, action: function() { onDelete(); setMenuOpen(false); } },
+                  ].map(function(item) { return (
                     <button
                       key={item.label}
                       onClick={item.action}
@@ -439,12 +442,12 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
                         color: item.color, fontSize: 13, fontWeight: 700, fontFamily: 'Barlow Condensed, sans-serif',
                         textAlign: 'left', letterSpacing: '0.04em',
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                      onMouseEnter={function(e) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+                      onMouseLeave={function(e) { e.currentTarget.style.background = 'none'; }}
                     >
                       <item.icon size={13} /> {item.label}
                     </button>
-                  ))}
+                  ); })}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -454,10 +457,10 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
           {track.lyrics && (
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => setLyricsOpen(o => !o)}
+              onClick={function() { setLyricsOpen(function(o) { return !o; }); }}
               style={{
                 background: lyricsOpen ? ROSE + '22' : 'rgba(255,255,255,0.04)',
-                border: `1px solid ${lyricsOpen ? ROSE + '55' : 'rgba(255,255,255,0.1)'}`,
+                border: '1px solid ' + (lyricsOpen ? ROSE + '55' : 'rgba(255,255,255,0.1)'),
                 borderRadius: 8, width: 30, height: 30,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer', color: lyricsOpen ? ROSE : 'rgba(255,255,255,0.4)',
@@ -477,19 +480,19 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
             whileTap={{ scale: 0.94 }}
             onClick={function() { if (onAddToStream) onAddToStream(track); }}
             style={{
-              ...T, display: 'flex', alignItems: 'center', gap: 5,
+              fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 5,
               padding: '5px 12px', borderRadius: 999, fontSize: 11, fontWeight: 800,
-              background: `${GREEN}15`, border: `1px solid ${GREEN}40`, color: GREEN,
+              background: GREEN + '15', border: '1px solid ' + GREEN + '40', color: GREEN,
               cursor: 'pointer', letterSpacing: '0.04em', textTransform: 'uppercase',
               transition: 'all 0.15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = `${GREEN}25`; }}
-            onMouseLeave={e => { e.currentTarget.style.background = `${GREEN}15`; }}
+            onMouseEnter={function(e) { e.currentTarget.style.background = GREEN + '25'; }}
+            onMouseLeave={function(e) { e.currentTarget.style.background = GREEN + '15'; }}
           >
             <Send size={10} /> Add to Stream
           </motion.button>
         )}
-        <span style={{ ...T, fontSize: 10, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>{track.duration}</span>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 10, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>{track.duration}</span>
       </div>
 
       {/* Mini audio scrubber */}
@@ -506,19 +509,19 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
           >
             <div style={{ padding: '14px 16px', background: 'rgba(123,93,166,0.04)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ ...T, fontSize: 11, color: ROSE, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: ROSE, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   Lyrics
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <button
-                    onClick={() => { navigator.clipboard.writeText(lyricsText).then(() => { setCopiedLyrics(true); setTimeout(() => setCopiedLyrics(false), 1800); }); }}
-                    style={{ ...T, background: 'none', border: 'none', cursor: 'pointer', color: copiedLyrics ? GOLD : 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 700, transition: 'color .2s' }}
+                    onClick={function() { navigator.clipboard.writeText(lyricsText).then(function() { setCopiedLyrics(true); setTimeout(function() { setCopiedLyrics(false); }, 1800); }); }}
+                    style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'none', border: 'none', cursor: 'pointer', color: copiedLyrics ? GOLD : 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 700, transition: 'color .2s' }}
                   >
                     {copiedLyrics ? '✓ copied' : '📋 copy'}
                   </button>
                   <button
-                    onClick={() => setEditingLyrics(e => !e)}
-                    style={{ ...T, background: 'none', border: 'none', cursor: 'pointer', color: AMBER, fontSize: 11, fontWeight: 700 }}
+                    onClick={function() { setEditingLyrics(function(e) { return !e; }); }}
+                    style={{ fontFamily: 'Barlow Condensed, sans-serif', background: 'none', border: 'none', cursor: 'pointer', color: AMBER, fontSize: 11, fontWeight: 700 }}
                   >
                     {editingLyrics ? 'Done' : 'Edit'}
                   </button>
@@ -527,9 +530,9 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
               {editingLyrics ? (
                 <textarea
                   value={lyricsText}
-                  onChange={e => setLyricsText(e.target.value)}
+                  onChange={function(e) { setLyricsText(e.target.value); }}
                   rows={10}
-                  style={{ ...inp, fontSize: 12, resize: 'vertical', lineHeight: 1.7 }}
+                  style={{ width: '100%', padding: '12px 16px', background: 'rgba(14,12,9,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 12, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', resize: 'vertical', lineHeight: 1.7 }}
                 />
               ) : (
                 <pre style={{
@@ -537,7 +540,7 @@ function TrackCard({ track, isPlaying, onPlay, onLike, onDelete, onContinue, onR
                   fontFamily: 'Barlow Condensed, sans-serif', lineHeight: 1.8,
                   whiteSpace: 'pre-wrap', wordBreak: 'break-word',
                 }}>
-                  {lyricsText.split('\n').map((line, i) => {
+                  {lyricsText.split('\n').map(function(line, i) {
                     var isTag = /^\[.+\]$/.test(line.trim());
                     return (
                       <span key={i} style={{ display: 'block', color: isTag ? GOLD : 'rgba(255,255,255,0.7)', fontWeight: isTag ? 800 : 400 }}>
@@ -567,43 +570,43 @@ function ContinuePanel({ track, onClose, onGenerate }) {
       exit={{ opacity: 0, y: 16 }}
       style={{
         borderRadius: 16, background: BG2,
-        border: `1px solid ${ROSE}55`,
+        border: '1px solid ' + ROSE + '55',
         padding: 20, marginBottom: 12,
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <span style={{ ...T, color: ROSE, fontSize: 14, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', color: ROSE, fontSize: 14, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
           Continue: {track.title}
         </span>
         <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.4)' }}>
           <X size={16} />
         </button>
       </div>
-      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
+      <label style={{ fontFamily: 'Barlow Condensed, sans-serif', display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
         Continue from (end of track)
       </label>
       <input
         value={startTime}
-        onChange={e => setStartTime(e.target.value)}
+        onChange={function(e) { setStartTime(e.target.value); }}
         placeholder="e.g. 2:47"
-        style={{ ...inp, marginBottom: 12 }}
+        style={{ width: '100%', padding: '12px 16px', background: 'rgba(14,12,9,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 12 }}
       />
-      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
+      <label style={{ fontFamily: 'Barlow Condensed, sans-serif', display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
         Description for next section
       </label>
       <textarea
         value={desc}
-        onChange={e => setDesc(e.target.value)}
+        onChange={function(e) { setDesc(e.target.value); }}
         rows={3}
         placeholder="Bridge with strings, slower tempo, emotional outro…"
-        style={{ ...inp, resize: 'none', marginBottom: 14 }}
+        style={{ width: '100%', padding: '12px 16px', background: 'rgba(14,12,9,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', resize: 'none', marginBottom: 14 }}
       />
       <motion.button
         whileTap={{ scale: 0.97 }}
-        onClick={() => onGenerate({ track, startTime, desc })}
+        onClick={function() { onGenerate({ track: track, startTime: startTime, desc: desc }); }}
         style={{
-          ...T, width: '100%', padding: '12px',
-          background: `linear-gradient(90deg, ${CRIMSON}, ${AMBER})`,
+          fontFamily: 'Barlow Condensed, sans-serif', width: '100%', padding: '12px',
+          background: 'linear-gradient(90deg, ' + CRIMSON + ', ' + AMBER + ')',
           border: 'none', borderRadius: 10,
           color: '#fff', fontSize: 13, fontWeight: 800, letterSpacing: '0.06em',
           textTransform: 'uppercase', cursor: 'pointer',
@@ -627,11 +630,11 @@ function Toast({ message, visible }) {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           style={{
             position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(8,11,24,0.97)', border: `1px solid ${GOLD}55`,
+            background: 'rgba(8,11,24,0.97)', border: '1px solid ' + GOLD + '55',
             borderRadius: 12, padding: '12px 22px',
             color: '#fff', fontSize: 14, fontFamily: 'Barlow Condensed, sans-serif',
             fontWeight: 700, letterSpacing: '0.04em',
-            boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 20px ${GOLD}18`,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 20px ' + GOLD + '18',
             zIndex: 9999, whiteSpace: 'nowrap',
           }}
         >
@@ -644,7 +647,7 @@ function Toast({ message, visible }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AIMusic() {
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me(); } });
   // Form state
   var [description, setDescription] = useState('');
   var [styleInput, setStyleInput] = useState('');
@@ -694,38 +697,38 @@ export default function AIMusic() {
   // Parsed style tags (comma-separated from styleInput)
   var parsedTags = styleInput
     .split(',')
-    .map(t => t.trim().toLowerCase())
+    .map(function(t) { return t.trim().toLowerCase(); })
     .filter(Boolean);
 
   // Persist library to localStorage
-  useEffect(() => {
-    try { localStorage.setItem('swl_music_library', JSON.stringify(tracks)); } catch {}
+  useEffect(function() {
+    try { localStorage.setItem('swl_music_library', JSON.stringify(tracks)); } catch (e) {}
   }, [tracks]);
 
   // Cycling gen steps
-  useEffect(() => {
+  useEffect(function() {
     if (!generating) { setGenStep(0); return; }
     var step = 0;
-    genTimerRef.current = setInterval(() => {
+    genTimerRef.current = setInterval(function() {
       step = (step + 1) % GEN_STEPS.length;
       setGenStep(step);
     }, 480);
-    return () => clearInterval(genTimerRef.current);
+    return function() { clearInterval(genTimerRef.current); };
   }, [generating]);
 
   function showToast(msg) {
     setToast({ visible: true, message: msg });
-    setTimeout(() => setToast({ visible: false, message: '' }), 3000);
+    setTimeout(function() { setToast({ visible: false, message: '' }); }, 3000);
   }
 
   function handleAddStyleTag(tag) {
     var lower = tag.toLowerCase();
     if (parsedTags.includes(lower)) return;
-    setStyleInput(prev => prev ? prev + ', ' + lower : lower);
+    setStyleInput(function(prev) { return prev ? prev + ', ' + lower : lower; });
   }
 
   function handleRemoveStyleTag(tag) {
-    var newTags = parsedTags.filter(t => t !== tag.toLowerCase());
+    var newTags = parsedTags.filter(function(t) { return t !== tag.toLowerCase(); });
     setStyleInput(newTags.join(', '));
   }
 
@@ -735,27 +738,29 @@ export default function AIMusic() {
     var isInstrumental = forceInstrumental || instrumental;
     var tags = parsedTags.length > 0 ? parsedTags : ['chill'];
     var styleDesc = tags.join(', ');
-    var promptText = description || `${styleDesc} background music${isInstrumental ? '' : ' with lyrics'}`;
+    var promptText = description || (styleDesc + ' background music' + (isInstrumental ? '' : ' with lyrics'));
+    var durationMins = Math.floor(duration / 60);
+    var durationSecs = duration % 60 > 0 ? (duration % 60) + 's' : '';
+    var lyricsField = isInstrumental ? 'null' : '"[Verse 1]\\nlyric line\\nlyric line\\n\\n[Chorus]\\nchorus line\\nchorus line\\n\\n[Verse 2]\\nverse line\\nverse line\\n\\n[Outro]\\noutro line"';
 
     try {
       var result = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an AI music producer for SeeWhy LIVE, a live streaming platform. Generate a complete original track.
-Style: ${styleDesc}
-Description: ${promptText}
-BPM: ${bpm}, Key: ${keyNote} ${keyScale}, Mastering: ${masterPreset}
-Vocal: ${isInstrumental ? 'Instrumental – no lyrics' : vocalType}
-Duration: ~${Math.floor(duration/60)}m${duration%60 > 0 ? duration%60+'s' : ''}
-
-Return ONLY valid JSON (no markdown, no backticks):
-{
-  "title": "creative track title",
-  "emoji": "one relevant emoji",
-  "tags": ["tag1","tag2","tag3","tag4"],
-  "duration": "2:45",
-  "streamReady": true,
-  "lyrics": ${isInstrumental ? 'null' : '"[Verse 1]\\nlyric line\\nlyric line\\n\\n[Chorus]\\nchorus line\\nchorus line\\n\\n[Verse 2]\\nverse line\\nverse line\\n\\n[Outro]\\noutro line"'},
-  "description": "one-sentence description of the sound"
-}`,
+        prompt: 'You are an AI music producer for SeeWhy LIVE, a live streaming platform. Generate a complete original track.\n' +
+          'Style: ' + styleDesc + '\n' +
+          'Description: ' + promptText + '\n' +
+          'BPM: ' + bpm + ', Key: ' + keyNote + ' ' + keyScale + ', Mastering: ' + masterPreset + '\n' +
+          'Vocal: ' + (isInstrumental ? 'Instrumental – no lyrics' : vocalType) + '\n' +
+          'Duration: ~' + durationMins + 'm' + durationSecs + '\n\n' +
+          'Return ONLY valid JSON (no markdown, no backticks):\n' +
+          '{\n' +
+          '  "title": "creative track title",\n' +
+          '  "emoji": "one relevant emoji",\n' +
+          '  "tags": ["tag1","tag2","tag3","tag4"],\n' +
+          '  "duration": "2:45",\n' +
+          '  "streamReady": true,\n' +
+          '  "lyrics": ' + lyricsField + ',\n' +
+          '  "description": "one-sentence description of the sound"\n' +
+          '}',
       });
 
       var data;
@@ -771,8 +776,8 @@ Return ONLY valid JSON (no markdown, no backticks):
         };
       }
 
-      setTracks(prev => [{
-        id: `t${Date.now()}`,
+      setTracks(function(prev) { return [{
+        id: 't' + Date.now(),
         title: titleInput || data.title || tags[0] + ' Track',
         tags: (data.tags || tags).slice(0, 6),
         duration: data.duration || '2:30',
@@ -781,14 +786,14 @@ Return ONLY valid JSON (no markdown, no backticks):
         likeCount: 0,
         streamReady: data.streamReady !== false,
         lyrics: isInstrumental ? null : (data.lyrics || null),
-      }, ...prev]);
+      }].concat(prev); });
       setTitleInput('');
       setDescription('');
       setMobileTab('library');
       showToast('🎵 AI track generated!');
     } catch (_) {
       var newTrack = {
-        id: `t${Date.now()}`,
+        id: 't' + Date.now(),
         title: titleInput || tags[0].charAt(0).toUpperCase() + tags[0].slice(1) + ' — AI Track',
         tags: tags.slice(0, 6),
         duration: '3:00',
@@ -796,7 +801,7 @@ Return ONLY valid JSON (no markdown, no backticks):
         streamReady: true,
         lyrics: isInstrumental ? null : generateFallbackLyrics(tags),
       };
-      setTracks(prev => [newTrack, ...prev]);
+      setTracks(function(prev) { return [newTrack].concat(prev); });
       setMobileTab('library');
       showToast('🎵 Track created!');
     } finally {
@@ -805,43 +810,43 @@ Return ONLY valid JSON (no markdown, no backticks):
   }
 
   function generateFallbackLyrics(tags) {
-    var mood = tags.find(t => ['dark','chill','hype','uplifting','romantic','aggressive'].includes(t)) || 'chill';
+    var mood = tags.find(function(t) { return ['dark','chill','hype','uplifting','romantic','aggressive'].includes(t); }) || 'chill';
     var genre = tags[0] || 'music';
-    return `[Verse 1]\nRiding the ${mood} wave, ${genre} in my veins\nSeeWhy LIVE is where the magic remains\nEvery beat a story, every note a dream\n\n[Chorus]\n${genre.toUpperCase()}, can you feel it tonight\nThe music takes over, everything feels right\nLive on the stream, hearts locked in the flow\n\n[Verse 2]\nChat moving fast, the energy is real\nAI composing what the soul demands\n\n[Outro]\nFade into the ${mood} night\nThis music carries us just right`;
+    return '[Verse 1]\nRiding the ' + mood + ' wave, ' + genre + ' in my veins\nSeeWhy LIVE is where the magic remains\nEvery beat a story, every note a dream\n\n[Chorus]\n' + genre.toUpperCase() + ', can you feel it tonight\nThe music takes over, everything feels right\nLive on the stream, hearts locked in the flow\n\n[Verse 2]\nChat moving fast, the energy is real\nAI composing what the soul demands\n\n[Outro]\nFade into the ' + mood + ' night\nThis music carries us just right';
   }
 
-  function handleContinueGenerate({ track, startTime, desc }) {
+  function handleContinueGenerate(opts) {
+    var track = opts.track; var startTime = opts.startTime; var desc = opts.desc;
     setContinueTrack(null);
     setGenerating(true);
-    setTimeout(() => {
-      var newTrack = {
-        ...track,
-        id: `t${Date.now()}`,
+    setTimeout(function() {
+      var newTrack = Object.assign({}, track, {
+        id: 't' + Date.now(),
         title: track.title + ' (Continued)',
         duration: '2:00',
         likeCount: 0,
         liked: false,
-      };
-      setTracks(prev => [newTrack, ...prev]);
+      });
+      setTracks(function(prev) { return [newTrack].concat(prev); });
       setGenerating(false);
       showToast('🎵 Continuation ready!');
     }, 2800);
   }
 
   function togglePlay(id) {
-    setPlayingId(prev => (prev === id ? null : id));
+    setPlayingId(function(prev) { return prev === id ? null : id; });
   }
 
   function toggleLike(id) {
-    setTracks(prev => prev.map(t =>
-      t.id === id
-        ? { ...t, liked: !t.liked, likeCount: t.liked ? t.likeCount - 1 : t.likeCount + 1 }
-        : t
-    ));
+    setTracks(function(prev) { return prev.map(function(t) {
+      return t.id === id
+        ? Object.assign({}, t, { liked: !t.liked, likeCount: t.liked ? t.likeCount - 1 : t.likeCount + 1 })
+        : t;
+    }); });
   }
 
   function deleteTrack(id) {
-    setTracks(prev => prev.filter(t => t.id !== id));
+    setTracks(function(prev) { return prev.filter(function(t) { return t.id !== id; }); });
     if (playingId === id) setPlayingId(null);
   }
 
@@ -853,20 +858,20 @@ Return ONLY valid JSON (no markdown, no backticks):
   }
 
   function handleAddToStream(track) {
-    base44.auth.me().then(u => {
+    base44.auth.me().then(function(u) {
       var existing = u.stream_queue || [];
-      if (!existing.some(t => t.id === track.id)) {
-        var updated = [...existing, { id: track.id, title: track.title, tags: track.tags, duration: track.duration, emoji: track.emoji, streamReady: track.streamReady }];
-        base44.auth.updateMe({ stream_queue: updated }).catch(() => {});
+      if (!existing.some(function(t) { return t.id === track.id; })) {
+        var updated = existing.concat([{ id: track.id, title: track.title, tags: track.tags, duration: track.duration, emoji: track.emoji, streamReady: track.streamReady }]);
+        base44.auth.updateMe({ stream_queue: updated }).catch(function() {});
       }
-    }).catch(() => {});
-    showToast(`📡 "${track.title}" added to stream queue!`);
+    }).catch(function() {});
+    showToast('📡 "' + track.title + '" added to stream queue!');
   }
 
-  var filteredTracks = tracks.filter(t => {
+  var filteredTracks = tracks.filter(function(t) {
     if (libFilter === 'liked' && !t.liked) return false;
     if (libFilter === 'streamready' && !t.streamReady) return false;
-    if (libSearch && !t.title.toLowerCase().includes(libSearch.toLowerCase()) && !t.tags.some(tag => tag.includes(libSearch.toLowerCase()))) return false;
+    if (libSearch && !t.title.toLowerCase().includes(libSearch.toLowerCase()) && !t.tags.some(function(tag) { return tag.includes(libSearch.toLowerCase()); })) return false;
     return true;
   });
 
@@ -886,24 +891,24 @@ Return ONLY valid JSON (no markdown, no backticks):
         </a>
         <div style={{
           width: 42, height: 42, borderRadius: 12, flexShrink: 0,
-          background: `linear-gradient(135deg, ${CRIMSON}, ${AMBER})`,
+          background: 'linear-gradient(135deg, ' + CRIMSON + ', ' + AMBER + ')',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <Music size={20} color="#fff" />
         </div>
         <div>
-          <h1 style={{ ...T, fontSize: 22, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '0.02em' }}>
+          <h1 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 22, fontWeight: 900, color: '#fff', margin: 0, letterSpacing: '0.02em' }}>
             AI Music Studio
           </h1>
-          <p style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0, letterSpacing: '0.08em' }}>
+          <p style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0, letterSpacing: '0.08em' }}>
             Powered by SeeWhy LIVE · Suno-style generation
           </p>
         </div>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{
-            ...T, fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
+            fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, fontWeight: 800, letterSpacing: '0.08em',
             padding: '4px 12px', borderRadius: 999,
-            background: GOLD + '18', border: `1px solid ${GOLD}40`, color: GOLD,
+            background: GOLD + '18', border: '1px solid ' + GOLD + '40', color: GOLD,
             textTransform: 'uppercase',
           }}>
             <Zap size={10} style={{ verticalAlign: 'middle', marginRight: 4 }} />
@@ -922,16 +927,16 @@ Return ONLY valid JSON (no markdown, no backticks):
       }}>
         {[
           { id: 'create', label: 'Create', icon: Wand2, color: GOLD },
-          { id: 'library', label: `My Songs (${tracks.length})`, icon: Music, color: ROSE },
+          { id: 'library', label: 'My Songs (' + tracks.length + ')', icon: Music, color: ROSE },
           { id: 'trending', label: 'Trending', icon: Radio, color: AMBER },
-        ].map(tab => (
+        ].map(function(tab) { return (
           <button
             key={tab.id}
-            onClick={() => setMobileTab(tab.id)}
+            onClick={function() { setMobileTab(tab.id); }}
             style={{
               flex: 1, padding: '12px 4px',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              background: 'none', border: 'none', borderBottom: `2px solid ${mobileTab === tab.id ? tab.color : 'transparent'}`,
+              background: 'none', border: 'none', borderBottom: '2px solid ' + (mobileTab === tab.id ? tab.color : 'transparent'),
               color: mobileTab === tab.id ? tab.color : 'rgba(255,255,255,0.35)',
               cursor: 'pointer', fontSize: 11, fontWeight: 800, fontFamily: 'Barlow Condensed, sans-serif',
               letterSpacing: '0.07em', textTransform: 'uppercase', transition: 'all 0.15s',
@@ -939,7 +944,7 @@ Return ONLY valid JSON (no markdown, no backticks):
           >
             <tab.icon size={13} /> {tab.label}
           </button>
-        ))}
+        ); })}
       </div>
 
       {/* ── Live Co-Stream feature banner ── */}
@@ -992,12 +997,12 @@ Return ONLY valid JSON (no markdown, no backticks):
               borderRadius: 20, background: BG2,
               border: '1px solid rgba(212,175,55,0.15)',
               padding: 24, marginBottom: 20,
-              boxShadow: `0 4px 40px rgba(0,0,0,0.4)`,
+              boxShadow: '0 4px 40px rgba(0,0,0,0.4)',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
               <Sparkles size={16} color={GOLD} />
-              <span style={{ ...T, fontSize: 13, fontWeight: 800, color: GOLD, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 800, color: GOLD, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Song Description
               </span>
             </div>
@@ -1005,54 +1010,54 @@ Return ONLY valid JSON (no markdown, no backticks):
             {/* Main textarea */}
             <textarea
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={function(e) { setDescription(e.target.value); }}
               rows={4}
               placeholder="Describe your song... dark trap beat with 808s, hype stream intro, chill lo-fi piano loop..."
-              style={{ ...inp, resize: 'none', fontSize: 15, lineHeight: 1.6, marginBottom: 14 }}
+              style={{ width: '100%', padding: '12px 16px', background: 'rgba(14,12,9,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 15, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', resize: 'none', lineHeight: 1.6, marginBottom: 14 }}
             />
 
             {/* Style of Music */}
-            <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
+            <label style={{ fontFamily: 'Barlow Condensed, sans-serif', display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
               Style of Music
             </label>
             <input
               value={styleInput}
-              onChange={e => setStyleInput(e.target.value)}
+              onChange={function(e) { setStyleInput(e.target.value); }}
               placeholder="trap, 808, dark, hype"
-              style={{ ...inp, marginBottom: 10 }}
+              style={{ width: '100%', padding: '12px 16px', background: 'rgba(14,12,9,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 10 }}
             />
 
             {/* Active style tag pills */}
             {parsedTags.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
-                {parsedTags.map(tag => (
+                {parsedTags.map(function(tag) { return (
                   <StyleChip
                     key={tag}
                     label={tag}
                     color={AMBER}
                     active
-                    onRemove={() => handleRemoveStyleTag(tag)}
-                    onClick={() => {}}
+                    onRemove={function() { handleRemoveStyleTag(tag); }}
+                    onClick={function() {}}
                   />
-                ))}
+                ); })}
               </div>
             )}
 
             {/* Title */}
-            <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
+            <label style={{ fontFamily: 'Barlow Condensed, sans-serif', display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
               Title (optional)
             </label>
             <input
               value={titleInput}
-              onChange={e => setTitleInput(e.target.value)}
+              onChange={function(e) { setTitleInput(e.target.value); }}
               placeholder="My Stream Intro Beat"
-              style={{ ...inp, marginBottom: 16 }}
+              style={{ width: '100%', padding: '12px 16px', background: 'rgba(14,12,9,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif', marginBottom: 16 }}
             />
 
             {/* Instrumental toggle */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
               <button
-                onClick={() => setInstrumental(i => !i)}
+                onClick={function() { setInstrumental(function(i) { return !i; }); }}
                 style={{
                   width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
                   background: instrumental ? ROSE : 'rgba(255,255,255,0.12)',
@@ -1068,15 +1073,15 @@ Return ONLY valid JSON (no markdown, no backticks):
                   }}
                 />
               </button>
-              <span style={{ ...T, fontSize: 13, color: instrumental ? ROSE : 'rgba(255,255,255,0.5)', fontWeight: 700 }}>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, color: instrumental ? ROSE : 'rgba(255,255,255,0.5)', fontWeight: 700 }}>
                 Instrumental (no lyrics)
               </span>
             </div>
 
             {/* Advanced options toggle */}
             <button
-              onClick={() => setShowAdvanced(v => !v)}
-              style={{ ...T, display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: showAdvanced ? AMBER : 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: showAdvanced ? 0 : 4 }}
+              onClick={function() { setShowAdvanced(function(v) { return !v; }); }}
+              style={{ fontFamily: 'Barlow Condensed, sans-serif', display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: showAdvanced ? AMBER : 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: showAdvanced ? 0 : 4 }}
             >
               <Sliders size={12} /> Advanced Options
               <ChevronRight size={11} style={{ transform: showAdvanced ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
@@ -1095,77 +1100,77 @@ Return ONLY valid JSON (no markdown, no backticks):
                     {/* BPM Slider */}
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                        <label style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>BPM</label>
-                        <span style={{ ...T, fontSize: 13, fontWeight: 800, color: GOLD }}>{bpm}</span>
+                        <label style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>BPM</label>
+                        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 13, fontWeight: 800, color: GOLD }}>{bpm}</span>
                       </div>
-                      <input type="range" min={60} max={180} step={1} value={bpm} onChange={e => setBpm(+e.target.value)}
+                      <input type="range" min={60} max={180} step={1} value={bpm} onChange={function(e) { setBpm(+e.target.value); }}
                         className="w-full h-1.5 rounded-full appearance-none"
-                        style={{ background: `linear-gradient(to right, ${GOLD} ${((bpm - 60) / 120) * 100}%, rgba(255,255,255,0.1) 0%)` }} />
+                        style={{ background: 'linear-gradient(to right, ' + GOLD + ' ' + (((bpm - 60) / 120) * 100) + '%, rgba(255,255,255,0.1) 0%)' }} />
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
-                        <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>60 Slow</span>
-                        <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>Hyper 180</span>
+                        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>60 Slow</span>
+                        <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>Hyper 180</span>
                       </div>
                     </div>
 
                     {/* Key/Scale */}
                     <div>
-                      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+                      <label style={{ fontFamily: 'Barlow Condensed, sans-serif', display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
                         Key: <span style={{ color: ROSE }}>{keyNote} {keyScale}</span>
                       </label>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
-                        {KEYS.map(k => (
-                          <button key={k} onClick={() => setKeyNote(k)}
-                            style={{ ...T, padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: keyNote === k ? ROSE + '25' : 'rgba(255,255,255,0.04)', border: `1px solid ${keyNote === k ? ROSE + '60' : 'rgba(255,255,255,0.08)'}`, color: keyNote === k ? ROSE : 'rgba(255,255,255,0.4)' }}>
+                        {KEYS.map(function(k) { return (
+                          <button key={k} onClick={function() { setKeyNote(k); }}
+                            style={{ fontFamily: 'Barlow Condensed, sans-serif', padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: keyNote === k ? ROSE + '25' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (keyNote === k ? ROSE + '60' : 'rgba(255,255,255,0.08)'), color: keyNote === k ? ROSE : 'rgba(255,255,255,0.4)' }}>
                             {k}
                           </button>
-                        ))}
+                        ); })}
                       </div>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        {['major', 'minor'].map(s => (
-                          <button key={s} onClick={() => setKeyScale(s)}
-                            style={{ ...T, flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em', transition: 'all 0.12s', background: keyScale === s ? ROSE + '20' : 'rgba(255,255,255,0.04)', border: `1px solid ${keyScale === s ? ROSE + '50' : 'rgba(255,255,255,0.08)'}`, color: keyScale === s ? ROSE : 'rgba(255,255,255,0.35)' }}>
+                        {['major', 'minor'].map(function(s) { return (
+                          <button key={s} onClick={function() { setKeyScale(s); }}
+                            style={{ fontFamily: 'Barlow Condensed, sans-serif', flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.06em', transition: 'all 0.12s', background: keyScale === s ? ROSE + '20' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (keyScale === s ? ROSE + '50' : 'rgba(255,255,255,0.08)'), color: keyScale === s ? ROSE : 'rgba(255,255,255,0.35)' }}>
                             {s}
                           </button>
-                        ))}
+                        ); })}
                       </div>
                     </div>
 
                     {/* Duration */}
                     <div>
-                      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Duration</label>
+                      <label style={{ fontFamily: 'Barlow Condensed, sans-serif', display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Duration</label>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        {DURATIONS.map(d => (
-                          <button key={d.s} onClick={() => setDuration(d.s)}
-                            style={{ ...T, flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: duration === d.s ? AMBER + '18' : 'rgba(255,255,255,0.04)', border: `1px solid ${duration === d.s ? AMBER + '50' : 'rgba(255,255,255,0.08)'}`, color: duration === d.s ? AMBER : 'rgba(255,255,255,0.35)' }}>
+                        {DURATIONS.map(function(d) { return (
+                          <button key={d.s} onClick={function() { setDuration(d.s); }}
+                            style={{ fontFamily: 'Barlow Condensed, sans-serif', flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 12, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: duration === d.s ? AMBER + '18' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (duration === d.s ? AMBER + '50' : 'rgba(255,255,255,0.08)'), color: duration === d.s ? AMBER : 'rgba(255,255,255,0.35)' }}>
                             {d.label}
                           </button>
-                        ))}
+                        ); })}
                       </div>
                     </div>
 
                     {/* Vocal type */}
                     <div>
-                      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Vocal Type</label>
+                      <label style={{ fontFamily: 'Barlow Condensed, sans-serif', display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Vocal Type</label>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                        {VOCAL_TYPES.map(v => (
-                          <button key={v.id} onClick={() => { setVocalType(v.id); if (v.id !== 'auto') setInstrumental(false); }}
-                            style={{ ...T, padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: vocalType === v.id ? v.color + '20' : 'rgba(255,255,255,0.04)', border: `1px solid ${vocalType === v.id ? v.color + '60' : 'rgba(255,255,255,0.08)'}`, color: vocalType === v.id ? v.color : 'rgba(255,255,255,0.4)' }}>
+                        {VOCAL_TYPES.map(function(v) { return (
+                          <button key={v.id} onClick={function() { setVocalType(v.id); if (v.id !== 'auto') setInstrumental(false); }}
+                            style={{ fontFamily: 'Barlow Condensed, sans-serif', padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: vocalType === v.id ? v.color + '20' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (vocalType === v.id ? v.color + '60' : 'rgba(255,255,255,0.08)'), color: vocalType === v.id ? v.color : 'rgba(255,255,255,0.4)' }}>
                             {v.label}
                           </button>
-                        ))}
+                        ); })}
                       </div>
                     </div>
 
                     {/* Mastering preset */}
                     <div>
-                      <label style={{ ...T, display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Mastering Preset</label>
+                      <label style={{ fontFamily: 'Barlow Condensed, sans-serif', display: 'block', fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>Mastering Preset</label>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        {MASTER_PRESETS.map(p => (
-                          <button key={p.id} onClick={() => setMasterPreset(p.id)}
-                            style={{ ...T, flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: masterPreset === p.id ? p.color + '18' : 'rgba(255,255,255,0.04)', border: `1px solid ${masterPreset === p.id ? p.color + '50' : 'rgba(255,255,255,0.08)'}`, color: masterPreset === p.id ? p.color : 'rgba(255,255,255,0.35)' }}>
+                        {MASTER_PRESETS.map(function(p) { return (
+                          <button key={p.id} onClick={function() { setMasterPreset(p.id); }}
+                            style={{ fontFamily: 'Barlow Condensed, sans-serif', flex: 1, padding: '5px 0', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: masterPreset === p.id ? p.color + '18' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (masterPreset === p.id ? p.color + '50' : 'rgba(255,255,255,0.08)'), color: masterPreset === p.id ? p.color : 'rgba(255,255,255,0.35)' }}>
                             {p.label}
                           </button>
-                        ))}
+                        ); })}
                       </div>
                     </div>
 
@@ -1179,10 +1184,10 @@ Return ONLY valid JSON (no markdown, no backticks):
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 disabled={generating}
-                onClick={() => handleCreate(false)}
+                onClick={function() { handleCreate(false); }}
                 style={{
                   flex: 1, padding: '13px 0',
-                  background: generating ? 'rgba(212,175,55,0.15)' : `linear-gradient(90deg, ${CRIMSON}, ${GOLD})`,
+                  background: generating ? 'rgba(212,175,55,0.15)' : 'linear-gradient(90deg, ' + CRIMSON + ', ' + GOLD + ')',
                   border: 'none', borderRadius: 12, cursor: generating ? 'not-allowed' : 'pointer',
                   color: generating ? GOLD : '#000', fontSize: 13, fontWeight: 800,
                   fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em',
@@ -1198,11 +1203,11 @@ Return ONLY valid JSON (no markdown, no backticks):
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 disabled={generating}
-                onClick={() => handleCreate(true)}
+                onClick={function() { handleCreate(true); }}
                 style={{
                   flex: 1, padding: '13px 0',
-                  background: generating ? 'rgba(212,133,74,0.1)' : `linear-gradient(90deg, ${CRIMSON}, ${ROSE})`,
-                  border: `1px solid rgba(192,57,90,0.5)`, borderRadius: 12, cursor: generating ? 'not-allowed' : 'pointer',
+                  background: generating ? 'rgba(212,133,74,0.1)' : 'linear-gradient(90deg, ' + CRIMSON + ', ' + ROSE + ')',
+                  border: '1px solid rgba(192,57,90,0.5)', borderRadius: 12, cursor: generating ? 'not-allowed' : 'pointer',
                   color: '#fff', fontSize: 13, fontWeight: 800,
                   fontFamily: 'Barlow Condensed, sans-serif', letterSpacing: '0.07em',
                   textTransform: 'uppercase', opacity: generating ? 0.6 : 1,
@@ -1223,7 +1228,7 @@ Return ONLY valid JSON (no markdown, no backticks):
                 exit={{ opacity: 0, y: -10 }}
                 style={{
                   borderRadius: 16, padding: '20px 24px',
-                  background: GOLD + '08', border: `1px solid ${GOLD}25`,
+                  background: GOLD + '08', border: '1px solid ' + GOLD + '25',
                   marginBottom: 20, textAlign: 'center',
                 }}
               >
@@ -1232,11 +1237,11 @@ Return ONLY valid JSON (no markdown, no backticks):
                   key={genStep}
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  style={{ ...T, color: GOLD, fontSize: 13, fontWeight: 700, marginTop: 12, letterSpacing: '0.05em' }}
+                  style={{ fontFamily: 'Barlow Condensed, sans-serif', color: GOLD, fontSize: 13, fontWeight: 700, marginTop: 12, letterSpacing: '0.05em' }}
                 >
                   {GEN_STEPS[genStep]}
                 </motion.p>
-                <p style={{ ...T, color: 'rgba(255,255,255,0.3)', fontSize: 11, marginTop: 4 }}>
+                <p style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.3)', fontSize: 11, marginTop: 4 }}>
                   {parsedTags.slice(0, 4).join(' · ') || 'chill'}
                 </p>
               </motion.div>
@@ -1251,33 +1256,33 @@ Return ONLY valid JSON (no markdown, no backticks):
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
               <Sparkles size={14} color={PINK} />
-              <span style={{ ...T, fontSize: 12, fontWeight: 800, color: PINK, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 800, color: PINK, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Quick Style Tags
               </span>
             </div>
 
             {/* Category tabs */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-              {STYLE_CATEGORIES.map((cat, i) => (
+              {STYLE_CATEGORIES.map(function(cat, i) { return (
                 <button
                   key={cat.label}
-                  onClick={() => setActiveCategory(i)}
+                  onClick={function() { setActiveCategory(i); }}
                   style={{
-                    ...T, padding: '5px 12px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                    fontFamily: 'Barlow Condensed, sans-serif', padding: '5px 12px', borderRadius: 999, border: 'none', cursor: 'pointer',
                     background: activeCategory === i ? cat.color + '25' : 'rgba(255,255,255,0.04)',
                     color: activeCategory === i ? cat.color : 'rgba(255,255,255,0.4)',
                     fontSize: 11, fontWeight: 800, letterSpacing: '0.06em',
-                    border: `1px solid ${activeCategory === i ? cat.color + '55' : 'rgba(255,255,255,0.08)'}`,
+                    border: '1px solid ' + (activeCategory === i ? cat.color + '55' : 'rgba(255,255,255,0.08)'),
                   }}
                 >
                   {cat.label}
                 </button>
-              ))}
+              ); })}
             </div>
 
             {/* Tag chips */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-              {STYLE_CATEGORIES[activeCategory].tags.map(tag => {
+              {STYLE_CATEGORIES[activeCategory].tags.map(function(tag) {
                 var isActive = parsedTags.includes(tag.toLowerCase());
                 return (
                   <StyleChip
@@ -1285,7 +1290,7 @@ Return ONLY valid JSON (no markdown, no backticks):
                     label={tag}
                     color={STYLE_CATEGORIES[activeCategory].color}
                     active={isActive}
-                    onClick={() => isActive ? handleRemoveStyleTag(tag) : handleAddStyleTag(tag)}
+                    onClick={function() { if (isActive) { handleRemoveStyleTag(tag); } else { handleAddStyleTag(tag); } }}
                   />
                 );
               })}
@@ -1300,17 +1305,17 @@ Return ONLY valid JSON (no markdown, no backticks):
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <Radio size={14} color={AMBER} />
-              <span style={{ ...T, fontSize: 12, fontWeight: 800, color: AMBER, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 12, fontWeight: 800, color: AMBER, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                 Trending Now on SeeWhy LIVE
               </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {TRENDING.map(item => (
+              {TRENDING.map(function(item) { return (
                 <motion.button
                   key={item.label}
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.96 }}
-                  onClick={() => { setStyleInput(item.style); setMobileTab('create'); }}
+                  onClick={function() { setStyleInput(item.style); setMobileTab('create'); }}
                   style={{
                     background: 'rgba(212,175,55,0.04)', border: '1px solid rgba(212,175,55,0.12)',
                     borderRadius: 12, padding: '12px 14px',
@@ -1318,16 +1323,16 @@ Return ONLY valid JSON (no markdown, no backticks):
                     cursor: 'pointer', textAlign: 'left',
                     transition: 'all 0.15s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = AMBER + '40'}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(212,175,55,0.12)'}
+                  onMouseEnter={function(e) { e.currentTarget.style.borderColor = AMBER + '40'; }}
+                  onMouseLeave={function(e) { e.currentTarget.style.borderColor = 'rgba(212,175,55,0.12)'; }}
                 >
                   <span style={{ fontSize: 22, marginBottom: 6 }}>{item.emoji}</span>
-                  <span style={{ ...T, color: '#fff', fontSize: 13, fontWeight: 800, display: 'block', marginBottom: 2 }}>
+                  <span style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', fontSize: 13, fontWeight: 800, display: 'block', marginBottom: 2 }}>
                     {item.label}
                   </span>
-                  <span style={{ ...T, color: 'rgba(255,255,255,0.35)', fontSize: 10 }}>{item.count}</span>
+                  <span style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.35)', fontSize: 10 }}>{item.count}</span>
                 </motion.button>
-              ))}
+              ); })}
             </div>
           </div>
         </div>
@@ -1343,8 +1348,8 @@ Return ONLY valid JSON (no markdown, no backticks):
           {/* Library header */}
           <div style={{ marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '0.02em' }}>My Library</span>
-              <span style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em' }}>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 18, fontWeight: 900, color: '#fff', letterSpacing: '0.02em' }}>My Library</span>
+              <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em' }}>
                 {filteredTracks.length}/{tracks.length} tracks
               </span>
             </div>
@@ -1353,14 +1358,14 @@ Return ONLY valid JSON (no markdown, no backticks):
             <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
               {[
                 { label: 'Total', value: tracks.length, color: GOLD },
-                { label: 'Liked', value: tracks.filter(t => t.liked).length, color: PINK },
-                { label: 'Stream Ready', value: tracks.filter(t => t.streamReady).length, color: GREEN },
-              ].map(s => (
+                { label: 'Liked', value: tracks.filter(function(t) { return t.liked; }).length, color: PINK },
+                { label: 'Stream Ready', value: tracks.filter(function(t) { return t.streamReady; }).length, color: GREEN },
+              ].map(function(s) { return (
                 <div key={s.label} style={{ flex: 1, borderRadius: 10, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', padding: '8px 10px', textAlign: 'center' }}>
-                  <div style={{ ...T, fontSize: 18, fontWeight: 900, color: s.color }}>{s.value}</div>
-                  <div style={{ ...T, fontSize: 11, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
+                  <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 18, fontWeight: 900, color: s.color }}>{s.value}</div>
+                  <div style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 11, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
                 </div>
-              ))}
+              ); })}
             </div>
 
             {/* Search */}
@@ -1368,9 +1373,9 @@ Return ONLY valid JSON (no markdown, no backticks):
               <Search size={12} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)' }} />
               <input
                 value={libSearch}
-                onChange={e => setLibSearch(e.target.value)}
+                onChange={function(e) { setLibSearch(e.target.value); }}
                 placeholder="Search tracks, tags…"
-                style={{ width: '100%', height: 34, padding: '0 12px 0 28px', fontSize: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', borderRadius: 8, outline: 'none', boxSizing: 'border-box', ...T }}
+                style={{ width: '100%', height: 34, padding: '0 12px 0 28px', fontSize: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', borderRadius: 8, outline: 'none', boxSizing: 'border-box', fontFamily: 'Barlow Condensed, sans-serif' }}
               />
             </div>
 
@@ -1380,12 +1385,12 @@ Return ONLY valid JSON (no markdown, no backticks):
                 { id: 'all',         label: 'All',         color: GOLD },
                 { id: 'liked',       label: '❤ Liked',     color: PINK },
                 { id: 'streamready', label: '📡 Stream Ready', color: GREEN },
-              ].map(f => (
-                <button key={f.id} onClick={() => setLibFilter(f.id)}
-                  style={{ ...T, padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: libFilter === f.id ? f.color + '20' : 'rgba(255,255,255,0.04)', border: `1px solid ${libFilter === f.id ? f.color + '55' : 'rgba(255,255,255,0.08)'}`, color: libFilter === f.id ? f.color : 'rgba(255,255,255,0.35)' }}>
+              ].map(function(f) { return (
+                <button key={f.id} onClick={function() { setLibFilter(f.id); }}
+                  style={{ fontFamily: 'Barlow Condensed, sans-serif', padding: '4px 12px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', transition: 'all 0.12s', background: libFilter === f.id ? f.color + '20' : 'rgba(255,255,255,0.04)', border: '1px solid ' + (libFilter === f.id ? f.color + '55' : 'rgba(255,255,255,0.08)'), color: libFilter === f.id ? f.color : 'rgba(255,255,255,0.35)' }}>
                   {f.label}
                 </button>
-              ))}
+              ); })}
             </div>
           </div>
 
@@ -1394,7 +1399,7 @@ Return ONLY valid JSON (no markdown, no backticks):
             {continueTrack && (
               <ContinuePanel
                 track={continueTrack}
-                onClose={() => setContinueTrack(null)}
+                onClose={function() { setContinueTrack(null); }}
                 onGenerate={handleContinueGenerate}
               />
             )}
@@ -1409,7 +1414,7 @@ Return ONLY valid JSON (no markdown, no backticks):
                 exit={{ opacity: 0, y: -10 }}
                 style={{
                   borderRadius: 16, padding: 18,
-                  background: GOLD + '08', border: `1px solid ${GOLD}25`,
+                  background: GOLD + '08', border: '1px solid ' + GOLD + '25',
                   marginBottom: 14, display: 'flex', alignItems: 'center', gap: 14,
                 }}
               >
@@ -1418,7 +1423,7 @@ Return ONLY valid JSON (no markdown, no backticks):
                     key={genStep}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    style={{ ...T, color: GOLD, fontSize: 13, fontWeight: 700, marginBottom: 8 }}
+                    style={{ fontFamily: 'Barlow Condensed, sans-serif', color: GOLD, fontSize: 13, fontWeight: 700, marginBottom: 8 }}
                   >
                     {GEN_STEPS[genStep]}
                   </motion.p>
@@ -1432,28 +1437,28 @@ Return ONLY valid JSON (no markdown, no backticks):
           {filteredTracks.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: 20, background: BG2, border: '1px solid rgba(255,255,255,0.06)' }}>
               <Music size={44} color="rgba(255,255,255,0.15)" style={{ marginBottom: 12 }} />
-              <p style={{ ...T, color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: 700 }}>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.4)', fontSize: 16, fontWeight: 700 }}>
                 {tracks.length === 0 ? 'No tracks yet' : 'No tracks match your filter'}
               </p>
-              <p style={{ ...T, color: 'rgba(255,255,255,0.25)', fontSize: 12, marginTop: 4 }}>
+              <p style={{ fontFamily: 'Barlow Condensed, sans-serif', color: 'rgba(255,255,255,0.25)', fontSize: 12, marginTop: 4 }}>
                 {tracks.length === 0 ? 'Create your first AI track in the Create tab' : 'Try a different filter or search term'}
               </p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {filteredTracks.map(track => (
+              {filteredTracks.map(function(track) { return (
                 <TrackCard
                   key={track.id}
                   track={track}
                   isPlaying={playingId === track.id}
-                  onPlay={() => togglePlay(track.id)}
-                  onLike={() => toggleLike(track.id)}
-                  onDelete={() => deleteTrack(track.id)}
-                  onContinue={() => setContinueTrack(track)}
-                  onRemix={() => remixTrack(track)}
-                  onAddToStream={() => handleAddToStream(track)}
+                  onPlay={function() { togglePlay(track.id); }}
+                  onLike={function() { toggleLike(track.id); }}
+                  onDelete={function() { deleteTrack(track.id); }}
+                  onContinue={function() { setContinueTrack(track); }}
+                  onRemix={function() { remixTrack(track); }}
+                  onAddToStream={function() { handleAddToStream(track); }}
                 />
-              ))}
+              ); })}
             </div>
           )}
         </div>
@@ -1468,17 +1473,17 @@ Return ONLY valid JSON (no markdown, no backticks):
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
             <Radio size={16} color={AMBER} />
-            <span style={{ ...T, fontSize: 18, fontWeight: 900, color: '#fff' }}>
+            <span style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 18, fontWeight: 900, color: '#fff' }}>
               Trending Now on SeeWhy LIVE
             </span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 14 }}>
-            {TRENDING.map(item => (
+            {TRENDING.map(function(item) { return (
               <motion.button
                 key={item.label}
                 whileHover={{ y: -3 }}
                 whileTap={{ scale: 0.96 }}
-                onClick={() => { setStyleInput(item.style); setMobileTab('create'); }}
+                onClick={function() { setStyleInput(item.style); setMobileTab('create'); }}
                 style={{
                   background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)',
                   borderRadius: 16, padding: '20px 16px',
@@ -1488,25 +1493,19 @@ Return ONLY valid JSON (no markdown, no backticks):
                 }}
               >
                 <span style={{ fontSize: 36, marginBottom: 10 }}>{item.emoji}</span>
-                <span style={{ ...T, color: '#fff', fontSize: 15, fontWeight: 800, display: 'block', marginBottom: 4 }}>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', color: '#fff', fontSize: 15, fontWeight: 800, display: 'block', marginBottom: 4 }}>
                   {item.label}
                 </span>
-                <span style={{ ...T, color: AMBER, fontSize: 11, fontWeight: 700 }}>{item.count}</span>
+                <span style={{ fontFamily: 'Barlow Condensed, sans-serif', color: AMBER, fontSize: 11, fontWeight: 700 }}>{item.count}</span>
               </motion.button>
-            ))}
+            ); })}
           </div>
         </div>
 
       </div>
 
       {/* ── Desktop CSS overrides ── */}
-      <style>{`
-        @media (min-width: 768px) {
-          .desktop-show-left { display: block !important; }
-          .desktop-show-right { display: block !important; }
-          .desktop-hide-trending { display: none !important; }
-        }
-      `}</style>
+      <style>{'@media (min-width: 768px) { .desktop-show-left { display: block !important; } .desktop-show-right { display: block !important; } .desktop-hide-trending { display: none !important; } }'}</style>
 
       {/* ── Toast ── */}
       <Toast message={toast.message} visible={toast.visible} />

@@ -211,7 +211,7 @@ var OCT = 'polygon(25% 0%,75% 0%,100% 25%,100% 75%,75% 100%,25% 100%,0% 75%,0% 2
 function useSyncEngine({ party, isController, onTimeSync }) {
   var qc = useQueryClient();
 
-  var pushState = useCallback(async (playerState) => {
+  var pushState = useCallback(async function(playerState) {
     if (!isController || !(party && party.id)) return;
     try {
       await base44.entities.WatchParty.update(party.id, {
@@ -222,9 +222,9 @@ function useSyncEngine({ party, isController, onTimeSync }) {
     } catch {}
   }, [isController, (party && party.id)]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (!(party && party.id)) return;
-    var unsub = base44.entities.WatchParty.subscribe((event) => {
+    var unsub = base44.entities.WatchParty.subscribe(function(event) {
       if (event.id !== party.id) return;
       if (!isController && event.data) onTimeSync(event.data);
       qc.invalidateQueries({ queryKey: ['broadcast-party', party.id] });
@@ -240,17 +240,17 @@ function YouTubeEmbed({ videoId, isController, syncData, onStateChange }) {
   var iframeRef = useRef(null);
   var playerRef = useRef(null);
 
-  useEffect(() => {
+  useEffect(function() {
     if (!videoId) return;
     var tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
     document.head.appendChild(tag);
-    window.onYouTubeIframeAPIReady = () => {
+    window.onYouTubeIframeAPIReady = function() {
       playerRef.current = new window.YT.Player(iframeRef.current, {
         videoId,
         playerVars: { autoplay: 0, controls: isController ? 1 : 0 },
         events: {
-          onStateChange: (e) => {
+          onStateChange: function(e) {
             if (!isController) return;
             var s = e.data;
             if (s === window.YT.PlayerState.PLAYING || s === window.YT.PlayerState.PAUSED) {
@@ -263,18 +263,18 @@ function YouTubeEmbed({ videoId, isController, syncData, onStateChange }) {
   }, [videoId]);
 
   // Push every 3s during playback so viewers stay in sync
-  useEffect(() => {
+  useEffect(function() {
     if (!isController) return;
-    var iv = setInterval(() => {
+    var iv = setInterval(function() {
       if (!(playerRef.current && playerRef.current.getPlayerState)) return;
       if (playerRef.current.getPlayerState() === (window.YT && window.YT.PlayerState && window.YT.PlayerState.PLAYING)) {
         onStateChange({ playing: true, currentTime: playerRef.current.getCurrentTime() || 0 });
       }
     }, 3000);
-    return () => clearInterval(iv);
+    return function() { clearInterval(iv); };
   }, [isController, onStateChange]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (isController || !playerRef.current || !syncData) return;
     var lag = Date.now() - (syncData.updated_at_ms || Date.now());
     var adj = (syncData.current_time || 0) + lag / 1000;
@@ -291,27 +291,27 @@ function YouTubeEmbed({ videoId, isController, syncData, onStateChange }) {
 function DirectPlayer({ url, isController, syncData, onStateChange }) {
   var videoRef = useRef(null);
 
-  var handleEvent = () => {
+  var handleEvent = function() {
     if (!isController || !videoRef.current) return;
     onStateChange({ playing: !videoRef.current.paused, currentTime: videoRef.current.currentTime });
   };
 
-  useEffect(() => {
+  useEffect(function() {
     if (!isController) return;
-    var iv = setInterval(() => {
+    var iv = setInterval(function() {
       if (!videoRef.current || videoRef.current.paused) return;
       onStateChange({ playing: true, currentTime: videoRef.current.currentTime });
     }, 3000);
-    return () => clearInterval(iv);
+    return function() { clearInterval(iv); };
   }, [isController, onStateChange]);
 
-  useEffect(() => {
+  useEffect(function() {
     if (isController || !videoRef.current || !syncData) return;
     var v = videoRef.current;
     var lag = Date.now() - (syncData.updated_at_ms || Date.now());
     var adj = (syncData.current_time || 0) + lag / 1000;
     if (Math.abs(v.currentTime - adj) > 2) v.currentTime = adj;
-    if (syncData.playback_state === 'playing') v.play().catch(() => {});
+    if (syncData.playback_state === 'playing') v.play().catch(function() {});
     else v.pause();
   }, [syncData, isController]);
 
@@ -331,7 +331,7 @@ function DirectPlayer({ url, isController, syncData, onStateChange }) {
 // ── Octagonal avatar thumbnail (audience rail) ───────────────────────────────
 function OctAvatarThumb({ name, stream, size = 36 }) {
   var vRef = useRef(null);
-  useEffect(() => { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
+  useEffect(function() { if (vRef.current && stream) vRef.current.srcObject = stream; }, [stream]);
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
       <div style={{ position: 'absolute', inset: 0, clipPath: OCT, background: 'rgba(212,175,55,0.3)' }} />
@@ -353,10 +353,10 @@ function NetBars({ bars, rtt }) {
   if (bars == null) return null;
   var color = bars >= 3 ? '#6DBF7E' : bars === 2 ? '#D4AF37' : '#C0392B';
   return (
-    <div className="flex items-end gap-0.5" title={rtt != null ? `${Math.round(rtt)}ms RTT` : undefined}>
-      {[1, 2, 3, 4].map(b => (
+    <div className="flex items-end gap-0.5" title={rtt != null ? Math.round(rtt) + 'ms RTT' : undefined}>
+      {[1, 2, 3, 4].map(function(b) { return (
         <div key={b} style={{ width: 3, height: b * 3 + 2, borderRadius: 1, background: b <= bars ? color : 'rgba(255,255,255,0.15)' }} />
-      ))}
+      ); })}
     </div>
   );
 }
@@ -369,10 +369,10 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking, n
   var [mirrored, setMirrored] = useState(true);
   var pipSupported = typeof document !== 'undefined' && !!document.pictureInPictureEnabled;
 
-  useEffect(() => { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
-  useEffect(() => { if (screenRef.current && screenStream) screenRef.current.srcObject = screenStream; }, [screenStream]);
+  useEffect(function() { if (camRef.current && localStream) camRef.current.srcObject = localStream; }, [localStream]);
+  useEffect(function() { if (screenRef.current && screenStream) screenRef.current.srcObject = screenStream; }, [screenStream]);
 
-  var togglePip = useCallback(async () => {
+  var togglePip = useCallback(async function() {
     var el = screenStream ? screenRef.current : camRef.current;
     if (!el) return;
     try {
@@ -381,14 +381,14 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking, n
       } else {
         await el.requestPictureInPicture();
         setIsPip(true);
-        el.addEventListener('leavepictureinpicture', () => setIsPip(false), { once: true });
+        el.addEventListener('leavepictureinpicture', function() { setIsPip(false); }, { once: true });
       }
     } catch {}
   }, [screenStream]);
 
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center"
-      style={isSpeaking ? { boxShadow: `inset 0 0 0 3px rgba(109,191,126,0.7)` } : undefined}>
+      style={isSpeaking ? { boxShadow: 'inset 0 0 0 3px rgba(109,191,126,0.7)' } : undefined}>
       {screenStream ? (
         <video ref={screenRef} autoPlay playsInline className="w-full h-full object-contain" />
       ) : localStream && videoEnabled ? (
@@ -401,23 +401,23 @@ function LiveCameraTile({ localStream, videoEnabled, screenStream, isSpeaking, n
         </div>
       )}
       <div className="absolute top-3 left-3 flex items-center gap-1 text-[11px] px-2 py-1 rounded"
-        style={{ background: 'rgba(192,57,43,0.2)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', ...T }}>
+        style={{ background: 'rgba(192,57,43,0.2)', border: '1px solid rgba(192,57,43,0.4)', color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>
         <span className="w-1.5 h-1.5 rounded-full bg-[#C0392B] animate-pulse inline-block mr-0.5" />
         {screenStream ? 'SCREEN' : 'LIVE'}
       </div>
       {/* Mirror toggle + PiP buttons */}
       <div className="absolute top-3 right-3 flex items-center gap-1">
         {!screenStream && localStream && videoEnabled && (
-          <button onClick={() => setMirrored(v => !v)} title={mirrored ? 'Disable mirror' : 'Enable mirror'}
+          <button onClick={() => setMirrored(function(v) { return !v; })} title={mirrored ? 'Disable mirror' : 'Enable mirror'}
             className="w-7 h-7 flex items-center justify-center rounded-lg"
-            style={{ background: mirrored ? 'rgba(212,175,55,0.25)' : 'rgba(0,0,0,0.45)', border: `1px solid ${mirrored ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)'}` }}>
+            style={{ background: mirrored ? 'rgba(212,175,55,0.25)' : 'rgba(0,0,0,0.45)', border: '1px solid ' + (mirrored ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)') }}>
             <FlipHorizontal2 className="w-3.5 h-3.5" style={{ color: mirrored ? GOLD : 'rgba(255,255,255,0.6)' }} />
           </button>
         )}
         {pipSupported && (localStream || screenStream) && (
           <button onClick={togglePip} title={isPip ? 'Exit Picture-in-Picture' : 'Pop out (Picture-in-Picture)'}
             className="w-7 h-7 flex items-center justify-center rounded-lg transition-opacity"
-            style={{ background: isPip ? 'rgba(212,175,55,0.25)' : 'rgba(0,0,0,0.45)', border: `1px solid ${isPip ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)'}` }}>
+            style={{ background: isPip ? 'rgba(212,175,55,0.25)' : 'rgba(0,0,0,0.45)', border: '1px solid ' + (isPip ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.15)') }}>
             <Maximize2 className="w-3.5 h-3.5" style={{ color: isPip ? GOLD : 'rgba(255,255,255,0.6)' }} />
           </button>
         )}
@@ -465,7 +465,7 @@ function CreateScreen({ onSubmit, isPending }) {
         <div className="text-center">
           <div className="flex items-center justify-center gap-2 mb-3">
             <Radio className="w-7 h-7" style={{ color: GOLD }} />
-            <h1 className="text-4xl font-black uppercase tracking-widest" style={{ color: GOLD, ...T }}>
+            <h1 className="text-4xl font-black uppercase tracking-widest" style={{ color: GOLD, fontFamily: 'Barlow Condensed, sans-serif' }}>
               Broadcast Studio
             </h1>
           </div>
@@ -478,27 +478,27 @@ function CreateScreen({ onSubmit, isPending }) {
           <input
             placeholder="Broadcast title…"
             value={title}
-            onChange={e => setTitle(e.target.value)}
+            onChange={function(e) { setTitle(e.target.value); }}
             maxLength={120}
             className="h-11 text-white placeholder:text-white/30"
             style={{ width: '100%', padding: '10px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
           />
 
           <div>
-            <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', ...T }}>Mode</p>
+            <p className="text-[11px] font-black uppercase mb-2" style={{ color: 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif' }}>Mode</p>
             <div className="grid grid-cols-3 gap-2">
-              {MODES.map(mod => (
-                <button key={mod.id} onClick={() => setMode(mod.id)}
+              {MODES.map(function(mod) { return (
+                <button key={mod.id} onClick={function() { setMode(mod.id); }}
                   className="flex flex-col items-center gap-1 p-3 rounded-xl transition-all"
                   style={{
                     background: mode === mod.id ? 'rgba(212,175,55,0.12)' : 'rgba(255,255,255,0.04)',
                     border: mode === mod.id ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.08)',
                   }}>
                   <span className="text-xl">{mod.icon}</span>
-                  <span className="text-[11px] font-black uppercase" style={{ color: mode === mod.id ? GOLD : 'rgba(255,255,255,0.4)', ...T }}>{mod.label}</span>
+                  <span className="text-[11px] font-black uppercase" style={{ color: mode === mod.id ? GOLD : 'rgba(255,255,255,0.4)', fontFamily: 'Barlow Condensed, sans-serif' }}>{mod.label}</span>
                   <span className="text-[11px] text-center leading-tight" style={{ color: 'rgba(255,255,255,0.25)' }}>{mod.desc}</span>
                 </button>
-              ))}
+              ); })}
             </div>
           </div>
 
@@ -506,7 +506,7 @@ function CreateScreen({ onSubmit, isPending }) {
             <input
               placeholder="YouTube URL or direct video URL (optional)…"
               value={videoUrl}
-              onChange={e => setVideoUrl(e.target.value)}
+              onChange={function(e) { setVideoUrl(e.target.value); }}
               maxLength={2048}
               className="h-10 text-white placeholder:text-white/30"
               style={{ width: '100%', padding: '8px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: 13, outline: 'none', fontFamily: 'Barlow Condensed, sans-serif' }}
@@ -520,10 +520,10 @@ function CreateScreen({ onSubmit, isPending }) {
               border: title.trim() ? '1px solid rgba(212,175,55,0.4)' : '1px solid rgba(255,255,255,0.1)',
               color: title.trim() ? GOLD : 'rgba(255,255,255,0.25)',
               boxShadow: title.trim() ? '0 0 24px rgba(128,0,32,0.35)' : 'none',
-              ...T,
+              fontFamily: 'Barlow Condensed, sans-serif',
             }}
             disabled={!title.trim() || isPending}
-            onClick={() => onSubmit({ title, videoUrl, mode })}>
+            onClick={function() { onSubmit({ title, videoUrl, mode }); }}>
             <Radio className="w-5 h-5" />
             {isPending ? 'Creating…' : 'Go Live'}
           </button>
@@ -618,39 +618,39 @@ export default function BroadcastStudio() {
   var [pinnedMessage, setPinnedMessage] = useState(null);
 
   // Elapsed timer for clip timestamps
-  useEffect(() => {
-    var iv = setInterval(() => setElapsed(s => s + 1), 1000);
-    return () => clearInterval(iv);
+  useEffect(function() {
+    var iv = setInterval(() => setElapsed(function(s) { return s + 1; }), 1000);
+    return function() { clearInterval(iv); };
   }, []);
 
-  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: () => base44.auth.me() });
+  var { data: user } = useQuery({ queryKey: ['currentUser'], queryFn: function() { return base44.auth.me() ; }});
 
   var { data: party } = useQuery({
     queryKey: ['broadcast-party', partyId],
-    queryFn: () => base44.entities.WatchParty.filter({ id: partyId }).then(r => r[0]),
+    queryFn: function() { return base44.entities.WatchParty.filter({ id: partyId }).then(function(r) { return r[0]; }); },
     enabled: !!partyId,
     refetchInterval: 15000,
   });
 
   var { data: members = [] } = useQuery({
     queryKey: ['broadcast-members', partyId],
-    queryFn: () => base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }),
+    queryFn: function() { return base44.entities.WatchPartyMember.filter({ party_id: partyId, is_active: true }); },
     enabled: !!partyId,
     refetchInterval: 15000,
   });
 
   var { data: activePoll } = useQuery({
     queryKey: ['active-poll', partyId],
-    queryFn: () => base44.entities.Poll.filter({ room_id: partyId, status: 'active' }).then(r => r[0] || null),
+    queryFn: function() { return base44.entities.Poll.filter({ room_id: partyId, status: 'active' }).then(function(r) { return r[0] || null; }); },
     enabled: !!partyId,
     refetchInterval: 5000,
   });
-  useEffect(() => { setPeakViewers(prev => Math.max(prev, members.length)); }, [members.length]);
+  useEffect(function() { setPeakViewers(function(prev) { return Math.max(prev, members.length); }); }, [members.length]);
 
   // Real-time roster
-  useEffect(() => {
+  useEffect(function() {
     if (!partyId) return;
-    var unsub = base44.entities.WatchPartyMember.subscribe((event) => {
+    var unsub = base44.entities.WatchPartyMember.subscribe(function(event) {
       if ((event.data && event.data.party_id) !== partyId) return;
       qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
     });
@@ -658,14 +658,14 @@ export default function BroadcastStudio() {
   }, [partyId, qc]);
 
   // Raised hand subscription
-  useEffect(() => {
+  useEffect(function() {
     if (!partyId) return;
-    var unsub = base44.entities.Message.subscribe((event) => {
+    var unsub = base44.entities.Message.subscribe(function(event) {
       if ((event.data && event.data.room_id) !== partyId) return;
       try {
         var d = JSON.parse((event.data && event.data.content) || '{}');
         if (d.action === 'raise-hand') {
-          setRaisedHands(prev => new Set([...prev, d.userId]));
+          setRaisedHands(function(prev) { var s = new Set(prev); s.add(d.userId); return s; });
         }
       } catch {}
     });
@@ -673,10 +673,10 @@ export default function BroadcastStudio() {
   }, [partyId]);
 
   // Local media — use stored device preferences from RoomEntryGate if available
-  var prefCam = (() => { try { return localStorage.getItem('swl_pref_cam') || null; } catch { return null; } })();
-  var prefMic = (() => { try { return localStorage.getItem('swl_pref_mic') || null; } catch { return null; } })();
+  var prefCam = (function() { try { return localStorage.getItem('swl_pref_cam') || null; } catch(e) { return null; } })();
+  var prefMic = (function() { try { return localStorage.getItem('swl_pref_mic') || null; } catch(e) { return null; } })();
   var { localStream, audioEnabled, videoEnabled, toggleAudio, toggleVideo, replaceVideoDevice, replaceAudioDevice, applyAudioConstraints, activeVideoId, activeAudioId, error: mediaError, reacquire: reacquireMedia } = useLocalMedia({ audio: true, video: true, videoDeviceId: prefCam, audioDeviceId: prefMic });
-  var handleBitrateChange = (b) => { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
+  var handleBitrateChange = function(b) { setSelectedBitrate(b); reacquireMedia({ resolution: ({1500:'480p',3000:'720p',5000:'1080p',7500:'1080p'})[b]||'720p' }); };
 
   var vodResult=useVODRecording({streamId:partyId||'',creatorId:user&&user.id||'',title:party&&party.title||'Live Recording',stream:localStream});
   var vodRecording=vodResult.recording,startRecording=vodResult.startRecording,stopRecording=vodResult.stopRecording,vodDuration=vodResult.duration,vodBlobUrl=vodResult.blobUrl,downloadRecording=vodResult.downloadRecording,extractClipBlobUrl=vodResult.extractClipBlobUrl;
@@ -684,14 +684,14 @@ export default function BroadcastStudio() {
   var isSpeaking=speakGate.isSpeaking,micLevelVal=speakGate.micLevel,isClipping=speakGate.isClipping;
   // WebRTC peer mesh — uses partyId as the signaling channel room
   var { remoteStreams, peerUserIds, announceJoin, leaveRoom, peersRef } = useWebRTCPeers(partyId, localStream, {
-    onPeerStateChange: useCallback((peerId, state) => {
+    onPeerStateChange: useCallback(function(peerId, state) {
       if (state === 'disconnected') {
-        toast(`⚠️ A participant dropped — reconnecting…`, { duration: 5000, id: `peer-${peerId}-disc` });
+        toast('⚠️ A participant dropped — reconnecting…', { duration: 5000, id: 'peer-' + peerId + '-disc' });
       } else if (state === 'connected') {
-        toast.dismiss(`peer-${peerId}-disc`);
-        toast.success(`✅ Participant reconnected`, { duration: 2500 });
+        toast.dismiss('peer-' + peerId + '-disc');
+        toast.success('✅ Participant reconnected', { duration: 2500 });
       } else if (state === 'failed') {
-        toast.error(`❌ Peer connection failed — removing from room`, { duration: 4000, id: `peer-${peerId}-fail` });
+        toast.error('❌ Peer connection failed — removing from room', { duration: 4000, id: 'peer-' + peerId + '-fail' });
       }
     }, []),
   });
@@ -701,9 +701,9 @@ export default function BroadcastStudio() {
 
   // Connection quality — monitor first connected peer
   var [activePc, setActivePc] = useState(null);
-  useEffect(() => {
+  useEffect(function() {
     var entries = Array.from(peersRef.current.entries());
-    var connected = entries.find(([, { pc }]) => pc.connectionState === 'connected');
+    var connected = entries.find(function(entry) { return entry[1].pc.connectionState === 'connected'; });
     setActivePc(connected ? connected[1].pc : null);
   }, [remoteStreams]);  
   var { bars: netBars, label: netLabel, rtt: netRtt, quality: netQuality } = useConnectionQuality(activePc, 5000);
@@ -715,7 +715,7 @@ export default function BroadcastStudio() {
 
   // Warn broadcaster once when connection drops to 1 bar or below
   var lastNetBarsRef = useRef(null);
-  useEffect(() => {
+  useEffect(function() {
     if (netBars === null || netBars === undefined) return;
     if (netBars <= 1 && (lastNetBarsRef.current === null || lastNetBarsRef.current > 1)) {
       toast.warning('Poor network connection — stream quality may be affected');
@@ -725,9 +725,9 @@ export default function BroadcastStudio() {
 
   // Adaptive video quality — 3-tier system based on connection bars
   // Tier: 'high' (bars≥3) | 'medium' (bars=2) | 'low' (bars≤1)
-  var prefRes = (() => { try { return localStorage.getItem('swl_pref_resolution') || '720p'; } catch { return '720p'; } })();
+  var prefRes = (function() { try { return localStorage.getItem('swl_pref_resolution') || '720p'; } catch (e) { return '720p'; } })();
   var adaptiveTierRef = useRef('high');
-  useEffect(() => {
+  useEffect(function() {
     if (netBars == null || !localStream) return;
     var track = localStream.getVideoTracks()[0];
     if (!track) return;
@@ -743,20 +743,20 @@ export default function BroadcastStudio() {
     var basePreset = PRESETS[prefRes] || PRESETS['720p'];
     if (netBars <= 1 && adaptiveTierRef.current !== 'low') {
       adaptiveTierRef.current = 'low';
-      track.applyConstraints({ width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 12 } }).catch(() => {});
+      track.applyConstraints({ width: { ideal: 640 }, height: { ideal: 360 }, frameRate: { ideal: 12 } }).catch(function() {});
     } else if (netBars === 2 && adaptiveTierRef.current !== 'medium') {
       adaptiveTierRef.current = 'medium';
-      track.applyConstraints({ width: { ideal: 854 }, height: { ideal: 480 }, frameRate: { ideal: 20 } }).catch(() => {});
+      track.applyConstraints({ width: { ideal: 854 }, height: { ideal: 480 }, frameRate: { ideal: 20 } }).catch(function() {});
     } else if (netBars >= 3 && adaptiveTierRef.current !== 'high') {
       adaptiveTierRef.current = 'high';
-      track.applyConstraints({ ...Object.fromEntries(Object.entries(basePreset).map(([k, v]) => [k, { ideal: v }])), frameRate: { ideal: 30 } }).catch(() => {});
+      track.applyConstraints({ ...Object.fromEntries(Object.entries(basePreset).map(function(entry) { return [entry[0], { ideal: entry[1] }]; })), frameRate: { ideal: 30 } }).catch(function() {});
     }
   }, [netBars, localStream, prefRes, lowLatencyPreview]);
 
   // Per-peer connection quality — Map<userId, {bars, rtt}>
-  var [peerQuality, setPeerQuality] = useState(() => new Map());
-  useEffect(() => {
-    var interval = setInterval(async () => {
+  var [peerQuality, setPeerQuality] = useState(function() { return new Map(); });
+  useEffect(function() {
+    var interval = setInterval(async function() {
       var qual = new Map();
       for (var [peerId, { pc }] of peersRef.current.entries()) {
         if (pc.connectionState !== 'connected') continue;
@@ -765,7 +765,7 @@ export default function BroadcastStudio() {
         try {
           var stats = await pc.getStats();
           var totalRtt = 0, cnt = 0;
-          stats.forEach(r => {
+          stats.forEach(function(r) {
             if (r.type === 'candidate-pair' && r.state === 'succeeded' && r.currentRoundTripTime != null) {
               totalRtt += r.currentRoundTripTime * 1000;
               cnt++;
@@ -778,17 +778,17 @@ export default function BroadcastStudio() {
       }
       setPeerQuality(qual);
     }, 5000);
-    return () => clearInterval(interval);
+    return function() { clearInterval(interval); };
   }, [peerUserIds]); // peersRef is a stable ref — no dep needed
 
   // Audio output (speaker) preference — applied to all video/audio elements via setSinkId
   var { speakers } = useCameraDevices();
-  var [prefSpeaker, setPrefSpeaker] = useState(() => { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
-  useEffect(() => {
+  var [prefSpeaker, setPrefSpeaker] = useState(function() { try { return localStorage.getItem('swl_pref_speaker') || ''; } catch { return ''; } });
+  useEffect(function() {
     if (!prefSpeaker) return;
-    document.querySelectorAll('video, audio').forEach(el => {
+    document.querySelectorAll('video, audio').forEach(function(el) {
       if (typeof el.setSinkId === 'function' && el.sinkId !== prefSpeaker) {
-        el.setSinkId(prefSpeaker).catch(() => {});
+        el.setSinkId(prefSpeaker).catch(function() {});
       }
     });
   }, [prefSpeaker, remoteStreams]);
@@ -797,7 +797,7 @@ export default function BroadcastStudio() {
   var [noiseSupp, setNoiseSupp] = useState(true);
   var [echoCan, setEchoCan] = useState(true);
   var [autoGain, setAutoGain] = useState(true);
-  useEffect(() => {
+  useEffect(function() {
     applyAudioConstraints({ noiseSuppression: noiseSupp, echoCancellation: echoCan, autoGainControl: autoGain });
   }, [noiseSupp, echoCan, autoGain, applyAudioConstraints]);
 
@@ -805,9 +805,9 @@ export default function BroadcastStudio() {
   var [screenStream, setScreenStream] = useState(null);
   var [screenEnabled, setScreenEnabled] = useState(false);
   var localStreamRef2 = useRef(localStream);
-  useEffect(() => { localStreamRef2.current = localStream; }, [localStream]);
+  useEffect(function() { localStreamRef2.current = localStream; }, [localStream]);
 
-  var toggleScreenShare = useCallback(async () => {
+  var toggleScreenShare = useCallback(async function() {
     if (screenEnabled && screenStream) {
       screenStream.getTracks().forEach(t => t.stop());
       setScreenStream(null);
@@ -816,7 +816,7 @@ export default function BroadcastStudio() {
       if (camTrack) {
         peersRef.current.forEach(({ pc }) => {
           var sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
-          if (sender) sender.replaceTrack(camTrack).catch(() => {});
+          if (sender) sender.replaceTrack(camTrack).catch(function() {});
         });
       }
       return;
@@ -824,14 +824,14 @@ export default function BroadcastStudio() {
     try {
       var stream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always', frameRate: { ideal: 30 }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: true });
       var screenTrack = stream.getVideoTracks()[0];
-      screenTrack.onended = () => {
+      screenTrack.onended = function() {
         setScreenStream(null);
         setScreenEnabled(false);
         var camTrack = localStreamRef2.current && localStreamRef2.current.getVideoTracks()[0];
         if (camTrack) {
           peersRef.current.forEach(({ pc }) => {
             var s = pc.getSenders().find(s2 => s2.track && s2.track.kind === 'video');
-            if (s) s.replaceTrack(camTrack).catch(() => {});
+            if (s) s.replaceTrack(camTrack).catch(function() {});
           });
         }
       };
@@ -839,7 +839,7 @@ export default function BroadcastStudio() {
       setScreenEnabled(true);
       peersRef.current.forEach(({ pc }) => {
         var sender = pc.getSenders().find(s => s.track && s.track.kind === 'video');
-        if (sender) sender.replaceTrack(screenTrack).catch(() => {});
+        if (sender) sender.replaceTrack(screenTrack).catch(function() {});
       });
     } catch {
       // User cancelled or browser denied — no-op
@@ -847,10 +847,10 @@ export default function BroadcastStudio() {
   }, [screenEnabled, screenStream, peersRef]);
   var announceRef = useRef(announceJoin);
   var leaveRef = useRef(leaveRoom);
-  useEffect(() => { announceRef.current = announceJoin; }, [announceJoin]);
-  useEffect(() => { leaveRef.current = leaveRoom; }, [leaveRoom]);
+  useEffect(function() { announceRef.current = announceJoin; }, [announceJoin]);
+  useEffect(function() { leaveRef.current = leaveRoom; }, [leaveRoom]);
   var announcedRef = useRef(false);
-  useEffect(() => {
+  useEffect(function() {
     if (!localStream || !(user && user.id) || announcedRef.current) return;
     announcedRef.current = true;
     if (announceRef.current) announceRef.current(user.id);
@@ -860,7 +860,7 @@ export default function BroadcastStudio() {
   var [hypeLevel, setHypeLevel] = useState(0);
 
   var isHost = (party && party.host_id) === (user && user.id);
-  var myMember = members.find(m => m.user_id === (user && user.id));
+  var myMember = members.find(function(m) { return m.user_id === (user && user.id); });
   var isCoHost = (myMember && myMember.role) === 'cohost';
   var isSpeaker = (myMember && myMember.role) === 'speaker';
   var canManage = isHost || isCoHost;
@@ -872,7 +872,7 @@ export default function BroadcastStudio() {
   function handleToggleAudio() {
     toggleAudio();
     if ((myMember && myMember.id)) {
-      base44.entities.WatchPartyMember.update(myMember.id, { is_audio_enabled: !audioEnabled }).catch(() => {});
+      base44.entities.WatchPartyMember.update(myMember.id, { is_audio_enabled: !audioEnabled }).catch(function() {});
     }
   }
 
@@ -880,9 +880,9 @@ export default function BroadcastStudio() {
   var pttWasEnabledRef = useRef(false);
 
   // Keyboard shortcuts: M = mic, V = camera, S = screen share, C = clip, Space = push-to-talk
-  useEffect(() => {
+  useEffect(function() {
     if (!canStream) return;
-    var onDown = (e) => {
+    var onDown = function(e) {
       var tag = document.activeElement && document.activeElement.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement && document.activeElement.isContentEditable)) return;
       if (e.key === 'm' || e.key === 'M') { e.preventDefault(); handleToggleAudio(); }
@@ -900,7 +900,7 @@ export default function BroadcastStudio() {
         }
       }
     };
-    var onUp = (e) => {
+    var onUp = function(e) {
       if (e.key === ' ') {
         e.preventDefault();
         if (pttActive && !pttWasEnabledRef.current) toggleAudio();
@@ -909,7 +909,7 @@ export default function BroadcastStudio() {
     };
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
-    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
+    return function() { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
    
   }, [canStream, audioEnabled, videoEnabled, screenEnabled, isHost, pttActive]);
 
@@ -930,10 +930,10 @@ export default function BroadcastStudio() {
   var { pushState } = useSyncEngine({ party, isController: canManage, onTimeSync });
 
   // Auto-join as member
-  useEffect(() => {
+  useEffect(function() {
     if (!party || !user) return;
     var mounted = true;
-    (async () => {
+    (async function() {
       try {
         var existing = await base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true });
         if (!mounted) return;
@@ -952,14 +952,14 @@ export default function BroadcastStudio() {
         }
       } catch {}
     })();
-    return () => { mounted = false; };
+    return function() { mounted = false; };
   }, [(party && party.id), (user && user.id)]);
 
   // Leave on unmount
-  useEffect(() => () => {
+  useEffect(() => function() {
     if (!(party && party.id) || !(user && user.id)) return;
     base44.entities.WatchPartyMember.filter({ party_id: party.id, user_id: user.id, is_active: true })
-      .then(ms => ms.forEach(m => base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(() => {}))).catch(() => {});
+      .then(ms => ms.forEach(m => base44.entities.WatchPartyMember.update(m.id, { is_active: false, left_at: new Date().toISOString() }).catch(function() {}))).catch(function() {});
   }, [(party && party.id), (user && user.id)]);
 
   var createMut = useMutation({
@@ -985,24 +985,24 @@ export default function BroadcastStudio() {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'room_created',
-          title: `Started broadcast: ${(p && p.title) || 'Broadcast Studio'}`,
-        }).catch(() => {});
+          title: 'Started broadcast: ' + ((p && p.title) || 'Broadcast Studio'),
+        }).catch(function() {});
       }
-      window.location.href = `${window.location.pathname}?id=${p.id}`;
+      window.location.href = window.location.pathname + '?id=' + p.id;
     },
     onError: () => toast.error('Action failed.'),
   });
 
   var endMut = useMutation({
     mutationFn: () => base44.entities.WatchParty.update(partyId, { status: 'ended' }),
-    onSuccess: () => {
+    onSuccess: function() {
       toast.success('Broadcast ended');
       if ((user && user.id)) {
         base44.entities.Activity.create({
           user_id: user.id,
           type: 'room_ended',
-          title: `Stream ended`,
-        }).catch(() => {});
+          title: 'Stream ended',
+        }).catch(function() {});
       }
       setSearchParams({});
     },
@@ -1010,8 +1010,8 @@ export default function BroadcastStudio() {
   });
 
   // ── AI Music handlers ────────────────────────────────────────────────────
-  var generateAiTrack = async () => {
-    var prompt = aiMusicPrompt.trim() || (aiMusicGenre ? `${aiMusicGenre} background music for a live stream` : 'upbeat live stream background music');
+  var generateAiTrack = async function() {
+    var prompt = aiMusicPrompt.trim() || (aiMusicGenre ? (aiMusicGenre + ' background music for a live stream') : 'upbeat live stream background music');
     setAiMusicGenerating(true);
     try {
       var result = await base44.integrations.Core.InvokeLLM({
@@ -1037,12 +1037,12 @@ Respond with JSON only:
       if ((party && party.id)) {
         base44.entities.WatchParty.update(party.id, {
           updated_at_ms: Date.now(),
-        }).catch(() => {});
+        }).catch(function() {});
       }
-      toast.success(`🎵 Now playing: ${data.title}`);
+      toast.success('🎵 Now playing: ' + data.title);
     } catch {
       // fallback track on error
-      var fallback = { title: `${aiMusicGenre || 'Chill'} Vibes`, genre: aiMusicGenre || 'Chill', mood: 'relaxed', bpm: 90, description: 'Smooth background music for your stream.', tags: ['chill', 'live', 'stream'] };
+      var fallback = { title: (aiMusicGenre || 'Chill') + ' Vibes', genre: aiMusicGenre || 'Chill', mood: 'relaxed', bpm: 90, description: 'Smooth background music for your stream.', tags: ['chill', 'live', 'stream'] };
       setAiMusicTrack(fallback);
       setAiMusicPlaying(true);
     } finally {
@@ -1050,11 +1050,11 @@ Respond with JSON only:
     }
   };
 
-  var detectChatMood = async () => {
+  var detectChatMood = async function() {
     if (!(chatMessages && chatMessages.length)) { toast('No chat messages yet'); return; }
     setAiMoodDetecting(true);
     try {
-      var snippet = chatMessages.slice(-20).map(m => m.content).join('\n');
+      var snippet = chatMessages.slice(-20).map(function(m) { return m.content; }).join('\n');
       var result = await base44.integrations.Core.InvokeLLM({
         prompt: `Analyze the vibe of this live stream chat and suggest a music genre.
 Chat messages:
@@ -1064,7 +1064,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       });
       var data = JSON.parse(result.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
       setAiMusicGenre(data.genre);
-      toast.success(`🎵 Chat vibe: ${data.mood} → switching to ${data.genre}`);
+      toast.success('🎵 Chat vibe: ' + data.mood + ' → switching to ' + data.genre);
     } catch {
       toast('Could not analyze chat mood');
     } finally {
@@ -1072,46 +1072,46 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     }
   };
 
-  var promoteCoHost = async (member) => {
+  var promoteCoHost = async function(member) {
     try {
       await base44.entities.WatchPartyMember.update(member.id, { role: 'cohost' });
-      toast.success(`${member.user_name} promoted to co-host`);
+      toast.success(member.user_name + ' promoted to co-host');
       qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
     } catch { toast.error('Failed to promote member.'); }
   };
 
-  var promoteSpeaker = async (member) => {
+  var promoteSpeaker = async function(member) {
     try {
       await base44.entities.WatchPartyMember.update(member.id, { role: 'speaker' });
-      toast.success(`${member.user_name} added to panel`);
+      toast.success(member.user_name + ' added to panel');
       qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
     } catch { toast.error('Failed to add to panel.'); }
   };
 
-  var demoteToAudience = async (member) => {
+  var demoteToAudience = async function(member) {
     try {
       await base44.entities.WatchPartyMember.update(member.id, { role: 'audience' });
       qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
     } catch { toast.error('Failed to update member role.'); }
   };
 
-  var copyLink = () => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
+  var copyLink = function() {
+    navigator.clipboard.writeText(window.location.href).then(function() {
       toast.success('Invite link copied!');
       setLinkCopied(true);
-      setTimeout(() => setLinkCopied(false), 2000);
+      setTimeout(function() { setLinkCopied(false); }, 2000);
     }).catch(() => toast.error('Copy failed.'));
   };
 
-  var kickMember = async (member) => {
+  var kickMember = async function(member) {
     try {
       await base44.entities.WatchPartyMember.update(member.id, { is_active: false, left_at: new Date().toISOString() });
-      toast.success(`${member.user_name} removed from broadcast`);
+      toast.success(member.user_name + ' removed from broadcast');
       qc.invalidateQueries({ queryKey: ['broadcast-members', partyId] });
     } catch { toast.error('Failed to remove member.'); }
   };
 
-  var sendRaiseHand = async () => {
+  var sendRaiseHand = async function() {
     if (!partyId || !(user && user.id)) return;
     try {
       await base44.entities.Message.create({
@@ -1127,21 +1127,21 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
     }
   };
 
-  var dismissRaisedHand = (userId) => {
-    setRaisedHands(prev => { var s = new Set(prev); s.delete(userId); return s; });
+  var dismissRaisedHand = function(userId) {
+    setRaisedHands(function(prev) { var s = new Set(prev); s.delete(userId); return s; });
   };
 
   // Build compositor slots from localStream + remoteStreams
-  var compositorSlots = React.useMemo(() => {
+  var compositorSlots = React.useMemo(function() {
     var slots = [];
     if (localStream) {
       var roleLabel = isHost ? 'Host' : isCoHost ? 'Co-Host' : isSpeaker ? 'Panel' : 'You';
-      slots.push({ stream: localStream, label: (user && user.full_name) || (user && user.email) || `You (${roleLabel})`, speaking: isSpeaking });
+      slots.push({ stream: localStream, label: (user && user.full_name) || (user && user.email) || ('You (' + roleLabel + ')'), speaking: isSpeaking });
     }
     if (remoteStreams) {
-      remoteStreams.forEach((stream, peerId) => {
+      remoteStreams.forEach(function(stream, peerId) {
         var userId = peerUserIds && peerUserIds.get(peerId);
-        var member = members.find(m => m.user_id === userId);
+        var member = members.find(function(m) { return m.user_id === userId; });
         slots.push({ stream, label: (member && member.user_name) || 'Guest' });
       });
     }
@@ -1153,7 +1153,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
 
   var compositorOverlay = {
     title: (party && party.title) || 'SeeWhy LIVE',
-    subtitle: `${members.length} panelists`,
+    subtitle: members.length + ' panelists',
     showLive: true,
     layout: compositorLayout,
     spotlightIndex: 0, // local stream always featured
@@ -1206,14 +1206,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
   ];
 
   return (
-    <div className={`flex flex-col ${theaterMode ? 'fixed inset-0 z-50' : 'h-screen'}`} style={{ background: BG }}>
+    <div className={'flex flex-col ' + (theaterMode ? 'fixed inset-0 z-50' : 'h-screen')} style={{ background: BG }}>
 
       {/* ── FANBASE-STYLE TOP BAR ──────────────────────────────────────────── */}
       <div className="shrink-0" style={{ background: 'rgba(8,11,24,0.97)', borderBottom: '1px solid rgba(212,175,55,0.1)', backdropFilter: 'blur(12px)' }}>
 
         {/* Row 1: panel toggle | title + badges | right actions */}
         <div className="flex items-center gap-2 px-3 h-12">
-          <button onClick={() => setLeftOpen(v => !v)}
+          <button onClick={function() { setLeftOpen(v => !v); }}
             className="w-8 h-8 flex items-center justify-center rounded-xl shrink-0 transition-all active:scale-95"
             style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)' }}>
             {leftOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
@@ -1222,17 +1222,17 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <span className="font-black text-white truncate" style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: 17, letterSpacing: '0.02em' }}>{party.title}</span>
             <span className="shrink-0 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-black uppercase"
-              style={{ background: 'rgba(192,57,43,0.18)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.35)', ...T }}>
+              style={{ background: 'rgba(192,57,43,0.18)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.35)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />LIVE
             </span>
             {isExclusive && (
               <span className="shrink-0 flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-black uppercase"
-                style={{ background: 'rgba(212,175,55,0.2)', color: GOLD, border: `1px solid rgba(212,175,55,0.5)`, ...T }}>
+                style={{ background: 'rgba(212,175,55,0.2)', color: GOLD, border: '1px solid rgba(212,175,55,0.5)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 🔐 EXCLUSIVE
               </span>
             )}
             <span className="shrink-0 text-[11px] px-2 py-0.5 rounded-full font-black uppercase hidden sm:block"
-              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.25)`, ...T }}>
+              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: '1px solid rgba(212,175,55,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               SeeWhy LIVE
             </span>
           </div>
@@ -1241,7 +1241,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
             {/* Connection quality */}
             <div className="flex items-end gap-0.5 px-1.5 py-1 rounded-lg"
               style={{ background: 'rgba(0,0,0,0.35)' }}
-              title={`Network: ${netLabel}${netRtt ? ` · ${netRtt}ms` : ''}`}>
+              title={'Network: ' + netLabel + (netRtt ? (' · ' + netRtt + 'ms') : '')}>
               {[0,1,2,3].map(i => (
                 <div key={i} style={{
                   width: 4, borderRadius: 2,
@@ -1257,7 +1257,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               style={{ background: 'rgba(212,175,55,0.08)', color: GOLD }} title="Copy invite link">
               <Copy className="w-3.5 h-3.5" />
             </button>
-            <button onClick={() => setTheaterMode(v => !v)}
+            <button onClick={function() { setTheaterMode(v => !v); }}
               className="w-8 h-8 flex items-center justify-center rounded-xl transition-all active:scale-95"
               style={{ background: theaterMode ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)', color: theaterMode ? GOLD : 'rgba(255,255,255,0.4)' }}>
               {theaterMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
@@ -1268,7 +1268,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 compact
                 isHost={isHost}
                 isCoHost={isCoHost}
-                onSelect={src => {
+                onSelect={function(src) {
                   var safeSelectUrl = isSafeUrl(src.url) ? src.url : '';
                   base44.entities.WatchParty.update(party.id, {
                     video_url: safeSelectUrl,
@@ -1276,7 +1276,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     current_time: 0,
                     playback_state: 'paused',
                     updated_at_ms: Date.now(),
-                  }).then(() => {
+                  }).then(function() {
                     qc.invalidateQueries({ queryKey: ['broadcast-party', partyId] });
                     setStudioMode('watch');
                   }).catch(() => toast.error('Failed to update video.'));
@@ -1289,7 +1289,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                 slots={compositorSlots}
                 overlayConfig={compositorOverlay}
                 userId={(user && user.id)}
-                onScreenCapture={(studioMode === 'watch' || studioMode === 'hybrid') ? async () => {
+                onScreenCapture={(studioMode === 'watch' || studioMode === 'hybrid') ? async function() {
                   var s = await navigator.mediaDevices.getDisplayMedia({ video: { displaySurface: 'browser' }, audio: true });
                   return s;
                 } : undefined}
@@ -1300,9 +1300,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               <ClipMarker roomId={partyId} user={user} streamStartTs={streamStartRef.current} getClipBlobUrl={extractClipBlobUrl} />
             )}
             {isHost && (
-              <button onClick={() => endMut.mutate()}
+              <button onClick={function() { endMut.mutate(); }}
                 className="flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-xl transition-all active:scale-95"
-                style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', ...T }}>
+                style={{ background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.25)', color: '#C0392B', fontFamily: 'Barlow Condensed, sans-serif' }}>
                 <LogOut className="w-3 h-3" /> End
               </button>
             )}
@@ -1323,38 +1323,38 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               { id: 'hybrid', icon: '⚡', label: 'Hybrid' },
               { id: 'watch',  icon: '🎬', label: 'Watch' },
               { id: 'live',   icon: '🎙', label: 'Live' },
-            ].map(mod => (
-              <button key={mod.id} onClick={() => setStudioMode(mod.id)}
+            ].map(function(mod) { return (
+              <button key={mod.id} onClick={function() { setStudioMode(mod.id); }}
                 className="text-[11px] px-2 py-0.5 rounded-full font-black uppercase transition-all active:scale-95"
                 style={{
                   background: studioMode === mod.id ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.04)',
                   border: studioMode === mod.id ? '1px solid rgba(212,175,55,0.35)' : '1px solid rgba(255,255,255,0.07)',
-                  color: studioMode === mod.id ? GOLD : 'rgba(255,255,255,0.3)', ...T,
+                  color: studioMode === mod.id ? GOLD : 'rgba(255,255,255,0.3)', fontFamily: 'Barlow Condensed, sans-serif',
                 }}>
                 {mod.icon} {mod.label}
               </button>
-            ))}
+            ); })}
           </div>
           {isHost && (
             <span className="ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
-              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.2)`, ...T }}>
+              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Host
             </span>
           )}
           {isCoHost && !isHost && (
             <span className="ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
-              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: `1px solid rgba(212,175,55,0.25)`, ...T }}>
+              style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: '1px solid rgba(212,175,55,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Co-Host
             </span>
           )}
           {isSpeaker && !isHost && !isCoHost && (
             <span className="ml-1 text-[11px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0"
-              style={{ background: 'rgba(212,133,74,0.12)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', ...T }}>
+              style={{ background: 'rgba(212,133,74,0.12)', color: '#D4854A', border: '1px solid rgba(212,133,74,0.25)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               Panel
             </span>
           )}
           {speakingName && (
-            <span className="ml-auto text-[10px] italic shrink-0" style={{ color: 'rgba(255,255,255,0.6)', ...T }}>
+            <span className="ml-auto text-[10px] italic shrink-0" style={{ color: 'rgba(255,255,255,0.6)', fontFamily: 'Barlow Condensed, sans-serif' }}>
               &quot;{speakingName} is speaking&quot;
             </span>
           )}
@@ -1387,7 +1387,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               <div className="shrink-0 flex items-center justify-between px-3 py-2"
                 style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.2)' }}>
                 <span className="text-[14px] font-black text-white" style={T}>Stage</span>
-                <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.45)', ...T }}>
+                <span className="text-[11px] font-bold" style={{ color: 'rgba(255,255,255,0.45)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                   {members.length}/{hostSettings.maxViewers}
                 </span>
                 <button className="w-6 h-6 flex items-center justify-center rounded"
@@ -1408,9 +1408,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   localStream={localStream}
                   peerQuality={peerQuality}
                 />
-                {members.length > 6 && (() => {
-                  var stageMembers = members.filter(m => m.user_id === party.host_id || m.role === 'cohost' || m.role === 'speaker');
-                  var audienceMembers = members.filter(m => m.role === 'audience' || m.role === 'viewer' || (!m.role && m.user_id !== party.host_id));
+                {members.length > 6 && (function() {
+                  var stageMembers = members.filter(function(m) { return m.user_id === party.host_id || m.role === 'cohost' || m.role === 'speaker'; });
+                  var audienceMembers = members.filter(function(m) { return m.role === 'audience' || m.role === 'viewer' || (!m.role && m.user_id !== party.host_id); });
                   if (audienceMembers.length === 0) return null;
                   var shown = audienceMembers.slice(0, 15);
                   var overflow = audienceMembers.length - 15;
@@ -1418,7 +1418,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                     <div className="px-2 pt-2 pb-3">
                       <p className="text-[11px] uppercase font-bold mb-2 tracking-wider" style={{ color: 'rgba(255,255,255,0.3)' }}>Others in the Room</p>
                       <div className="flex flex-wrap gap-1.5">
-                        {shown.map(m => {
+                        {shown.map(function(m) {
                           var _peerEntry = peerUserIds && Array.from(peerUserIds.entries()).find(function(e) { return e[1] === m.user_id; });
                           var peerId = _peerEntry && _peerEntry[0];
                           var mStream = peerId && remoteStreams ? remoteStreams.get(peerId) : null;
@@ -1536,7 +1536,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               Exclusive Live
             </span>
             <button
-              onClick={() => {
+              onClick={function() {
                 var next = !isExclusive;
                 setIsExclusive(next);
                 if (partyId && next) {
@@ -1573,7 +1573,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               {slowMode && (
                 <div className="flex items-center gap-1 mr-2">
                   {[10, 30, 60].map(s => (
-                    <button key={s} onClick={() => setSlowModeCooldown(s)}
+                    <button key={s} onClick={function() { setSlowModeCooldown(s); }}
                       className="text-[11px] px-1.5 py-0.5 rounded-full"
                       style={{ background: slowModeCooldown === s ? 'rgba(201,168,76,0.2)' : 'rgba(255,255,255,0.05)', color: slowModeCooldown === s ? '#C9A84C' : 'rgba(255,255,255,0.3)', border: slowModeCooldown === s ? '1px solid rgba(201,168,76,0.3)' : '1px solid rgba(255,255,255,0.07)', fontFamily: 'Barlow Condensed, sans-serif' }}>
                       {s}s
@@ -1581,7 +1581,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
                   ))}
                 </div>
               )}
-              <button className="tap-44" aria-label="Toggle slow mode" onClick={() => setSlowMode(v => !v)}
+              <button className="tap-44" aria-label="Toggle slow mode" onClick={function() { setSlowMode(v => !v); }}
                 style={{ position: 'relative', width: 36, height: 20, borderRadius: 10, background: slowMode ? '#C9A84C' : 'rgba(255,255,255,0.2)', border: 'none', cursor: 'pointer', transition: 'background 0.2s', flexShrink: 0 }}
               >
                 <div style={{ position: 'absolute', top: 2, left: slowMode ? 18 : 2, width: 16, height: 16, borderRadius: '50%', background: '#fff', transition: 'left 0.2s' }} />
@@ -1591,17 +1591,17 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
 
           {/* Tab bar */}
           <div className="flex shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', background: '#0B0B18' }}>
-            {RIGHT_TABS.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            {RIGHT_TABS.map(function(tab) { return (
+              <button key={tab.id} onClick={function() { setActiveTab(tab.id); }}
                 className="flex-1 py-2 flex flex-col items-center gap-0 transition-all"
                 style={{
                   color: activeTab === tab.id ? GOLD : 'rgba(255,255,255,0.3)',
                   background: activeTab === tab.id ? 'rgba(212,175,55,0.06)' : 'transparent',
-                  borderBottom: activeTab === tab.id ? `2px solid ${GOLD}` : '2px solid transparent',
+                  borderBottom: activeTab === tab.id ? ('2px solid ' + GOLD) : '2px solid transparent',
                 }}>
                 <span className="text-[11px] font-black uppercase" style={T}>{tab.label}</span>
               </button>
-            ))}
+            ); })}
           </div>
 
           {/* Quick-action feature row */}
@@ -1619,9 +1619,9 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
               { icon: '🚪', label: 'Breakout', action: () => setShowBreakoutRooms(true) },
               { icon: '📢', label: 'Share',    action: () => setShowShareModal(true) },
               { icon: '⚡', label: 'Activity', action: () => setShowActivitySidebar(v => !v) },
-              { icon: '📊', label: 'Poll',     action: () => { navigate(createPageUrl('PollManager')); } },
+              { icon: '📊', label: 'Poll',     action: function() { navigate(createPageUrl('PollManager')); } },
               { icon: '🔔', label: 'Alert',    action: () => toast.info('Alert sent to audience!') },
-              { icon: '🎵', label: 'Music',    action: () => { navigate(createPageUrl('AIMusic')); } },
+              { icon: '🎵', label: 'Music',    action: function() { navigate(createPageUrl('AIMusic')); } },
             ].map(item => (
               <button key={item.label}
                 onClick={item.action}
@@ -1710,7 +1710,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           <Monitor className="w-4 h-4" />
         </motion.button>
 
-        <motion.button whileTap={{ scale: 0.92 }} onClick={() => setShowCameraPicker(true)}
+        <motion.button whileTap={{ scale: 0.92 }} onClick={function() { setShowCameraPicker(true); }}
           title="Switch camera / OBS source"
           className="flex items-center justify-center w-10 h-10 rounded-xl transition-all"
           style={{
@@ -1724,7 +1724,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         <div className="w-px h-6" style={{ background: 'rgba(255,255,255,0.1)' }} />
 
         <span className="text-[11px] px-2 py-1 rounded font-black uppercase"
-          style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', ...T }}>
+          style={{ background: 'rgba(212,175,55,0.1)', color: GOLD, border: '1px solid rgba(212,175,55,0.2)', fontFamily: 'Barlow Condensed, sans-serif' }}>
           {studioMode === 'watch' ? '🎬 Watch' : studioMode === 'live' ? '🎙️ Live' : '⚡ Hybrid'}
         </span>
 
@@ -1752,34 +1752,34 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           style={{display:'flex',alignItems:'center',justifyContent:'center',width:44,height:44,minWidth:44,minHeight:44,borderRadius:12,cursor:'pointer',
             background:'rgba(212,175,55,0.1)',border:'1px solid rgba(212,175,55,0.3)',color:GOLD,fontSize:14}}>
           🎬</button>)}
-        {!vodRecording&&vodBlobUrl&&(<button onClick={()=>downloadRecording((party && party.title)?`${party.title.slice(0,40)}.webm`:'recording.webm')}
+        {!vodRecording&&vodBlobUrl&&(<button onClick={()=>downloadRecording((party && party.title)?(party.title.slice(0,40) + '.webm'):'recording.webm')}
           title="Download recording"
           style={{display:'flex',alignItems:'center',justifyContent:'center',width:44,height:44,minWidth:44,minHeight:44,borderRadius:12,cursor:'pointer',
             background:'rgba(109,191,126,0.15)',border:'1px solid rgba(109,191,126,0.4)',color:'#6DBF7E',fontSize:13}}>
           ⬇</button>)}
         {!isHost ? (
           <motion.button whileTap={{ scale: 0.92 }}
-            onClick={() => { navigate('/'); }}
+            onClick={function() { navigate('/'); }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase"
-            style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', ...T }}>
+            style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <PhoneOff className="w-3.5 h-3.5" /> Leave
           </motion.button>
         ) : (
           <motion.button whileTap={{ scale: 0.92 }}
-            onClick={() => endMut.mutate()}
+            onClick={function() { endMut.mutate(); }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase"
-            style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', ...T }}>
+            style={{ background: 'rgba(255,68,68,0.15)', border: '1px solid rgba(255,68,68,0.3)', color: '#FF4444', fontFamily: 'Barlow Condensed, sans-serif' }}>
             <PhoneOff className="w-3.5 h-3.5" /> End Broadcast
           </motion.button>
         )}
       </div>
 
-      <PreJoinSettingsModal open={showPreflight} onClose={() => setShowPreflight(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={(id) => { replaceVideoDevice(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {}; }} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
+      <PreJoinSettingsModal open={showPreflight} onClose={() => setShowPreflight(false)} stream={localStream} devices={{ cameras: [] }} onCameraChange={function(id) { replaceVideoDevice(id); try { if (id) localStorage.setItem('swl_pref_cam', id); } catch {}; }} onResolutionChange={(res) => reacquireMedia({ resolution: res })} />
       <LiveCaptionOverlay stream={localStream} />
       {showCameraPicker && (
         <CameraSourcePicker
           currentStream={localStream}
-          onSelect={(stream, meta) => {
+          onSelect={function(stream, meta) {
             // Release picker's own acquired stream tracks
             if (stream) stream.getVideoTracks().forEach(t => t.stop());
             if ((meta && meta.deviceId)) {
@@ -1804,8 +1804,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
           roomId={partyId}
           isHost={isHost}
           sessionId={(user && user.id)}
-          onViewerUpdate={n => { setLiveViewers(n); setPeakViewers(p => Math.max(p, n)); }}
-          onTipReceived={msg => { var amt = msg.tip_amount || 0; if (amt > 0) setTipTotal(prev => prev + amt); }}
+          onViewerUpdate={function(n) { setLiveViewers(n); setPeakViewers(p => Math.max(p, n)); }}
+          onTipReceived={function(msg) { var amt = msg.tip_amount || 0; if (amt > 0) setTipTotal(prev => prev + amt); }}
         />
       )}
 
@@ -1816,7 +1816,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
         user={user}
         creatorId={(party && party.host_id)}
         creatorName={(party && party.host_name) || 'Creator'}
-        onGiftSent={(gift, sender) => {
+        onGiftSent={function(gift, sender) {
           var senderName = (sender && sender.full_name) || (sender && sender.email) || 'You';
           var amount = (gift && gift.price) || 0;
           setGiftEvent({ id: Date.now(), gift, senderName });
@@ -1878,8 +1878,8 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <PerformanceDashboard roomId={partyId} sessionId={partyId} />}
       <StreamHealthDashboard isLive={partyId != null} />
       {!isHost && partyId && <QuickTip recipientId={(party && party.host_id) || (user && user.id)} recipientName={''} onTipSent={(amount) => setTipTotal(t => t + Math.floor(amount || 0))} />}
-      {isHost && <LowerThirdsBanner onBannerChange={(b) => { if (partyId) base44.entities.WatchParty.update(partyId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(() => {}); }} />}
-      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={(s) => { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !screenEnabled) setScreenEnabled(true); else if (s === 'camera' && screenEnabled) setScreenEnabled(false); }} />}
+      {isHost && <LowerThirdsBanner onBannerChange={function(b) { if (partyId) base44.entities.WatchParty.update(partyId, { lower_thirds_text: b.text, lower_thirds_enabled: b.enabled }).catch(function() {}); }} />}
+      {isHost && <SceneSwitcher activeScene={activeScene} onSceneChange={function(s) { setActiveScene(s); if ((s === 'screen' || s === 'pip') && !screenEnabled) setScreenEnabled(true); else if (s === 'camera' && screenEnabled) setScreenEnabled(false); }} />}
       <NotificationHub />
       {isHost && <SoundboardWidget isVisible={true} />}
       {isHost && partyId && <RaidPanelButton room={party} currentUser={user} isHost={isHost} triggerOpen={raidTick} />}
@@ -1893,7 +1893,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <AICopilotSidebar roomId={partyId} isHost={isHost} viewerCount={members.length} />}
       {isHost && partyId && <EnhancedPollingSystem roomId={partyId} hostId={(party && party.host_id) || (user && user.id)} isHost={isHost} />}
       {partyId && (user && user.id) && <SuperChatBar roomId={partyId} currentUser={user} recipientId={(party && party.host_id) || (user && user.id)} recipientName={''} />}
-      {(user && user.id) && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={() => {}} />}
+      {(user && user.id) && <SwanyBotEnhanced userId={user.id} conversationId={null} onContextReady={function() {}} />}
       {isHost && <LocalVideoTile stream={localStream} audioEnabled={audioEnabled} videoEnabled={videoEnabled} userName={(user && user.full_name) || ''} isHost={isHost} isSpeaking={isSpeaking} />}
       {isHost && <OctagonalVideoWindow title={'My Camera'} isMuted={!audioEnabled} isVideoOff={!videoEnabled} onMicToggle={handleToggleAudio} onVideoToggle={toggleVideo} />}
       {isHost && <AudioPanel micMuted={!audioEnabled} onMicToggle={handleToggleAudio} participants={members} />}
@@ -1908,14 +1908,14 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && <CreatorTierManager creatorId={(party && party.host_id) || (user && user.id)} />}
       {(user && user.id) && <TierBadge tier={null} size={'sm'} showName={false} />}
       {(user && user.id) && <LoyaltyBadge userId={user.id} creatorId={(party && party.host_id) || (user && user.id)} />}
-      {partyId && <GuestGrid participants={members} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(() => {})} hostId={(user && user.id)} speakingIds={speakingIds} />}
-      {isHost && partyId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
-      <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={(url) => { if (isHost && partyId) base44.entities.WatchParty.update(partyId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(() => {}); }} />
+      {partyId && <GuestGrid participants={members} isHost={isHost} onInvite={() => navigator.clipboard.writeText(window.location.href).then(() => toast.success('Invite link copied!')).catch(function() {})} hostId={(user && user.id)} speakingIds={speakingIds} />}
+      {isHost && partyId && <EnhancedRoomControls isHost={isHost} roomData={party} micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={function(s) { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} />}
+      <CollabPlaylist isHost={isHost} currentUser={user} onPlayVideo={function(url) { if (isHost && partyId) base44.entities.WatchParty.update(partyId, { video_url: url, current_time: 0, playback_state: 'paused', updated_at_ms: Date.now() }).catch(function() {}); }} />
       <YouTubeDiscovery />
       <ActivitySidebar isOpen={showActivitySidebar} onClose={() => setShowActivitySidebar(false)} />
       {showGlobalSearch && <GlobalSearch onClose={() => setShowGlobalSearch(false)} />}
       {partyId && <PayPerViewGate roomId={partyId} ppvPrice={4.99} onPurchase={() => toast.success('Content unlocked!')} />}
-      <PaywallGate isHost={isHost} streamTitle={(party && party.title) || ''} onUnlock={() => {}} isUnlocked={true} />
+      <PaywallGate isHost={isHost} streamTitle={(party && party.title) || ''} onUnlock={function() {}} isUnlocked={true} />
       {partyId && <SubscriptionGate creatorId={(party && party.host_id) || (user && user.id)} roomId={partyId} />}
       {showModerationAppeal && partyId && <ModerationAppealPanel flagId={null} messageId={null} roomId={partyId} onClose={() => setShowModerationAppeal(false)} />}
       {isHost && <GuestStreamingPermissions participant={null} isHost={isHost} onPermissionChange={() => toast.success('Permissions updated')} />}
@@ -1926,15 +1926,15 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && <PKBattleSoundboard battleId={partyId} isBattleActive={partyId != null} />}
       <PanelMusicPlayer />
       {isHost && partyId && <PollLaunchBar roomId={partyId} hostId={(user && user.id)} activePoll={activePoll} isHost={isHost} />}
-      {party && <PreStreamCountdown room={party} currentUser={user} onGoLive={() => { if (isHost && partyId) base44.entities.WatchParty.update(partyId, { status: 'live' }).catch(() => {}); }} />}
+      {party && <PreStreamCountdown room={party} currentUser={user} onGoLive={function() { if (isHost && partyId) base44.entities.WatchParty.update(partyId, { status: 'live' }).catch(function() {}); }} />}
       <PrivatePanel isHost={isHost} currentUser={user} />
       {partyId && <StreamChatbot roomId={partyId} isHost={isHost} elapsedSeconds={elapsed} hostName={(user && user.full_name) || ''} room={party} />}
-      {partyId && <StreamEventBus roomId={partyId} isHost={isHost} sessionId={partyId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor((msg && msg.tip_amount) || 0))} onMessageReceived={msg => { if ((msg && msg.content)) setChatMessages(prev => [...prev, msg]); }} />}
+      {partyId && <StreamEventBus roomId={partyId} isHost={isHost} sessionId={partyId} onViewerUpdate={setBusViewerCount} onTipReceived={msg => setTipTotal(t => t + Math.floor((msg && msg.tip_amount) || 0))} onMessageReceived={function(msg) { if ((msg && msg.content)) setChatMessages(prev => [...prev, msg]); }} />}
       {partyId && <TippingOverlay roomId={partyId} creatorId={(party && party.host_id) || (user && user.id)} isVisible={true} />}
       {partyId && <UnifiedChat roomId={partyId} currentUser={user} isHost={isHost} />}
       {isHost && partyId && <AIPersonaCustomizer roomId={partyId} sessionId={partyId} onCustomized={() => toast.success('AI persona configured!')} />}
       {isHost && <AudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} />}
-      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={(s) => { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} stream={localStream} />}
+      {isHost && <EnhancedAudioMixer micMuted={!audioEnabled} onMicToggle={handleToggleAudio} onAudioSettingsChange={function(s) { if (s.noiseSuppression !== undefined) setNoiseSupp(s.noiseSuppression); if (s.echoCancellation !== undefined) setEchoCan(s.echoCancellation); }} stream={localStream} />}
       {isHost && <ScreenSharePanel isSharing={screenEnabled} onStartShare={toggleScreenShare} onStopShare={toggleScreenShare} />}
       {partyId && <AuraEmotionDisplay roomId={partyId} sessionId={partyId} auraPersona={'hype'} />}
       {partyId && <BattleScoreboard roomId={partyId} />}
@@ -1961,7 +1961,7 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {isHost && partyId && (user && user.id) && <StreamHighlightCapture roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} isHost={isHost} />}
       {isHost && partyId && <QuickPollLauncher roomId={partyId} hostId={(user && user.id)} isHost={isHost} />}
       {!isHost && partyId && (party && party.host_id) && <GiftTray roomId={partyId} currentUser={user} recipientId={party.host_id} />}
-      {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={(b) => { if ((party && party.id)) base44.entities.WatchParty.update(party.id, b).catch(() => {}); }} isHost={isHost} />}
+      {isHost && party && <RoomBrandingEditor roomData={party} onBrandingChange={function(b) { if ((party && party.id)) base44.entities.WatchParty.update(party.id, b).catch(function() {}); }} isHost={isHost} />}
       {/* Creator Studios */}
       <div style={{ margin: '0 0 16px', padding: 16, borderRadius: 16, border: '1px solid rgba(123,45,139,0.22)', background: 'rgba(13,6,24,0.5)' }}>
         <p style={{ fontSize: 11, fontWeight: 900, fontFamily: 'Barlow Condensed, sans-serif', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(176,102,204,0.7)', marginBottom: 12 }}>Creator Studios</p>
@@ -2005,21 +2005,21 @@ Respond with JSON only: {"genre": "one of: Lo-Fi|Trap|Gospel|Afrobeats|R&B|Chill
       {partyId && <AuraPanel roomId={partyId} isHost={isHost} streamTitle={(party && party.title) || ''} viewerCount={members.length} isLive={partyId != null} userTier="free" />}
       {isHost && <GuestControls
         participants={members}
-        onMuteGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_audio_enabled: false }).catch(() => {})}
-        onRemoveGuest={(id) => { var m = members.find(mb => mb.id === id); if (m) kickMember(m); }}
+        onMuteGuest={(id) => base44.entities.WatchPartyMember.update(id, { is_audio_enabled: false }).catch(function() {})}
+        onRemoveGuest={function(id) { var m = members.find(mb => mb.id === id); if (m) kickMember(m); }}
       />}
       {isHost && partyId && <StreamHealthMonitor isLive={true} />}
       {isHost && partyId && <BreakoutRoomsModal isOpen={showBreakoutRooms} onClose={() => setShowBreakoutRooms(false)} roomId={partyId} roomTitle={(party && party.title) || ''} currentUser={user} />}
       {isHost && partyId && <CoStreamHub roomId={partyId} isHost={isHost} isCoHost={false} currentUser={user} compact={false} speakingIds={speakingIds} />}
-      {isHost && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={() => { setShowGreenRoomModal(false); if (partyId) base44.entities.WatchParty.update(partyId, { status: 'live' }).catch(() => {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
-      {isHost && party && user && <GreenRoomPreflight isOpen={showPreflight} onClose={() => setShowPreflight(false)} onGoLive={() => { if (partyId) base44.entities.WatchParty.update(partyId, { status: 'live' }).catch(() => {}); }} party={party} user={user} />}
+      {isHost && <GreenRoomModal isOpen={showGreenRoomModal} onClose={() => setShowGreenRoomModal(false)} onReady={function() { setShowGreenRoomModal(false); if (partyId) base44.entities.WatchParty.update(partyId, { status: 'live' }).catch(function() {}); }} localStream={localStream} audioEnabled={audioEnabled} />}
+      {isHost && party && user && <GreenRoomPreflight isOpen={showPreflight} onClose={() => setShowPreflight(false)} onGoLive={function() { if (partyId) base44.entities.WatchParty.update(partyId, { status: 'live' }).catch(function() {}); }} party={party} user={user} />}
       {isHost && (user && user.id) && <OverlayThemeBuilder creatorId={(party && party.host_id) || (user && user.id)} />}
       {isHost && showClipCreator && partyId && (user && user.id) && <ClipCreatorSheet roomId={partyId} sessionId={partyId} creatorId={user.id} elapsedSeconds={elapsed} roomTitle={(party && party.title) || ''} onClose={() => setShowClipCreator(false)} />}
       {isHost && showAuraPanelDrawer && partyId && <AuraPanelDrawer roomId={partyId} hostId={(party && party.host_id) || (user && user.id)} onClose={() => setShowAuraPanelDrawer(false)} />}
       {partyId && <PKBattle roomId={partyId} isHost={isHost} hostName={(user && user.full_name) || ''} viewerCount={members.length} />}
       {partyId && <PKBattleModal isOpen={showPKBattleModal} onClose={() => setShowPKBattleModal(false)} roomId={partyId} isHost={isHost} currentUser={user} hostName={(user && user.full_name) || ''} />}
       {!isHost && partyId && user && <LoveTap roomId={partyId} user={user} creatorId={(party && party.host_id) || (user && user.id)} creatorName={''} />}
-      <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} url={`${window.location.origin}${createPageUrl('BroadcastStudio')}?id=${partyId}`} title={(party && party.title) || ''} />
+      <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} url={window.location.origin + createPageUrl('BroadcastStudio') + '?id=' + partyId} title={(party && party.title) || ''} />
       <WebRTCConfigModal isOpen={showWebRTCConfig} onClose={() => setShowWebRTCConfig(false)} onApply={() => setShowWebRTCConfig(false)} currentConfig={{}} />
     </div>
   );
